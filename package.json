@@ -1,0 +1,32 @@
+{
+  "name": "tron-fuel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.41.1",
+    "axios": "^0.27.2",
+    "bcrypt": "^5.0.1",
+    "bitcore-lib": "^8.25.25",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "ethereumjs-wallet": "^1.0.2",
+    "express": "^4.17.1",
+    "express-validator": "^6.14.0",
+    "express-ws": "^5.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "mysql": "^2.18.1",
+    "node-fetch": "^3.0.0",
+    "nodemailer": "^6.7.3",
+    "nodemon": "^2.0.14",
+    "tronweb": "^4.1.0",
+    "web3": "^1.7.3"
+  }
+}
