@@ -7,7 +7,7 @@ const bonusSchema = new mongoose.Schema({
     bonus_type : { type : String ,  required : true },
     token_quantity : { type : Number , default : 0 },
     bonus_percent : { type : Number , default : 0 }
-}, { timestamps: true});
+}, { timestamps: true}); 
 
 
 module.exports = mongoose.model("Bonus", bonusSchema);
