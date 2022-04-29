@@ -7,8 +7,7 @@ const {
   varify,
   sendotp,
   forgetPassword,
-  resetPassword,
-  createWallet,
+  resetPassword, 
   walletData,
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
