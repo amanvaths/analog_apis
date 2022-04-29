@@ -26,7 +26,7 @@ function randomString(length, chars) {
   return result;
 }
 
-async function sendMail(subject, message) {
+async function sendMail(email, subject, message) {
   var transporter = nodemailer.createTransport({
     host: "mail.hrlw.in",
     port: 465,
@@ -38,7 +38,7 @@ async function sendMail(subject, message) {
 
   var mailOptions = {
     from: "analog@hrlw.in",
-    to: "vipinatraura@gmail.com",
+    to: email,
     subject: subject,
     html: message,
   };
@@ -70,7 +70,7 @@ exports.sendotp = async (req, res) => {
       { $set: { otp: otp } }
     );
     if (varify) {
-      sendMail(subject, message);
+      sendMail(email, subject, message);
       return res.status(200).json({
         status: 1,
         message: "OTP sended successfully",
@@ -172,9 +172,9 @@ exports.signup = async (req, res) => {
             } else if (data) {
                     createWallet(email);
                     var subject = "Registration completed successully";
-                    var message = "<h1>Hello Rahul, <br> Your have Registerd successully on Analog. Your OTP is : <br>" +                 otp +
+                    var message = "<h1>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" +                 otp +
                       "</h1>";
-                    sendMail(subject, message);
+                    sendMail(email, subject, message);
                     return res.status(200).json({
                       status: 1,
                       message: "User Sign Up successfully",
@@ -325,7 +325,7 @@ exports.forgetPassword = async (req, res) => {
           if (user) {
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
-            var msg = `<h1>Hello Rahul, <br> Click on the reset button below to reset your password.<br> <a href='http://localhost:3000/ResetPassword?resetcode=${randCode}' > Reset </a></h1>`;
+            var msg = `<h1>Hello , <br> Click on the reset button below to reset your password.<br> <a href='http://localhost:3000/ResetPassword?resetcode=${randCode}' > Reset </a></h1>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
               email: req.body.email,
@@ -339,7 +339,7 @@ exports.forgetPassword = async (req, res) => {
                 });
               }
               if (data) {
-                sendMail(subject, msg);
+                sendMail(email, subject, msg);
                 return res.status(200).json({
                   status: 1,
                   message: "Reset link is sended",
@@ -415,8 +415,8 @@ exports.resetPassword = async (req, res) => {
                   if (passwordUpdate) {
                     var subject = "Password changed successfully";
                     var message =
-                      "<h1>Hello Rahul, <br> Your password has been updated successfully.</h1>";
-                    sendMail(subject, message);
+                      "<h1>Hello, <br> Your password has been updated successfully.</h1>";
+                    sendMail(email, subject, message);
                     return res.status(200).json({
                       status: 1,
                       message: "Password updated successully...",
