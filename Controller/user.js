@@ -70,7 +70,7 @@ exports.sendotp = async (req, res) => {
       { $set: { otp: otp } }
     );
     if (varify) {
-      sendMail(email, subject, message);
+      sendMail(req.body.email, subject, message);
       return res.status(200).json({
         status: 1,
         message: "OTP sended successfully",
@@ -172,7 +172,7 @@ exports.signup = async (req, res) => {
             } else if (data) {
                     createWallet(email);
                     var subject = "Registration completed successully";
-                    var message = "<h1>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" +                 otp +
+                    var message = "<h1>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" + otp +
                       "</h1>";
                     sendMail(email, subject, message);
                     return res.status(200).json({
