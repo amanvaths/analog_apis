@@ -632,3 +632,148 @@ exports.walletData = async (req, res) => {
 };
 
 
+
+
+exports.transaction_history = async (req, res) => {
+  const web3 = require('web3');
+  /** trx
+   * 
+   */
+  const TronWeb = require("tronweb");
+  const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io", }); 
+  /**
+   * eth
+   */
+  // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
+  const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
+  const Web3 = require("web3");
+  const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
+  const web3Eth = new Web3(web3Provider);
+
+  const email = req.body.email;  
+  if(email){   
+    let go = await canUpdate(email);
+    if(go){
+      
+      var walletETH   = await userWallet.find({ email: email, wallet_type: 'ETH' });      
+      var walletTRX   = await userWallet.find({ email: email, symbol: 'TRX' });     
+        
+    if (walletTRX && walletTRX[0].symbol == 'TRX') {
+        console.log("TRX")
+        let wallet = walletTRX;
+        const decimal = 1e6;        
+        let trx_balance = await tronWeb.trx.getBalance(walletTRX[0].walletAddr);
+        console.log(trx_balance/decimal + " TRX balance");
+        const balance = trx_balance/decimal;
+        if (balance > 0) {
+          /**
+           * check for w balance
+           */         
+          const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+          const new_w_balance = balance;         
+          /**
+           * update user's wallet
+           */         
+          await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
+              $set: {
+                  balance     : new_w_balance,
+                  old_balanace  : w_balance
+              }
+          });
+          if (balance > 0) {
+              createDepositHistory(email, 'TRX', wallet[0].walletAddr, balance);            
+          }  
+           
+      }
+    }
+
+    if (walletETH && walletETH[0].symbol == 'ETH') {
+      console.log("ETH");
+      let wallet = walletETH;
+      const decimal = 1e18;        
+      let eth_balance = await web3Eth.eth.getBalance(walletTRX[0].walletAddr); 
+      console.log(eth_balance/decimal + " TRX balance");
+      const balance = eth_balance/decimal;
+      if (balance > 0) {
+        /**
+         * check for w balance
+         */         
+        const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+        const new_w_balance = balance;         
+        /**
+         * update user's wallet
+         */         
+        await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
+            $set: {
+                balance     : new_w_balance,
+                old_balanace  : w_balance
+            }
+        });
+        if (balance > 0) {
+            createDepositHistory(email, 'ETH', wallet[0].walletAddr, balance);            
+        }  
+         
+    }
+  }
+
+    }
+  } 
+}
+
+
+function createDepositHistory(email, symbol, address, amount) {
+const transaction_history = require('../models/transaction_history');
+try {    
+    // if (user_id && type && address && amount) {
+      transaction_history.create({
+        email: email,
+        symbol: symbol,
+        status: 1,
+        amount: amount,
+        to_address: address,
+        type: "deposit"
+    }).then((data) => {
+        // console.log("history created", user_id);
+    }).catch((error) => {
+        // console.log("error: ", error.message);
+    })
+
+    // } else {
+    //     return false;
+    // }
+    return true;
+} catch (error) {
+    return false;
+}
+}
+
+async function canUpdate(email) {
+const transaction_history = require('../models/transaction_history');
+try {
+    let last_deposit = await transaction_history.findOne({ email: email }).sort({ createdAt: -1 });
+    if (last_deposit) {
+        let last_created = last_deposit.createdAt ? last_deposit.createdAt : undefined;
+        if (last_created) {
+            let d = new Date(last_created).getTime();
+            if (d) {
+                if (new Date().getTime() - d > 3000) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    } else {
+        return true;
+    }
+} catch (error) {
+    console.log("error in canupdate: ", error.message)
+    return false;
+}
+}
+
+

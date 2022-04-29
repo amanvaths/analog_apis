@@ -9,6 +9,7 @@ const {
   forgetPassword,
   resetPassword, 
   walletData,
+  transaction_history
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent } = require('../Controller/utility');
@@ -32,6 +33,7 @@ router.get('/alluserbydate', alluserbydate);
 router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
+router.post('/transaction_history', transaction_history);
 
 router.get("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
