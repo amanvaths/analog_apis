@@ -659,8 +659,6 @@ exports.walletData = async (req, res) => {
 };
 
 
-
-
 exports.transaction_history = async (req, res) => {
   const web3 = require('web3');
       /** trx
@@ -773,7 +771,7 @@ exports.transaction_history = async (req, res) => {
       console.log("ETH");
       let wallet = walletBNB;
       const decimal = 1e18;
-      const bnb_balance = await web3Bnb.eth.getBalance(walletTRX[0].walletAddr); 
+      const bnb_balance = await web3Bnb.eth.getBalance(walletBNB[0].walletAddr); 
       console.log(bnb_balance/decimal + " BNB balance");
       const balance = bnb_balance/decimal;
       if (balance > 0) {
