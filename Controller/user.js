@@ -679,8 +679,7 @@ exports.transaction_history = async (req, res) => {
          * eth
          */
         // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-        const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-        const Web3 = require("web3");
+        const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';        
         const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
         const web3Eth = new Web3(web3Provider);
 
