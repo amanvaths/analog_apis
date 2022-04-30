@@ -214,6 +214,7 @@ exports.signin = async (req, res) => {
             // console.log(browser_name, req.connection.remoteAddress)
             try {      
               const login_history = new login_history({
+                      "email"             : email,
                       "request_address"   : ip, 
                       "request_device"    : device, 
                       "browser_name"      : browser_name, 
