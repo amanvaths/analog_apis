@@ -28,7 +28,7 @@ function randomString(length, chars) {
 
 async function sendMail(email, subject, message) {
   var transporter = nodemailer.createTransport({
-    host: "mail.hrlw.in",
+    host: "mail.tronexa.com",
     port: 465,
     auth: {
       user: "analog@tronexa.com",
