@@ -660,7 +660,7 @@ exports.walletData = async (req, res) => {
 
 
 exports.transaction_history = async (req, res) => {
-  const web3 = require('web3');
+  const Web3 = require('web3');
       /** trx
        * 
        */
@@ -703,6 +703,8 @@ exports.transaction_history = async (req, res) => {
       var walletTRX   = await userWallet.find({ email: email, symbol: 'TRX' });     
       var walletBNB   = await userWallet.find({ email: email, symbol: 'BNB' }); 
       var walletMATIC = await userWallet.find({ email: email, symbol: 'MATIC' }); 
+      var walletUSDT = await userWallet.find({ email: email, symbol: 'USDT' }); 
+
 
     if (walletTRX && walletTRX[0].symbol == 'TRX') {
 
