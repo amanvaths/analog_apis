@@ -209,14 +209,14 @@ exports.signin = async (req, res) => {
             browser_version     = browser_version?browser_version.substr(1, browser_version.length-2):"";
              console.log(ip + " =ip" + "device= "+ device +" browser_name= " + browser_version);
             try {      
-              const login_history = new login_history({
+              const _login_history = new login_history({
                       "email"             : email,
                       "request_address"   : ip, 
                       "request_device"    : device, 
                       "browser_name"      : browser_name, 
                       "browser_version"   : browser_version,            
                 });
-                login_history.save(); 
+                _login_history.save(); 
                 
             } catch (error) {
               console.log("error = " + error);
