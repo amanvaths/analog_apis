@@ -663,29 +663,39 @@ exports.walletData = async (req, res) => {
 
 exports.transaction_history = async (req, res) => {
   const web3 = require('web3');
-  /** trx
-   * 
-   */
-  const TronWeb = require("tronweb");
-  const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io", }); 
-  /**
-   * eth
-   */
-  // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-  const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-  const Web3 = require("web3");
-  const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
-  const web3Eth = new Web3(web3Provider);
+      /** trx
+       * 
+       */
+      const TronWeb = require("tronweb");
+      const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io", });
+      /**
+       * bnb
+       */
+      const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
+      //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
+      //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
+      const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
+      const web3Bnb = new Web3(web3ProviderBnb);
 
-  /**
- * bnb
- */
- const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
- //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
- //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
- const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
- const web3Bnb = new Web3(web3ProviderBnb);
+        /**
+         * eth
+         */
+        // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
+        const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
+        const Web3 = require("web3");
+        const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
+        const web3Eth = new Web3(web3Provider);
 
+        /**
+         * polygon / Matic
+         */
+        const MATICTESTNET_WSS = "https://rpc-mumbai.maticvigil.com";
+        //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
+        //const web3ProviderMatic = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
+        const web3ProviderMatic = new Web3.providers.HttpProvider(MATICTESTNET_WSS);
+        const web3Matic = new Web3(web3ProviderMatic);
+
+ 
   const email = req.body.email;  
   if(email){   
     let go = await canUpdate(email);
@@ -694,8 +704,10 @@ exports.transaction_history = async (req, res) => {
       var walletETH   = await userWallet.find({ email: email, wallet_type: 'ETH' });      
       var walletTRX   = await userWallet.find({ email: email, symbol: 'TRX' });     
       var walletBNB   = await userWallet.find({ email: email, symbol: 'BNB' }); 
+      var walletMATIC = await userWallet.find({ email: email, symbol: 'MATIC' }); 
 
     if (walletTRX && walletTRX[0].symbol == 'TRX') {
+
         console.log("TRX")
         let wallet = walletTRX;
         const decimal = 1e6;        
@@ -710,7 +722,8 @@ exports.transaction_history = async (req, res) => {
           const new_w_balance = balance;         
           /**
            * update user's wallet
-           */         
+           */     
+          if(new_w_balance != w_balance){    
           await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
               $set: {
                   balance     : new_w_balance,
@@ -720,12 +733,13 @@ exports.transaction_history = async (req, res) => {
           if (balance > 0) {
               createDepositHistory(email, 'TRX', wallet[0].walletAddr, balance);            
           }  
-           
+        } 
       }
     }
 
     if (walletETH && walletETH[0].symbol == 'ETH') {
-      console.log("ETH");
+      console.log("ETH");     
+
       let wallet = walletETH;
       const decimal = 1e18;        
       let eth_balance = await web3Eth.eth.getBalance(walletTRX[0].walletAddr); 
@@ -739,7 +753,8 @@ exports.transaction_history = async (req, res) => {
         const new_w_balance = balance;         
         /**
          * update user's wallet
-         */         
+         */      
+        if(new_w_balance != w_balance){   
         await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
             $set: {
                 balance     : new_w_balance,
@@ -749,11 +764,12 @@ exports.transaction_history = async (req, res) => {
         if (balance > 0) {
             createDepositHistory(email, 'ETH', wallet[0].walletAddr, balance);            
         }  
-         
+      }  
     }
   }
 
     if (walletBNB && walletBNB[0].symbol == 'BNB') {
+    
       console.log("ETH");
       let wallet = walletBNB;
       const decimal = 1e18;
@@ -768,7 +784,8 @@ exports.transaction_history = async (req, res) => {
         const new_w_balance = balance;         
         /**
          * update user's wallet
-         */         
+         */   
+        if(new_w_balance != w_balance){          
         await userWallet.updateOne({ email: email, symbol: 'BNB' }, {
             $set: {
                 balance     : new_w_balance,
@@ -778,9 +795,41 @@ exports.transaction_history = async (req, res) => {
         if (balance > 0) {
             createDepositHistory(email, 'BNB', wallet[0].walletAddr, balance);            
         }  
-        
+      }
     }
   }
+
+  if (walletMATIC && walletMATIC[0].symbol == 'MATIC') {
+    console.log("MATIC");
+    let wallet = walletMATIC;
+    const decimal = 1e18;
+    const matic_balance = await web3Bnb.eth.getBalance(wallet[0].walletAddr); 
+    console.log(matic_balance/decimal + " Matic balance");
+    const balance = matic_balance/decimal;
+    if (balance > 0) {
+      /**
+       * check for w balance
+       */         
+      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+      const new_w_balance = balance;         
+      /**
+       * update user's wallet
+       */   
+      if(new_w_balance != w_balance){      
+      await userWallet.updateOne({ email: email, symbol: 'MATIC' }, {
+          $set: {
+              balance     : new_w_balance,
+              old_balanace  : w_balance
+          }
+      });
+      if (balance > 0) {
+          createDepositHistory(email, 'MATIC', wallet[0].walletAddr, balance);            
+      }  
+    }
+  }
+}
+
+
 
 
 
