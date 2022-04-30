@@ -21,7 +21,9 @@ app.use(cors({
 }));
 
 const userRouter = require('./router/userRouter')
+const depositRouter = require('./router/deposit')
 app.use('/api',userRouter);
+app.use('/api',depositRouter);
 
 app.get('/get', async function(req, res) { 
   const web3 = require('web3');
