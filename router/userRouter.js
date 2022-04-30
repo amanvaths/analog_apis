@@ -16,12 +16,25 @@ const { updatePrecent } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
 
+/**
+ user Routes
+ */
+
 router.post("/sendotp", sendotp);
 router.post("/varify", varify);
 router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin', signin);
+router.post('/transaction_history', transaction_history);
+router.get("/getCoinData", getCMCData);
+router.post("/getwalletdata", walletData);
+
+
+/**
+ * Admin Routes
+ */
+
 router.post('/buytoken', buytoken);
 router.post('/updatePrecent', updatePrecent);
 router.post('/addpresale', presalelevel);
@@ -33,10 +46,6 @@ router.get('/alluserbydate', alluserbydate);
 router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
-router.post('/transaction_history', transaction_history);
-
-router.get("/getCoinData", getCMCData);
-router.post("/getwalletdata", walletData);
 
 
 async function getCMCData(req, res) {

@@ -25,40 +25,48 @@ app.use('/api',userRouter);
 
 app.get('/get', async function(req, res) { 
   const web3 = require('web3');
-  /**
- * eth
- */
-// const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-const Web3 = require("web3");
-const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
-const web3Eth = new Web3(web3Provider);
 
 /**
- * trx
- * here we will use cross fetch
+ * polygon
  */
-const TronWeb = require("tronweb");
-const tronWeb = new TronWeb({ fullHost: "https://api.trongrid.io", });
-const fetch = require('cross-fetch');
+ //var Web3 = require('web3');
+ //const web3 = new Web3('https://rpc-mumbai.matic.today');
+ var Eth = require('web3-eth');
+ var eth = new Eth('https://rpc-mumbai.matic.today');
+ 
+ let minABI = [
+   // balanceOf
+   {
+     "constant":true,
+     "inputs":[{"name":"_owner","type":"address"}],
+     "name":"balanceOf",
+     "outputs":[{"name":"balance","type":"uint256"}],
+     "type":"function"
+   },
+   // decimals
+   {
+     "constant":true,
+     "inputs":[],
+     "name":"decimals",
+     "outputs":[{"name":"","type":"uint8"}],
+     "type":"function"
+   }
+ ];
+ 
+ 
+ let contract = new web3.eth.Contract(minABI,"0x94881e74d7266f26e19dc247a062daed6f4bfec3");
+ async function getBalance() {
+   balance = await contract.methods.balanceOf(walletAddress).call();
+   return balance;
+ }
+ 
+ getBalance().then(function (result) {
+   console.log(result);
+ });
 
-// getting balance of eth wallet
-const wallet = '0xba9e0b72f2dcb624600354f69eb5ea03568f93d8';
-const bal = await web3Eth.eth.getBalance(wallet);
-console.log(bal + "ETH balance");
 
-// trx wallet balance 
-const trx_wallet = "TV7cRCWzhUiDKmL5RFZN2UQJugzHpzLnry";
-let trx_balance = await tronWeb.trx.getBalance(trx_wallet);
-console.log(trx_balance + "TRX balance");
 
-// usdt wallet balance 
-// const decimal = 1e6;
-// tronWeb.setAddress(wallet.wallet_address);
-// const instance = await tronWeb.contract().at(wallet.contract_address);
-// const hex_balance = await instance.balanceOf(wallet.wallet_address).call();
-// const usdt_balance = Number(hex_balance._hex);
-// console.log(usdt_balance + "usdt balance");
+
 
 return res.send("success");
 });
