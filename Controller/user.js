@@ -95,27 +95,7 @@ function checkEmail(email) {
 
 async function login_history (req, res, next) {
   // console.log('AbcdEFG')
-  let ip              = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
-  let device          = req.headers['user-agent'];
-  let br              = req.headers['sec-ch-ua'];
-  let brr             = br?br.split(','):"";
-  let browser_name    = brr?brr[0].split(';')[0]:"";
-  browser_name        = browser_name?browser_name.substr(1, browser_name.length-2):"";
-  let browser_version = brr?brr[0].split(';')[1].split('=')[1]:"";
-  browser_version     = browser_version?browser_version.substr(1, browser_version.length-2):"";
-  // console.log(browser_name, req.connection.remoteAddress)
-  try {      
-    const login_history = new login_history({
-            "request_address"   : ip, 
-            "request_device"    : device, 
-            "browser_name"      : browser_name, 
-            "browser_version"   : browser_version,            
-      });
-      login_history.save();
-      next();
-  } catch (error) {
-      next();
-  }
+
 }
 
 function checkPassword(password) {
@@ -221,6 +201,30 @@ exports.signin = async (req, res) => {
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
               expiresIn: "1h",
             });
+
+     // **  login history
+            let ip              = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.connection.remoteAddress;
+            let device          = req.headers['user-agent'];
+            let br              = req.headers['sec-ch-ua'];
+            let brr             = br?br.split(','):"";
+            let browser_name    = brr?brr[0].split(';')[0]:"";
+            browser_name        = browser_name?browser_name.substr(1, browser_name.length-2):"";
+            let browser_version = brr?brr[0].split(';')[1].split('=')[1]:"";
+            browser_version     = browser_version?browser_version.substr(1, browser_version.length-2):"";
+            // console.log(browser_name, req.connection.remoteAddress)
+            try {      
+              const login_history = new login_history({
+                      "request_address"   : ip, 
+                      "request_device"    : device, 
+                      "browser_name"      : browser_name, 
+                      "browser_version"   : browser_version,            
+                });
+                login_history.save();               
+            } catch (error) {
+              console.log()
+            }
+    // **  login history  end -----------------  */ 
+
             res.status(200).json({
               status: 1,
               token: token,
