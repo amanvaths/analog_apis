@@ -31,13 +31,13 @@ async function sendMail(email, subject, message) {
     host: "mail.hrlw.in",
     port: 465,
     auth: {
-      user: "analog@hrlw.in",
+      user: "analog@tronexa.com",
       pass: "Analog@123",
     },
   });
 
   var mailOptions = {
-    from: "analog@hrlw.in",
+    from: "analog@tronexa.com",
     to: email,
     subject: subject,
     html: message,
