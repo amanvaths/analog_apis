@@ -827,6 +827,39 @@ exports.transaction_history = async (req, res) => {
   }
 }
 
+  if (walletUSDT && walletUSDT[0].symbol == 'USDT') {
+    console.log("USDT");
+    let wallet = walletUSDT;
+    const decimal = 1e18;
+    tronWeb.setAddress(wallet[0].walletAddr);
+    const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+    const hex_balance = await instance.balanceOf(wallet[0].walletAddr).call();
+    const usdt_balance = Number(hex_balance._hex);
+
+    if (usdt_balance > 0) {
+      /**
+       * check for w balance
+       */  
+
+      let balance = usdt_balance ? usdt_balance / decimal : 0;  
+      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+      const new_w_balance = balance;         
+      /**
+       * update user's wallet
+       */   
+      if(new_w_balance != w_balance){      
+      await userWallet.updateOne({ email: email, symbol: 'USDT' }, {
+          $set: {
+              balance     : new_w_balance,
+              old_balanace  : w_balance
+          }
+      });
+      if (balance > 0) {
+          createDepositHistory(email, 'USDT', wallet[0].walletAddr, balance);            
+      }  
+    }
+  }
+  }
 
 
 
