@@ -211,7 +211,7 @@ exports.signin = async (req, res) => {
             browser_name        = browser_name?browser_name.substr(1, browser_name.length-2):"";
             let browser_version = brr?brr[0].split(';')[1].split('=')[1]:"";
             browser_version     = browser_version?browser_version.substr(1, browser_version.length-2):"";
-            // console.log(browser_name, req.connection.remoteAddress)
+             console.log(ip + " =ip" + "device= "+ device +" browser_name= " + browser_version);
             try {      
               const login_history = new login_history({
                       "email"             : email,
@@ -220,7 +220,8 @@ exports.signin = async (req, res) => {
                       "browser_name"      : browser_name, 
                       "browser_version"   : browser_version,            
                 });
-                login_history.save();               
+                login_history.save(); 
+                
             } catch (error) {
               console.log("error = " + error);
             }
