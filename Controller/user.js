@@ -9,6 +9,7 @@ const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
+const login_history = require("../models/login_history");
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -91,11 +92,6 @@ function checkEmail(email) {
   const res = emailRegexp.test(emailToValidate);
   console.log("CHECK EMAIL : ", res);
   return res;
-}
-
-async function login_history (req, res, next) {
-  // console.log('AbcdEFG')
-
 }
 
 function checkPassword(password) {
