@@ -11,6 +11,16 @@ const mongoose = require("mongoose");
 const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
 const login_history = require("../models/login_history");
+const session = require("express-session");
+app.use(session({
+  secret: 'thisissecratekey',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+      maxAge: 6000000,
+  }
+}));
+
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -232,6 +242,8 @@ exports.signin = async (req, res) => {
               console.log("error = " + error);
             }
     // **  login history  end -----------------  */ 
+           session.userid=_id;
+           // console.log(session.userid);        
 
             res.status(200).json({
               status: 1,
@@ -651,7 +663,6 @@ async function createSolanaAddress() {
   }
 }
 
-
 exports.walletData = async (req, res) => {
   try {
     const { email } = req.body;
@@ -701,17 +712,6 @@ exports.login_history = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-exports.profileSetting = async (req, res) => {
-  const { email, task } = req.body;
-
-  switch(task){
-    case "profile":      
-            
-  }
-}
-
 
 exports.transaction_update = async (req, res) => {
   const Web3 = require('web3');
@@ -775,7 +775,7 @@ exports.transaction_update = async (req, res) => {
          * eth
          */
         // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-        const eth_testnet = 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';        
+        const eth_testnet = 'https://kovan.infura.io/v3/235ebabc8cf1441c8ead19deb49bba49';        
         const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
         const web3Eth = new Web3(web3Provider);
 
@@ -794,21 +794,20 @@ exports.transaction_update = async (req, res) => {
     let go = await canUpdate(email);
     if(go){
       
-      var walletETH   = await userWallet.find({ email: email, wallet_type: 'ETH' });      
+      var walletETH   = await userWallet.find({ email: email, symbol: 'ETH' });      
       var walletTRX   = await userWallet.find({ email: email, symbol: 'TRX' });     
       var walletBNB   = await userWallet.find({ email: email, symbol: 'BNB' }); 
       var walletMATIC = await userWallet.find({ email: email, symbol: 'MATIC' }); 
       var walletUSDT = await userWallet.find({ email: email, symbol: 'USDT' }); 
       var walletBUSD = await userWallet.find({ email: email, symbol: 'BUSD' });
       var walletSHIB = await userWallet.find({ email: email, symbol: 'SHIB' });
-
+ 
     if (walletTRX && walletTRX[0].symbol == 'TRX') {
-
         console.log("TRX")
         try{
         let wallet = walletTRX;
-        const decimal = 1e6;        
-        let trx_balance = await tronWeb.trx.getBalance(walletTRX[0].walletAddr);
+        const decimal = 1e6;          
+        let trx_balance = await tronWeb.trx.getBalance(walletTRX[0].walletAddr);     
         console.log(trx_balance/decimal + " TRX balance");
         const balance = trx_balance/decimal;
         if (balance > 0) {
@@ -843,8 +842,8 @@ exports.transaction_update = async (req, res) => {
       try{
       let wallet = walletETH;
       const decimal = 1e18;        
-      let eth_balance = await web3Eth.eth.getBalance(walletTRX[0].walletAddr); 
-      console.log(eth_balance/decimal + " TRX balance");
+      let eth_balance = await web3Eth.eth.getBalance(walletETH[0].walletAddr); 
+      console.log(eth_balance/decimal + " ETH balance");
       const balance = eth_balance/decimal;
       if (balance > 0) {
         /**
@@ -856,7 +855,7 @@ exports.transaction_update = async (req, res) => {
          * update user's wallet
          */      
         if(new_w_balance != w_balance){   
-        await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
+        await userWallet.updateOne({ email: email, symbol: 'ETH' }, {
             $set: {
                 balance     : new_w_balance,
                 old_balanace  : w_balance

@@ -10,7 +10,7 @@ const {
   resetPassword, 
   walletData,
   transaction_history,
-  transaction_update
+  transaction_update,
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory } = require('../Controller/utility');
