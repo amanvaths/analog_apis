@@ -703,11 +703,12 @@ exports.transaction_history = async (req, res) => {
       var walletBNB   = await userWallet.find({ email: email, symbol: 'BNB' }); 
       var walletMATIC = await userWallet.find({ email: email, symbol: 'MATIC' }); 
       var walletUSDT = await userWallet.find({ email: email, symbol: 'USDT' }); 
-
+      var walletBUSD = await userWallet.find({ email: email, symbol: 'BUSD' });
 
     if (walletTRX && walletTRX[0].symbol == 'TRX') {
 
         console.log("TRX")
+        try{
         let wallet = walletTRX;
         const decimal = 1e6;        
         let trx_balance = await tronWeb.trx.getBalance(walletTRX[0].walletAddr);
@@ -734,11 +735,14 @@ exports.transaction_history = async (req, res) => {
           }  
         } 
       }
+    }catch(err){
+      console.log("Error in getting TRX balance " + err);
+    }
     }
 
     if (walletETH && walletETH[0].symbol == 'ETH') {
       console.log("ETH");     
-
+      try{
       let wallet = walletETH;
       const decimal = 1e18;        
       let eth_balance = await web3Eth.eth.getBalance(walletTRX[0].walletAddr); 
@@ -765,11 +769,15 @@ exports.transaction_history = async (req, res) => {
         }  
       }  
     }
+  }catch(err){
+    console.log("Error in getting ETH balance " + err);
+  }
   }
 
     if (walletBNB && walletBNB[0].symbol == 'BNB') {
     
-      console.log("ETH");
+      console.log("BNB");
+      try{
       let wallet = walletBNB;
       const decimal = 1e18;
       const bnb_balance = await web3Bnb.eth.getBalance(walletBNB[0].walletAddr); 
@@ -796,13 +804,17 @@ exports.transaction_history = async (req, res) => {
         }  
       }
     }
+  }catch(err){
+    console.log("Error in getting BNB balance " + err);
   }
+}
 
   if (walletMATIC && walletMATIC[0].symbol == 'MATIC') {
     console.log("MATIC");
+    try{
     let wallet = walletMATIC;
     const decimal = 1e18;
-    const matic_balance = await web3Bnb.eth.getBalance(wallet[0].walletAddr); 
+    const matic_balance = await web3Matic.eth.getBalance(wallet[0].walletAddr); 
     console.log(matic_balance/decimal + " Matic balance");
     const balance = matic_balance/decimal;
     if (balance > 0) {
@@ -826,12 +838,16 @@ exports.transaction_history = async (req, res) => {
       }  
     }
   }
+ }catch(err){
+   console.log("Error in getting Matic Balance " + err);
+ }
 }
 
   if (walletUSDT && walletUSDT[0].symbol == 'USDT') {
     console.log("USDT");
+    try{
     let wallet = walletUSDT;
-    const decimal = 1e18;
+    const decimal = 1e6;
     tronWeb.setAddress(wallet[0].walletAddr);
     const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
     const hex_balance = await instance.balanceOf(wallet[0].walletAddr).call();
@@ -848,6 +864,7 @@ exports.transaction_history = async (req, res) => {
       /**
        * update user's wallet
        */   
+      console.log(new_w_balance + " USDT balance");
       if(new_w_balance != w_balance){      
       await userWallet.updateOne({ email: email, symbol: 'USDT' }, {
           $set: {
@@ -860,9 +877,49 @@ exports.transaction_history = async (req, res) => {
       }  
     }
   }
+  }catch(err){
+    console.log("Error in getting USDT balance " + err);
+  }
   }
 
+  if (walletBUSD && walletBUSD[0].symbol == 'BUSD') {
+    console.log("BUSD");
+    try{
+    let wallet = walletBUSD;
+    var contract = new web3Bnb.eth.Contract(dex, "0x1004f1CD9e4530736AadC051a62b0992c198758d");
+    const decimal = 18;//await contract.methods.decimals().call();  
+    const bal = await contract.methods.balanceOf(wallet[0].balance).call(); //'0x58f876857a02d6762e0101bb5c46a8c1ed44dc16'
+    console.log("Bal: ", bal)
+    let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
 
+    if (busd_balance > 0) {
+      /**
+       * check for w balance
+       */  
+
+      let balance = busd_balance ? busd_balance / decimal : 0;  
+      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+      const new_w_balance = balance;         
+      /**
+       * update user's wallet
+       */   
+      console.log(new_w_balance + " BUSD balance");
+      if(new_w_balance != w_balance){      
+      await userWallet.updateOne({ email: email, symbol: 'BUSD' }, {
+          $set: {
+              balance     : new_w_balance,
+              old_balanace  : w_balance
+          }
+      });
+      if (balance > 0) {
+          createDepositHistory(email, 'BUSD', wallet[0].walletAddr, balance);            
+      }  
+    }
+  }
+  }catch(err){
+    console.log("Error in getting BUSD balance " + err);
+  }
+  }
 
 
     }

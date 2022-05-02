@@ -56,11 +56,11 @@ console.log(trx_balance + "TRX balance");
 /**
  * bnb
  */
-//  const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
-//  //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
-//  //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
-//  const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
-//  const web3Bnb = new Web3(web3ProviderBnb);
+ const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
+ //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
+ //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
+ const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
+ const web3Bnb = new Web3(web3ProviderBnb);
 
 //  const bal = await web3Bnb.eth.getBalance("0xbd892F3c65A61102e21edAFa875fb3569f4ecAF5");
 //  console.log(bal);
@@ -138,7 +138,7 @@ console.log(trx_balance + "TRX balance");
   const bal = await contract.methods.balanceOf("0x94881e74d7266f26e19dc247a062daed6f4bfec3").call(); //'0x58f876857a02d6762e0101bb5c46a8c1ed44dc16'
   console.log("Bal: ", bal)
   let balance = bal ? bal / Number(`1e${decimal}`) : 0;
-console.log(balance + " shib bal")
+console.log(balance + " BUSD bal");
 
 return res.send("success");
 });
