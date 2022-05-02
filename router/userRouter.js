@@ -13,7 +13,7 @@ const {
   transaction_update
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
-const { updatePrecent,loginhistory } = require('../Controller/utility');
+const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
 
@@ -32,6 +32,7 @@ router.get("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
 router.post('/loginhistory', loginhistory);
+router.post('/levels', levels);
 
 /**
  * Admin Routes
