@@ -6,7 +6,7 @@ const cors = require('cors');
 const port = 3001
 env.config();
 const User = require('./models/user');
-
+var session = require('express-session');
 
 const mongoose = require('mongoose');
 const db = `mongodb+srv://dbUser:dbUser@cluster0.lrk8k.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`

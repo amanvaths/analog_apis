@@ -685,6 +685,32 @@ exports.transaction_history = async (req, res) => {
   }
 };
 
+exports.login_history = async (req, res) => {
+  const login_history = require("../models/login_history");
+  try {
+    const { email, symbol } = req.body;
+    const loginData = await login_history.find({ email, symbol });
+    if (loginData) {
+      return res.status(200).json(loginData);
+    } else {
+      return res
+        .status(400)
+        .json({ message: "something went wrong. member not found." });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+exports.profileSetting = async (req, res) => {
+  const { email, task } = req.body;
+
+  switch(task){
+    case "profile":      
+            
+  }
+}
 
 
 exports.transaction_update = async (req, res) => {
@@ -803,7 +829,7 @@ exports.transaction_update = async (req, res) => {
           });
           if (balance > 0) {
               const new_transaction = new_w_balance - w_balance; 
-              createDepositHistory(email, 'TRX', wallet[0].walletAddr, new_transaction);            
+              createDepositHistory(email, 'TRX', wallet[0].walletAddr, new_transaction, new_w_balance);            
           }  
         } 
       }
@@ -838,7 +864,7 @@ exports.transaction_update = async (req, res) => {
         });
         if (balance > 0) {
             const new_transaction = new_w_balance - w_balance; 
-            createDepositHistory(email, 'ETH', wallet[0].walletAddr, new_transaction);            
+            createDepositHistory(email, 'ETH', wallet[0].walletAddr, new_transaction, new_w_balance);            
         }  
       }  
     }
@@ -874,7 +900,7 @@ exports.transaction_update = async (req, res) => {
           });
           if (balance > 0) {
               const new_transaction = new_w_balance - w_balance; 
-              createDepositHistory(email, 'BNB', wallet[0].walletAddr, new_transaction);            
+              createDepositHistory(email, 'BNB', wallet[0].walletAddr, new_transaction, new_w_balance);            
           }  
         }
       }
@@ -909,7 +935,7 @@ exports.transaction_update = async (req, res) => {
         });
         if (balance > 0) {
             const new_transaction = new_w_balance - w_balance; 
-            createDepositHistory(email, 'MATIC', wallet[0].walletAddr, new_transaction);            
+            createDepositHistory(email, 'MATIC', wallet[0].walletAddr, new_transaction, new_w_balance);            
         }  
       }
     }
@@ -949,7 +975,7 @@ exports.transaction_update = async (req, res) => {
         });
         if (balance > 0) {
             const new_transaction = new_w_balance - w_balance;
-            createDepositHistory(email, 'USDT', wallet[0].walletAddr, new_transaction);            
+            createDepositHistory(email, 'USDT', wallet[0].walletAddr, new_transaction, new_w_balance);            
         }  
       }
     }
@@ -988,7 +1014,7 @@ exports.transaction_update = async (req, res) => {
         });
         if (balance > 0) {
             const new_transaction = new_w_balance - w_balance;
-            createDepositHistory(email, 'BUSD', wallet[0].walletAddr, new_transaction);            
+            createDepositHistory(email, 'BUSD', wallet[0].walletAddr, new_transaction, new_w_balance);            
         }  
       }
     }
@@ -1027,7 +1053,7 @@ exports.transaction_update = async (req, res) => {
         });
         if (balance > 0) {
             const new_transaction = new_w_balance - w_balance;
-            createDepositHistory(email, 'SHIB', wallet[0].walletAddr, new_transaction);            
+            createDepositHistory(email, 'SHIB', wallet[0].walletAddr, new_transaction, new_w_balance);            
         }  
       }
     }
@@ -1045,7 +1071,7 @@ exports.transaction_update = async (req, res) => {
 
 
 
-function createDepositHistory(email, symbol, address, amount) {
+function createDepositHistory(email, symbol, address, amount, balance) {
 const transaction_history = require('../models/transaction_history');
 try {    
     // if (user_id && type && address && amount) {
@@ -1054,6 +1080,7 @@ try {
         symbol: symbol,
         status: 1,
         amount: amount,
+        balance : balance,
         to_address: address,
         type: "deposit"
     }).then((data) => {
