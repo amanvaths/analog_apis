@@ -689,6 +689,48 @@ exports.transaction_history = async (req, res) => {
 
 exports.transaction_update = async (req, res) => {
   const Web3 = require('web3');
+
+  const dex = [
+    {
+        "anonymous": false,
+        "inputs": [
+            { "indexed": true, "internalType": "address", "name": "from", "type": "address" },
+            { "indexed": true, "internalType": "address", "name": "to", "type": "address" },
+            { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        constant: true,
+        inputs: [{ name: "_owner", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "balance", type: "uint256" }],
+        payable: false,
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        constant: true,
+        inputs: [],
+        name: "decimals",
+        outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+        payable: false,
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        constant: false,
+        inputs: [{ name: "_to", type: "address" }, { name: "_value", type: "uint256" }],
+        name: "transfer",
+        outputs: [{ name: "success", type: "bool" }],
+        payable: false,
+        stateMutability: "nonpayable",
+        type: "function"
+    },
+];
+
+
       /** trx
        * 
        */
@@ -732,6 +774,7 @@ exports.transaction_update = async (req, res) => {
       var walletMATIC = await userWallet.find({ email: email, symbol: 'MATIC' }); 
       var walletUSDT = await userWallet.find({ email: email, symbol: 'USDT' }); 
       var walletBUSD = await userWallet.find({ email: email, symbol: 'BUSD' });
+      var walletSHIB = await userWallet.find({ email: email, symbol: 'SHIB' });
 
     if (walletTRX && walletTRX[0].symbol == 'TRX') {
 
@@ -751,7 +794,7 @@ exports.transaction_update = async (req, res) => {
           /**
            * update user's wallet
            */     
-          if(new_w_balance != w_balance){    
+          if(new_w_balance != w_balance){                
           await userWallet.updateOne({ email: email, symbol: 'TRX' }, {
               $set: {
                   balance     : new_w_balance,
@@ -759,7 +802,8 @@ exports.transaction_update = async (req, res) => {
               }
           });
           if (balance > 0) {
-              createDepositHistory(email, 'TRX', wallet[0].walletAddr, balance);            
+              const new_transaction = new_w_balance - w_balance; 
+              createDepositHistory(email, 'TRX', wallet[0].walletAddr, new_transaction);            
           }  
         } 
       }
@@ -793,7 +837,8 @@ exports.transaction_update = async (req, res) => {
             }
         });
         if (balance > 0) {
-            createDepositHistory(email, 'ETH', wallet[0].walletAddr, balance);            
+            const new_transaction = new_w_balance - w_balance; 
+            createDepositHistory(email, 'ETH', wallet[0].walletAddr, new_transaction);            
         }  
       }  
     }
@@ -803,14 +848,49 @@ exports.transaction_update = async (req, res) => {
   }
 
     if (walletBNB && walletBNB[0].symbol == 'BNB') {
-    
-      console.log("BNB");
+      
+        console.log("BNB");
+        try{
+        let wallet = walletBNB;
+        const decimal = 1e18;
+        const bnb_balance = await web3Bnb.eth.getBalance(walletBNB[0].walletAddr); 
+        console.log(bnb_balance/decimal + " BNB balance");
+        const balance = bnb_balance/decimal;
+        if (balance > 0) {
+          /**
+           * check for w balance
+           */         
+          const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+          const new_w_balance = balance;         
+          /**
+           * update user's wallet
+           */   
+          if(new_w_balance != w_balance){          
+          await userWallet.updateOne({ email: email, symbol: 'BNB' }, {
+              $set: {
+                  balance     : new_w_balance,
+                  old_balanace  : w_balance
+              }
+          });
+          if (balance > 0) {
+              const new_transaction = new_w_balance - w_balance; 
+              createDepositHistory(email, 'BNB', wallet[0].walletAddr, new_transaction);            
+          }  
+        }
+      }
+    }catch(err){
+      console.log("Error in getting BNB balance " + err);
+    }
+  }
+
+    if (walletMATIC && walletMATIC[0].symbol == 'MATIC') {
+      console.log("MATIC");
       try{
-      let wallet = walletBNB;
+      let wallet = walletMATIC;
       const decimal = 1e18;
-      const bnb_balance = await web3Bnb.eth.getBalance(walletBNB[0].walletAddr); 
-      console.log(bnb_balance/decimal + " BNB balance");
-      const balance = bnb_balance/decimal;
+      const matic_balance = await web3Matic.eth.getBalance(wallet[0].walletAddr); 
+      console.log(matic_balance/decimal + " Matic balance");
+      const balance = matic_balance/decimal;
       if (balance > 0) {
         /**
          * check for w balance
@@ -820,133 +900,142 @@ exports.transaction_update = async (req, res) => {
         /**
          * update user's wallet
          */   
-        if(new_w_balance != w_balance){          
-        await userWallet.updateOne({ email: email, symbol: 'BNB' }, {
+        if(new_w_balance != w_balance){      
+        await userWallet.updateOne({ email: email, symbol: 'MATIC' }, {
             $set: {
                 balance     : new_w_balance,
                 old_balanace  : w_balance
             }
         });
         if (balance > 0) {
-            createDepositHistory(email, 'BNB', wallet[0].walletAddr, balance);            
+            const new_transaction = new_w_balance - w_balance; 
+            createDepositHistory(email, 'MATIC', wallet[0].walletAddr, new_transaction);            
         }  
       }
     }
   }catch(err){
-    console.log("Error in getting BNB balance " + err);
+    console.log("Error in getting Matic Balance " + err);
   }
-}
+  }
 
-  if (walletMATIC && walletMATIC[0].symbol == 'MATIC') {
-    console.log("MATIC");
-    try{
-    let wallet = walletMATIC;
-    const decimal = 1e18;
-    const matic_balance = await web3Matic.eth.getBalance(wallet[0].walletAddr); 
-    console.log(matic_balance/decimal + " Matic balance");
-    const balance = matic_balance/decimal;
-    if (balance > 0) {
-      /**
-       * check for w balance
-       */         
-      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
-      const new_w_balance = balance;         
-      /**
-       * update user's wallet
-       */   
-      if(new_w_balance != w_balance){      
-      await userWallet.updateOne({ email: email, symbol: 'MATIC' }, {
-          $set: {
-              balance     : new_w_balance,
-              old_balanace  : w_balance
-          }
-      });
-      if (balance > 0) {
-          createDepositHistory(email, 'MATIC', wallet[0].walletAddr, balance);            
-      }  
+    if (walletUSDT && walletUSDT[0].symbol == 'USDT') {
+      console.log("USDT");
+      try{
+      let wallet = walletUSDT;
+      const decimal = 1e6;
+      tronWeb.setAddress(wallet[0].walletAddr);
+      const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+      const hex_balance = await instance.balanceOf(wallet[0].walletAddr).call();
+      const usdt_balance = Number(hex_balance._hex);
+
+      if (usdt_balance > 0) {
+        /**
+         * check for w balance
+         */  
+
+        let balance = usdt_balance ? usdt_balance / decimal : 0;  
+        const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+        const new_w_balance = balance;         
+        /**
+         * update user's wallet
+         */   
+        console.log(new_w_balance + " USDT balance");
+        if(new_w_balance != w_balance){      
+        await userWallet.updateOne({ email: email, symbol: 'USDT' }, {
+            $set: {
+                balance     : new_w_balance,
+                old_balanace  : w_balance
+            }
+        });
+        if (balance > 0) {
+            const new_transaction = new_w_balance - w_balance;
+            createDepositHistory(email, 'USDT', wallet[0].walletAddr, new_transaction);            
+        }  
+      }
     }
-  }
- }catch(err){
-   console.log("Error in getting Matic Balance " + err);
- }
-}
-
-  if (walletUSDT && walletUSDT[0].symbol == 'USDT') {
-    console.log("USDT");
-    try{
-    let wallet = walletUSDT;
-    const decimal = 1e6;
-    tronWeb.setAddress(wallet[0].walletAddr);
-    const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-    const hex_balance = await instance.balanceOf(wallet[0].walletAddr).call();
-    const usdt_balance = Number(hex_balance._hex);
-
-    if (usdt_balance > 0) {
-      /**
-       * check for w balance
-       */  
-
-      let balance = usdt_balance ? usdt_balance / decimal : 0;  
-      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
-      const new_w_balance = balance;         
-      /**
-       * update user's wallet
-       */   
-      console.log(new_w_balance + " USDT balance");
-      if(new_w_balance != w_balance){      
-      await userWallet.updateOne({ email: email, symbol: 'USDT' }, {
-          $set: {
-              balance     : new_w_balance,
-              old_balanace  : w_balance
-          }
-      });
-      if (balance > 0) {
-          createDepositHistory(email, 'USDT', wallet[0].walletAddr, balance);            
-      }  
+    }catch(err){
+      console.log("Error in getting USDT balance " + err);
     }
-  }
-  }catch(err){
-    console.log("Error in getting USDT balance " + err);
-  }
-  }
-
-  if (walletBUSD && walletBUSD[0].symbol == 'BUSD') {
-    console.log("BUSD");
-    try{
-    let wallet = walletBUSD;
-    var contract = new web3Bnb.eth.Contract(dex, "0x1004f1CD9e4530736AadC051a62b0992c198758d");
-    const decimal = 18;//await contract.methods.decimals().call();  
-    const bal = await contract.methods.balanceOf(wallet[0].balance).call(); //'0x58f876857a02d6762e0101bb5c46a8c1ed44dc16'
-    console.log("Bal: ", bal)
-    let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
-
-    if (busd_balance > 0) {
-      /**
-       * check for w balance
-       */  
-      let balance = busd_balance ? busd_balance / decimal : 0;  
-      const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
-      const new_w_balance = balance;         
-      /**
-       * update user's wallet
-       */   
-      console.log(new_w_balance + " BUSD balance");
-      if(new_w_balance != w_balance){      
-      await userWallet.updateOne({ email: email, symbol: 'BUSD' }, {
-          $set: {
-              balance     : new_w_balance,
-              old_balanace  : w_balance
-          }
-      });
-      if (balance > 0) {
-          createDepositHistory(email, 'BUSD', wallet[0].walletAddr, balance);            
-      }  
     }
-  }
-  }catch(err){
-    console.log("Error in getting BUSD balance " + err);
-  }
-  }
+
+    if (walletBUSD && walletBUSD[0].symbol == 'BUSD') {
+      console.log("BUSD");
+      try{
+      let wallet = walletBUSD;
+      var contract = new web3Bnb.eth.Contract(dex, "0x1004f1CD9e4530736AadC051a62b0992c198758d");
+      const decimal = 18;//await contract.methods.decimals().call();       
+      const bal = await contract.methods.balanceOf(wallet[0].walletAddr).call(); 
+      console.log("Bal: ", bal)
+      let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
+
+      if (busd_balance > 0) {
+        /**
+         * check for w balance
+         */  
+        let balance = busd_balance ? busd_balance / decimal : 0;  
+        const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+        const new_w_balance = balance;         
+        /**
+         * update user's wallet
+         */   
+        console.log(new_w_balance + " BUSD balance");
+        if(new_w_balance != w_balance){      
+        await userWallet.updateOne({ email: email, symbol: 'BUSD' }, {
+            $set: {
+                balance     : new_w_balance,
+                old_balanace  : w_balance
+            }
+        });
+        if (balance > 0) {
+            const new_transaction = new_w_balance - w_balance;
+            createDepositHistory(email, 'BUSD', wallet[0].walletAddr, new_transaction);            
+        }  
+      }
+    }
+    }catch(err){
+      console.log("Error in getting BUSD balance " + err);
+    }
+    }
+
+    if (walletSHIB && walletSHIB[0].symbol == 'SHIB') {
+      console.log("SHIB");
+      try{
+      let wallet = walletSHIB;
+      var contract = new web3Bnb.eth.Contract(dex, "0x1004f1CD9e4530736AadC051a62b0992c198758d");
+      const decimal = 18;//await contract.methods.decimals().call();      
+      const bal = await contract.methods.balanceOf(wallet[0].walletAddr).call(); 
+      console.log("Bal: ", bal)
+      let shib_balance = bal ? bal / Number(`1e${decimal}`) : 0;
+
+      if (shib_balance > 0) {
+        /**
+         * check for w balance
+         */  
+        let balance = shib_balance ? shib_balance / decimal : 0;  
+        const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
+        const new_w_balance = balance;         
+        /**
+         * update user's wallet
+         */   
+        console.log(new_w_balance + " SHIB balance");
+        if(new_w_balance != w_balance){      
+        await userWallet.updateOne({ email: email, symbol: 'SHIBA' }, {
+            $set: {
+                balance     : new_w_balance,
+                old_balanace  : w_balance
+            }
+        });
+        if (balance > 0) {
+            const new_transaction = new_w_balance - w_balance;
+            createDepositHistory(email, 'SHIB', wallet[0].walletAddr, new_transaction);            
+        }  
+      }
+    }
+    }catch(err){
+      console.log("Error in getting SHIB balance " + err);
+    }
+    }
+
 
 
 
