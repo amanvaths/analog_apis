@@ -9,7 +9,8 @@ const {
   forgetPassword,
   resetPassword, 
   walletData,
-  transaction_history
+  transaction_history,
+  transaction_update
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent } = require('../Controller/utility');
@@ -29,7 +30,7 @@ router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
 router.get("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
-
+router.post("/transaction_update", transaction_update);
 
 /**
  * Admin Routes

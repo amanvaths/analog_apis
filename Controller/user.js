@@ -658,8 +658,26 @@ exports.walletData = async (req, res) => {
   }
 };
 
-
 exports.transaction_history = async (req, res) => {
+  const transaction_history = require("../models/transaction_history");
+  try {
+    const { email } = req.body;
+    const transactionData = await transaction_history.find({ email });
+    if (transactionData) {
+      return res.status(200).json(transactionData);
+    } else {
+      return res
+        .status(400)
+        .json({ message: "something went wrong. member not found." });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+exports.transaction_update = async (req, res) => {
   const Web3 = require('web3');
       /** trx
        * 
@@ -896,7 +914,6 @@ exports.transaction_history = async (req, res) => {
       /**
        * check for w balance
        */  
-
       let balance = busd_balance ? busd_balance / decimal : 0;  
       const w_balance = wallet[0].balance ? parseFloat(wallet[0].balance) : 0;           
       const new_w_balance = balance;         
@@ -925,6 +942,7 @@ exports.transaction_history = async (req, res) => {
     }
   } 
 }
+
 
 
 function createDepositHistory(email, symbol, address, amount) {
