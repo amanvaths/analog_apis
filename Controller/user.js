@@ -661,8 +661,8 @@ exports.walletData = async (req, res) => {
 exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
-    const { email } = req.body;
-    const transactionData = await transaction_history.find({ email });
+    const { email, symbol } = req.body;
+    const transactionData = await transaction_history.find({ email, symbol });
     if (transactionData) {
       return res.status(200).json(transactionData);
     } else {
@@ -937,6 +937,7 @@ exports.transaction_update = async (req, res) => {
     console.log("Error in getting BUSD balance " + err);
   }
   }
+
 
 
     }
