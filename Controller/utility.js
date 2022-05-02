@@ -46,7 +46,7 @@ console.log(user_purchase);
 
 exports.loginhistory = async (req, res) => { 
     // const {per_page,page} = req.query
-    const user = await Login.findOne({email:req.body.email}).sort( { createdAt: -1 } ).limit(10);
+    const user = await Login.find({email:req.body.email}).sort( { createdAt: -1 } ).limit(10);
     // console.log(user,"user")
     
       res.status(200).json({login_record:user});
