@@ -31,6 +31,7 @@ router.post('/transaction_history', transaction_history);
 router.get("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
+router.post('/loginhistory', loginhistory);
 
 /**
  * Admin Routes
@@ -47,7 +48,7 @@ router.get('/alluserbydate', alluserbydate);
 router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
-router.get('/loginhistory', loginhistory);
+
 
 
 async function getCMCData(req, res) {
