@@ -1154,7 +1154,7 @@ exports.settings = async (req, res) => {
                       if(data){
                         return res.status(200).json({
                           status  :  1,
-                          message : "Username no. updated successfully"                      
+                          message : "Username updated successfully"                      
                         });
                       }
                     });   
@@ -1284,6 +1284,21 @@ exports.settings = async (req, res) => {
           }catch(err){
               console.log("Error in Change password " + err);
           }
-          break;   
+          break; 
+     
+    case "personal_information" :
+            try{            
+              const _user = await User.findOne({ email : email }); 
+              return res.status(200).json({
+                status : 1,
+                username : _user.username,
+                contact_no : _user.contact_no,
+                currency : _user.currency,
+                email : email
+              })
+            }catch(err){
+                console.log("Error in Personal Information " + err);
+            }
+            break; 
   }
 }
