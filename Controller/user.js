@@ -1166,7 +1166,7 @@ exports.settings = async (req, res) => {
       break;                          
     case "contact" :
           try{
-            await User.findOne({ contact_no : req.body.contact_no }).exec( async(err, data) => {
+            await User.findOne({ contact_no : req.body.contact }).exec( async(err, data) => {
                 if(data){
                   return res.status(200).json({
                     status  :  -1,
@@ -1175,7 +1175,7 @@ exports.settings = async (req, res) => {
                 }else{
                   await User.updateOne({ email: email }, {
                     $set: {
-                        contact_no     : req.body.contact_no,
+                        contact_no     : req.body.contact,
                           }
                     }).exec( async (err, data) => {
                       if(err){
