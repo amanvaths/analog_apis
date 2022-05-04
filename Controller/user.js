@@ -52,7 +52,7 @@ async function sendMail(email, subject, message) {
     from: "analog@tronexa.com",
     to: email,
     subject: subject,
-    html: message,
+    html:  emailTemplate(email, message)   
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
@@ -64,6 +64,79 @@ async function sendMail(email, subject, message) {
   });
 }
 
+function emailTemplate(user, msg){
+  const template = `
+  <html>
+ <head>
+    
+     <link rel="stylesheet" href="http://localhost:3000/assets/css/dashlite.css?ver=3.0.2" />
+     <link rel="stylesheet" href="http://localhost:3000/assets/css/theme.css?ver=3.0.2">
+     <link rel="stylesheet" href="http://localhost:3000/assets/css/style-email.css" />
+ </head>
+ <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
+    
+                 <table class="email-wraper">
+                     <tbody>
+                         <tr>
+                          <td class="py-5">
+                              <table class="email-header">
+                                  <tbody>
+                                      <tr>
+                                          <td class="text-center pb-4">
+                                              <a href="#">
+                                                  <img class="email-logo" src="http://localhost:3000/images/logo-dark.png" alt="logo">
+                                                 </a>
+                                                 <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                                 <table class="email-body">
+                                     <tbody>
+                                         <tr>
+                                             <td class="p-3 p-sm-5">
+                                                 <p><strong>Hello ${user}</strong>,</p>
+                                                 <p>
+                                                    ${msg}                                                
+                                                 </p>                                                  
+                                                 <p class="mt-4">---- 
+                                                     <br> Regards
+                                                     <br>
+                                                     Analog
+                                                 </p>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                                 <table class="email-footer">
+                                     <tbody>
+                                         <tr>
+                                             <td class="text-center pt-4">
+                                                 <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
+                                                 <ul class="email-social">
+                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/facebook.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/twitter.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/youtube.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/medium.png" alt=""></a></li>
+                                                 </ul>
+                                                 <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="http://localhost:3000">analog.com</a>. 
+                                                 </p>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </td>
+                         </tr>
+                     </tbody>
+                 </table>         
+</body>
+</html>
+  `;
+  return template;
+}
+
+
+
 exports.sendotp = async (req, res) => {
   if (req.body.email == "") {
     return res.status(400).json({
@@ -74,9 +147,9 @@ exports.sendotp = async (req, res) => {
     var otp = Math.floor(Math.random() * 1000000 + 1);
     var subject = "Varify your Email";
     var message =
-      "<h1>Wecome to Analog, <br> To Varify your email on Analog. Your OTP is : <br>" +
+      "<h3>Wecome to Analog, <br> To Varify your email on Analog. Your OTP is : <br>" +
       otp +
-      "</h1>";
+      "</h3>";
     let varify = await User.updateOne(
       { email: req.body.email },
       { $set: { otp: otp } }
@@ -159,8 +232,8 @@ exports.signup = async (req, res) => {
             } else if (data) {
                     createWallet(email);
                     var subject = "Registration completed successully";
-                    var message = "<h1>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" + otp +
-                      "</h1>";
+                    var message = "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" + otp +
+                      "</h3>";
                     sendMail(email, subject, message);
                     return res.status(200).json({
                       status: 1,
@@ -1069,7 +1142,6 @@ exports.transaction_update = async (req, res) => {
 }
 
 
-
 function createDepositHistory(email, symbol, address, amount, balance) {
 const transaction_history = require('../models/transaction_history');
 try {    
@@ -1302,3 +1374,5 @@ exports.settings = async (req, res) => {
             break; 
   }
 }
+
+
