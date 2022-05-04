@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema(
     },
     user_id : { type: String, unique : true },
     username : { type: String, unique : true },
-    contact_no : { type: Number, unique : true },
+    contact_no : { 
+            type: Number,
+            unique : true,
+            minlength: [10, "Contact no. Minimum length is 10 digit"],
+          },
     refferal: { type: String },
     password: {
       type: String,
@@ -31,6 +35,7 @@ const userSchema = new mongoose.Schema(
     wallet_balance: { type: Number, default: 0 },
     otp: { type: Number, default: 0 },
     isVarify: { type: Number, default: 0 },
+    login_activity : { type : Number }
   },
   { timestamps: true }
 );

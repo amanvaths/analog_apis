@@ -1129,64 +1129,161 @@ try {
 
 exports.settings = async (req, res) => {
 
-  const { email, task } = req.body;
+  const { email, task } = req.body;  
   switch(task){
     case "username" :
-                await User.updateOne({ email: email }, {
-                  $set: {
-                      username     : req.body.username,
-                        }
-                  }).then((err, data) => {
-                    if(err){
-                      res.status(400).json({
-                        status  :  0,
-                        message : "Something went wrong"
-                      });
-                    }
-                    if(data){
-                    res.status(200).json({
-                      status  :  1,
-                      message : "Username upated successfully"
-                    });
-                  }                  
-                  });
+          try{
+            await User.findOne({ username : req.body.username }).exec( async(err, data) => {
+                if(data){
+                  return res.status(200).json({
+                    status  :  -1,
+                    message : "Username Already Exits"                      
+                  });  
+                }else{
+                  await User.updateOne({ email: email }, {
+                    $set: {
+                        username     : req.body.username,
+                          }
+                    }).exec( async (err, data) => {
+                      if(err){
+                        return res.status(400).json({
+                          "status" : 0,
+                          "message " : "something went wrong"                         
+                        });
+                      }
+                      if(data){
+                        return res.status(200).json({
+                          status  :  1,
+                          message : "Username no. updated successfully"                      
+                        });
+                      }
+                    });   
+                }
+            })
+          }catch(err){
+              console.log("Error in Updating username " + err);
+          }
+      break;                          
     case "contact" :
-                await User.updateOne({ email: email }, {
-                  $set: {
-                      contact_no     : req.body.contact_no,
-                        }
-                  }).then((err, data) => {
-                    if(err){
-                      res.status(400).json({
-                        status  :  0,
-                        message : "Something went wrong"
-                      });
-                    }
-                    if(data){
-                    res.status(200).json({
-                      status  :  1,
-                      message : "Contact no. upated successfully"
-                    });
-                  }  
-                  }); 
+          try{
+            await User.findOne({ contact_no : req.body.contact_no }).exec( async(err, data) => {
+                if(data){
+                  return res.status(200).json({
+                    status  :  -1,
+                    message : "Contact no. Already Exits"                      
+                  });  
+                }else{
+                  await User.updateOne({ email: email }, {
+                    $set: {
+                        contact_no     : req.body.contact_no,
+                          }
+                    }).exec( async (err, data) => {
+                      if(err){
+                        return res.status(400).json({
+                          "status" : 0,
+                          "message " : "something went wrong"
+                        });
+                      }
+                      if(data){
+                        return res.status(200).json({
+                          status  :  1,
+                          message : "Contact no. updated successfully"                      
+                        });
+                      }
+                    });   
+                }
+            })
+          }catch(err){
+              console.log("Error in Updating Contact no.  " + err);
+          }
+          break;
+                  
     case "currency" :  
+          try{  
                 await User.updateOne({ email: email }, {
+                    $set: {
+                        currency     : req.body.currency,
+                          }
+                    }).exec( async (err, data) => {
+                      if(err){
+                        return res.status(400).json({
+                          "status" : 0,
+                          "message " : "something went wrong"
+                        });
+                      }
+                      if(data){
+                        return res.status(200).json({
+                          status  :  1,
+                          message : "Currency updated successfully"                      
+                        });
+                      }
+                  });  
+          }catch(err){
+              console.log("Error in Updating Currency " + err);
+          }
+          break;  
+    
+    case "login_activity" : 
+          try{  
+              await User.updateOne({ email: email }, {
                   $set: {
-                      currency     : req.body.currency,
+                      login_activity     : req.body.login_activity,
                         }
-                  }).then((err, data) => {
+                  }).exec( async (err, data) => {
                     if(err){
-                      res.status(400).json({
-                        status  :  0,
-                        message : "Something went wrong"
+                      return res.status(400).json({
+                        "status" : 0,
+                        "message " : "something went wrong"
                       });
                     }
                     if(data){
-                    res.status(200).json({
-                      status  :  1,
-                      message : "Currency no. upated successfully"
-                    });
-                  }  
-                  }); 
+                      return res.status(200).json({
+                        status  :  1,
+                        message : "Login activity updated successfully"                      
+                      });
+                    }
+                });  
+            }catch(err){
+                console.log("Error in Updating Login activity" + err);
+            }
+        break;
+    case "change_password" :
+          try{
+            const old_password = req.body.old_password?req.body.old_password:"";
+            const new_password = req.body.new_password?req.body.new_password:"";           
+            const hashPassword = await bcrypt.hash(new_password, 10);
+            const _user = await User.findOne({ email : email }); 
+            if (_user && _user.password) {
+              if (bcrypt.compareSync(old_password, _user.password)) {
+               // console.log("executed");
+                  await User.updateOne({ email : email }, {
+                    $set : {
+                          password : hashPassword                   
+                      }
+                    }).exec((err, data) => {
+                      if(err){
+                          return res.json({
+                            status: 0,
+                            message: "Invalid password"
+                        })
+                      }
+                      if(data){
+                        return res.json({
+                          status: 1,
+                          message: "Password changed successfully"
+                      })
+                    }
+                })
+            }else{
+                return res.json({
+                  status: 0,
+                  message: "Invalid password"
+              })
+            }
+          }
+          }catch(err){
+              console.log("Error in Change password " + err);
+          }
+          break;   
   }
 }
