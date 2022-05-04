@@ -1127,3 +1127,66 @@ try {
 }
 
 
+exports.settings = async (req, res) => {
+
+  const { email, task } = req.body;
+  switch(task){
+    case "username" :
+                await User.updateOne({ email: email }, {
+                  $set: {
+                      username     : req.body.username,
+                        }
+                  }).then((err, data) => {
+                    if(err){
+                      res.status(400).json({
+                        status  :  0,
+                        message : "Something went wrong"
+                      });
+                    }
+                    if(data){
+                    res.status(200).json({
+                      status  :  1,
+                      message : "Username upated successfully"
+                    });
+                  }                  
+                  });
+    case "contact" :
+                await User.updateOne({ email: email }, {
+                  $set: {
+                      contact_no     : req.body.contact_no,
+                        }
+                  }).then((err, data) => {
+                    if(err){
+                      res.status(400).json({
+                        status  :  0,
+                        message : "Something went wrong"
+                      });
+                    }
+                    if(data){
+                    res.status(200).json({
+                      status  :  1,
+                      message : "Contact no. upated successfully"
+                    });
+                  }  
+                  }); 
+    case "currency" :  
+                await User.updateOne({ email: email }, {
+                  $set: {
+                      currency     : req.body.currency,
+                        }
+                  }).then((err, data) => {
+                    if(err){
+                      res.status(400).json({
+                        status  :  0,
+                        message : "Something went wrong"
+                      });
+                    }
+                    if(data){
+                    res.status(200).json({
+                      status  :  1,
+                      message : "Currency no. upated successfully"
+                    });
+                  }  
+                  }); 
+  }
+}

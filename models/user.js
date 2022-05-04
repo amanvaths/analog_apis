@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema(
       validate: [isEmail, "Please enter a valid email"],
     },
     user_id : { type: String, unique : true },
+    username : { type: String, unique : true },
+    contact_no : { type: Number, unique : true },
     refferal: { type: String },
     password: {
       type: String,
