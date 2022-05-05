@@ -315,8 +315,9 @@ exports.signin = async (req, res) => {
               console.log("error = " + error);
             }
     // **  login history  end -----------------  */ 
+
            session.userid=_id;
-           // console.log(session.userid);        
+           session.email = email;                   
 
             res.status(200).json({
               status: 1,
@@ -422,7 +423,7 @@ exports.forgetPassword = async (req, res) => {
           if (user) {
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
-            var msg = `<h1>Hello , <br> Click on the reset button below to reset your password.<br> <a href='http://localhost:3000/ResetPassword?resetcode=${randCode}' > Reset </a></h1>`;
+            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='http://localhost:3000/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
               email: req.body.email,
@@ -512,7 +513,7 @@ exports.resetPassword = async (req, res) => {
                   if (passwordUpdate) {
                     var subject = "Password changed successfully";
                     var message =
-                      "<h1>Hello, <br> Your password has been updated successfully.</h1>";
+                      "<h3>Hello, <br> Your password has been updated successfully.</h3>";
                     sendMail(email, subject, message);
                     return res.status(200).json({
                       status: 1,
@@ -551,99 +552,42 @@ async function createWallet(email) {
   const trx_wallet        = await createTRXAddress();
   const solana_wallet     = await createSolanaAddress();
  
-  // 1 BTC wallet
-  const btcWallet = new userWallet({       
-      email           : email,
-      walletAddr      : btc_wallet.address,
-      privateKey      : btc_wallet.privateKey,
-      walleType       : btc_wallet.type,
-      symbol          : btc_wallet.symbol
-  });
-  btcWallet.save();
+  // 1 BTC wallet 
+  storeWallet(email, btc_wallet.address, btc_wallet.privateKey,  btc_wallet.type, btc_wallet.symbol);
 
   // 2) INRX, ETH, BUSD,  BNB, SHIBA, MATIC
-  const inrxWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "INRX",
-      symbol          : "INRX"
-  });
-  inrxWallet.save();
-
-  const ethWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "Etherium",
-      symbol          : "ETH"
-  });
-  ethWallet.save();
-
-  const busdWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "BUSD",
-      symbol          : "BUSD"
-  });
-  busdWallet.save();
-
-  const bnbWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "BNB",
-      symbol          : "BNB"
-  });
-  bnbWallet.save();
-
-  const shibaWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "SHIB",
-      symbol          : "SHIB"
-  });
-  shibaWallet.save();
-
-  const maticWallet = new userWallet({    
-      email           : email,
-      walletAddr      : eth_wallet.address,
-      privateKey      : eth_wallet.privateKey,
-      walleType       : "Matic",
-      symbol          : "MATIC"
-  });
-  maticWallet.save();
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "INRX", "INRX");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "Etherium", "ETH");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "BUSD", "BUSD");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "BNB", "BNB");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "SHIB", "SHIB");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "MATIC", "MATIC");
   
   // 3) USDT, TRX 
-  const usdtWallet = new userWallet({    
-      email           : email,
-      walletAddr      : trx_wallet.address,
-      privateKey      : trx_wallet.privateKey,
-      walleType       : "USDT",
-      symbol          : "USDT"
-  });
-  usdtWallet.save();
-
-  const trxWallet = new userWallet({    
-      email           : email,
-      walletAddr      : trx_wallet.address,
-      privateKey      : trx_wallet.privateKey,
-      walleType       : "TRON",
-      symbol          : "TRX"
-  });
-  trxWallet.save();
+  storeWallet(email, trx_wallet.address, trx_wallet.privateKey,  "USDT", "USDT");
+  storeWallet(email, trx_wallet.address, trx_wallet.privateKey,  "TRON", "TRX");
 
   // 4) SOLANA
-  const solanaWallet = new userWallet({    
+  storeWallet(email, solana_wallet.address, solana_wallet.privateKey,  "SOLANA", "SOL");
+
+}
+
+async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol){
+  try{
+    userWallet.create({
       email           : email,
-      walletAddr      : solana_wallet.address,
-      privateKey      : solana_wallet.privateKey,
-      walleType       : "SOLANA",
-      symbol          : "SOL"
-  });
-  solanaWallet.save();
+      walletAddr      : walletAddr,
+      privateKey      : PrivateKey,
+      walleType       : walleType,
+      symbol          : symbol
+    }).then((data) => {
+      //console.log("currency stored");
+    }).catch((err) => {
+      //console.log("Err in currency stored");
+    })
+  }catch(err){
+    console.log("Error in storing user Wallet " + err);
+  }
 }
 
 async function createBTCAddress() {
@@ -1200,7 +1144,6 @@ try {
 
 
 exports.settings = async (req, res) => {
-
   const { email, task } = req.body;  
   switch(task){
     case "username" :
@@ -1212,24 +1155,17 @@ exports.settings = async (req, res) => {
                     message : "Username Already Exits"                      
                   });  
                 }else{
-                  await User.updateOne({ email: email }, {
-                    $set: {
-                        username     : req.body.username,
-                          }
-                    }).exec( async (err, data) => {
-                      if(err){
-                        return res.status(400).json({
-                          "status" : 0,
-                          "message " : "something went wrong"                         
-                        });
-                      }
-                      if(data){
-                        return res.status(200).json({
-                          status  :  1,
-                          message : "Username updated successfully"                      
-                        });
-                      }
-                    });   
+                  await User.updateOne({ email: email }, { $set: { username : req.body.username, } }).then((data) => {
+                      return res.status(200).json({
+                        status  :  1,
+                        message : "Username updated successfully"                      
+                      });
+                    }).catch((err) => {
+                      return res.status(400).json({
+                        "status" : 0,
+                        "message " : "something went wrong"                         
+                      });
+                    })                 
                 }
             })
           }catch(err){
@@ -1245,119 +1181,42 @@ exports.settings = async (req, res) => {
                     message : "Contact no. Already Exits"                      
                   });  
                 }else{
-                  await User.updateOne({ email: email }, {
-                    $set: {
-                        contact_no     : req.body.contact,
-                          }
-                    }).exec( async (err, data) => {
-                      if(err){
-                        return res.status(400).json({
-                          "status" : 0,
-                          "message " : "something went wrong"
-                        });
-                      }
-                      if(data){
-                        return res.status(200).json({
+                  await User.updateOne({ email: email }, { $set: { contact_no : req.body.contact, } }).then((data) => {
+                    return res.status(200).json({
                           status  :  1,
-                          message : "Contact no. updated successfully"                      
+                          message : "Contact no. updated successfully"   
+                      }).catch((err) => {
+                        return res.status(400).json({
+                          status  :  0,
+                          message : "something went wrong"                      
                         });
-                      }
-                    });   
-                }
+                      }) 
+                })
+              }
             })
           }catch(err){
               console.log("Error in Updating Contact no.  " + err);
           }
-          break;
-                  
+          break;              
     case "currency" :  
           try{  
-                await User.updateOne({ email: email }, {
-                    $set: {
-                        currency     : req.body.currency,
-                          }
-                    }).exec( async (err, data) => {
-                      if(err){
-                        return res.status(400).json({
-                          "status" : 0,
-                          "message " : "something went wrong"
-                        });
-                      }
-                      if(data){
-                        return res.status(200).json({
-                          status  :  1,
-                          message : "Currency updated successfully"                      
-                        });
-                      }
-                  });  
-          }catch(err){
-              console.log("Error in Updating Currency " + err);
-          }
-          break;  
-    
-    case "login_activity" : 
-          try{  
-              await User.updateOne({ email: email }, {
-                  $set: {
-                      login_activity     : req.body.login_activity,
-                        }
-                  }).exec( async (err, data) => {
-                    if(err){
-                      return res.status(400).json({
-                        "status" : 0,
-                        "message " : "something went wrong"
-                      });
-                    }
+                await User.updateOne({ email: email }, { $set: { currency : req.body.currency, } }).then((data) => {
                     if(data){
                       return res.status(200).json({
                         status  :  1,
-                        message : "Login activity updated successfully"                      
+                        message : "Currency updated successfully"                      
                       });
-                    }
-                });  
-            }catch(err){
-                console.log("Error in Updating Login activity" + err);
-            }
-        break;
-    case "change_password" :
-          try{
-            const old_password = req.body.old_password?req.body.old_password:"";
-            const new_password = req.body.new_password?req.body.new_password:"";           
-            const hashPassword = await bcrypt.hash(new_password, 10);
-            const _user = await User.findOne({ email : email }); 
-            if (_user && _user.password) {
-              if (bcrypt.compareSync(old_password, _user.password)) {
-               // console.log("executed");
-                  await User.updateOne({ email : email }, {
-                    $set : {
-                          password : hashPassword                   
-                      }
-                    }).exec((err, data) => {
-                      if(err){
-                          return res.json({
-                            status: 0,
-                            message: "Invalid password"
-                        })
-                      }
-                      if(data){
-                        return res.json({
-                          status: 1,
-                          message: "Password changed successfully"
-                      })
-                    }
-                })
-            }else{
-                return res.json({
-                  status: 0,
-                  message: "Invalid password"
-              })
-            }
-          }
+                    }                                       
+                  }).catch((error) => {                   
+                      return res.status(400).json({
+                        "status" : 0,
+                        "message " : "something went wrong"
+                      });                  
+                  }) 
           }catch(err){
-              console.log("Error in Change password " + err);
+              console.log("Error in Updating Currency " + err);
           }
-          break; 
-     
+          break;     
     case "personal_information" :
             try{            
               const _user = await User.findOne({ email : email }); 
@@ -1375,4 +1234,53 @@ exports.settings = async (req, res) => {
   }
 }
 
+exports.change_password = async(req, res) => { 
+    try{
+      const old_password = req.body.old_password?req.body.old_password:"";
+      const new_password = req.body.new_password?req.body.new_password:"";           
+      const hashPassword = await bcrypt.hash(new_password, 10);
+      const _user = await User.findOne({ email : email }); 
+      if (_user && _user.password) {
+        if (bcrypt.compareSync(old_password, _user.password)) {
+         // console.log("executed");
+            await User.updateOne({ email : email }, { $set : { password : hashPassword } }).then((data) => {
+              return res.json({
+                      status: 1,
+                      message: "Password changed successfully"
+                  })           
+            }).catch((error) => {
+              return res.json({
+                        status: 0,
+                        message: "Something went wrong"
+                    })
+            })
+        }else{
+            return res.json({
+              status: 0,
+              message: "Invalid password"
+          })
+        }
+    }
+    }catch(err){
+        console.log("Error in Change password " + err);
+    }   
+}
+
+exports.login_activity = async (req, res) => {
+  try{  
+      await User.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
+        return res.status(200).json({
+          status  :  1,
+          message : "Login activity updated successfully"                      
+        });                  
+        }).catch((error) => {
+          return res.status(400).json({
+            status  :  0,
+            message : "Something went wrong"                      
+          });
+        }) 
+    }catch(err){
+        console.log("Error in Updating Login activity" + err);
+    }
+}
 

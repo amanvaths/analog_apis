@@ -11,7 +11,9 @@ const {
   walletData,
   transaction_history,
   transaction_update,
-  settings
+  settings,
+  change_password,
+  login_activity
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -35,6 +37,8 @@ router.post("/transaction_update", transaction_update);
 router.post('/loginhistory', loginhistory);
 router.post('/levels', levels);
 router.post('/settings', settings);
+router.post('/change_password', change_password);
+router.post('/login_activity', login_activity);
 
 /**
  * Admin Routes
