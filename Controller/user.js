@@ -1263,7 +1263,7 @@ try {
 }
 }
 
-/*
+
 exports.settings = async (req, res) => {
   const { email, task } = req.body;  
   switch(task){
@@ -1354,7 +1354,7 @@ exports.settings = async (req, res) => {
             break; 
   }
 }
-*/
+
 exports.change_password = async(req, res) => { 
     try{
       const old_password = req.body.old_password?req.body.old_password:"";
@@ -1404,7 +1404,7 @@ exports.login_activity = async (req, res) => {
         console.log("Error in Updating Login activity" + err);
     }
 }
-/*
+
 exports.generateauthtoken = async (req, res)=>{
  // if (req.session.session_id) {
      // const user = await getUserIdFromSessionId(req.session.session_id);
@@ -1540,7 +1540,7 @@ exports.verifyauthtoken = async (req, res) =>{
   }
 }
 
-*/
+/*
 exports.settings = async (req, res) => {
   const { email, task } = req.body;
   switch (task) {
@@ -1734,7 +1734,7 @@ exports.settings = async (req, res) => {
       break;
   }
 };
-
+*/
 
 exports.updateSetting = async (req, res) => {
   const User = require("../models/user")
