@@ -1388,6 +1388,7 @@ exports.change_password = async(req, res) => {
 }
 
 exports.login_activity = async (req, res) => {
+  const {email} = req.body;
   try{  
       await User.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
         return res.status(200).json({
@@ -1405,140 +1406,6 @@ exports.login_activity = async (req, res) => {
     }
 }
 
-exports.generateauthtoken = async (req, res)=>{
- // if (req.session.session_id) {
-     // const user = await getUserIdFromSessionId(req.session.session_id);
-     const { email } = req.body;
-     const user = User.find({ email: email });
-      if (user) {
-          try {
-              const google_auth = req.body.state?req.body.state:false;
-              //console.log(google_auth);              
-              if (google_auth) {
-                  const speakeasy = require("speakeasy");
-                  var secret = speakeasy.generateSecret({
-                      name: email
-                  });
-                  await User.updateOne(
-                      {user_id: user},
-                      {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
-                          google_authenticator_ascii: secret.ascii,
-                          google_authenticator: true,
-                      },
-                      { upsert: true }
-                  );
-                  return res.json({
-                      status: 1,
-                      data: secret.otpauth_url,
-                      key: secret.base32
-                  })
-              } else {
-                  await db.collection('settings').update(
-                      {user_id: user},
-                      {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
-                          google_authenticator_ascii: s.google_authenticator_ascii,
-                          google_authenticator: false
-                      },
-                      { upsert: true }
-                  );
-              }
-              return res.json({
-                  status: 1,
-                  msg: "Disabled!"
-              })
-          } catch (error) {
-              return res.json({
-                  status: -5,
-                  msg: `Error: ${error.message}`
-              })
-          }
-      } else {
-          return res.json({
-              status: -4,
-              msg: "Invalid API call*"
-          })
-      }
-  // } 
-  // else {
-  //     return res.json({
-  //         status: -4,
-  //         msg: "Invalid API call!"
-  //     })
-  // }
-}
-
-exports.verifyauthtoken = async (req, res) =>{
-  const speakeasy = require("speakeasy");
-  const bcrypt = require('bcryptjs');
-  try {
-      const {db} = await connectToDatabase(true);
-      const email = req.session.email?req.session.email:'';
-      if (email) {
-          const token = req.body.token?req.body.token:false;
-          if (token) {
-              const ue = await db.collection('user').findOne({email: email}, {email: 0, user_name: 0,  created_on: 0, self_ref_code: 0, parent_ref_code: 0, password: 0});
-              const s = await db.collection('settings').findOne({user_id: ue._id}, {_id: 0, user_id: 0, affiliate_shield: 0, profit_shield: 0, voting_ticket: 0, transaction_password: 0, activity_permission: 0});
-              if (s && s.google_authenticator_ascii) {
-                  const verified = await speakeasy.totp.verify({
-                      secret: s.google_authenticator_ascii,
-                      encoding:  'ascii',
-                      token: token
-                  });
-                  if (verified) {
-                      const session_id = await bcrypt.hash(email, 2)+Date.now();
-                      await db.collection("user_session").insertOne( {"user_id" : ue._id, "active_session_id" : session_id } );
-                      await updateLoginActivity(req, ue._id);
-                      req.session.session_id = session_id;
-                      return res.json({
-                          status: 1, 
-                          session_id: req.session.session_id,
-                          msg: "Login Successfull!"
-                      })
-                  } else {
-                      return res.json({
-                          status: 0,
-                          msg: 'Invalid Token'
-                      })
-                  }
-              } else {
-                  return res.json({
-                      status: 0,
-                      msg: 'Google 2FA is not activated'
-                  })
-              }    
-          } else {
-              return res.json({
-                  status: 0,
-                  msg: "Invalid API call"
-              })
-          }
-      } else {
-          return res.json({
-              status: -4,
-              msg: "Invalid API call**"
-          })
-      }
-  } catch (error) {
-      return res.json({
-          status: -5,
-          msg: `Error: ${error.message}`
-      })
-  }
-}
 
 /*
 exports.settings = async (req, res) => {
@@ -1736,6 +1603,7 @@ exports.settings = async (req, res) => {
 };
 */
 
+
 exports.updateSetting = async (req, res) => {
   const User = require("../models/user")
   const bcrypt = require("bcrypt")
@@ -1795,4 +1663,82 @@ exports.updateSetting = async (req, res) => {
   } catch (err) {
     console.log("Error in Updating Contact no.  " + err);
   }
+}
+
+
+exports.generateauthtoken = async (req, res)=>{
+ // if (req.session.session_id) {
+      const { email } = req.body;
+      const user = await User.findOne({ email : email });
+      if (user) {
+          try {
+              const google_auth = req.body.state?req.body.state:false;
+              // const {db} = await connectToDatabase(true);
+              // const s = await db.collection('settings').findOne({user_id: user});
+              if (google_auth) {
+                  const speakeasy = require("speakeasy");
+                  var secret = speakeasy.generateSecret({
+                      name: email
+                  });
+                  console.log(secret.ascii);
+                  return res.send(secret.ascii);
+                  await db.collection('settings').update(
+                      {user_id: user},
+                      {
+                          _id: s._id,
+                          user_id: user,
+                          affiliate_shield: s.affiliate_shield,
+                          profit_shield: s.profit_shield,
+                          voting_ticket: s.voting_ticket,
+                          transaction_password: s.transaction_password,
+                          activity_permission: s.activity_permission,
+                          google_authenticator_ascii: secret.ascii,
+                          google_authenticator: true,
+                      },
+                      { upsert: true }
+                  );
+                  return res.json({
+                      status: 1,
+                      data: secret.otpauth_url,
+                      key: secret.base32
+                  })
+              } else {
+                  await db.collection('settings').update(
+                      {user_id: user},
+                      {
+                          _id: s._id,
+                          user_id: user,
+                          affiliate_shield: s.affiliate_shield,
+                          profit_shield: s.profit_shield,
+                          voting_ticket: s.voting_ticket,
+                          transaction_password: s.transaction_password,
+                          activity_permission: s.activity_permission,
+                          google_authenticator_ascii: s.google_authenticator_ascii,
+                          google_authenticator: false
+                      },
+                      { upsert: true }
+                  );
+              }
+              return res.json({
+                  status: 1,
+                  msg: "Disabled!"
+              })
+          } catch (error) {
+              return res.json({
+                  status: -5,
+                  msg: `Error: ${error.message}`
+              })
+          }
+      } else {
+          return res.json({
+              status: -4,
+              msg: "Invalid API call*"
+          })
+      }
+  // } else {
+  //     return res.json({
+  //         status: -4,
+  //         msg: "Invalid API call!"
+  //     })
+  // }
 }
