@@ -1672,52 +1672,28 @@ exports.generateauthtoken = async (req, res)=>{
       const user = await User.findOne({ email : email });
       if (user) {
           try {
-              const google_auth = req.body.state?req.body.state:false;
-              // const {db} = await connectToDatabase(true);
-              // const s = await db.collection('settings').findOne({user_id: user});
+              const google_auth = req.body.state?req.body.state:false;             
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: email
                   });
-                  console.log(secret.ascii);
-                  return res.send(secret.ascii);
-                  await db.collection('settings').update(
-                      {user_id: user},
+                  // console.log(secret.ascii);             
+                  await User.updateOne(
+                      {email: email},
                       {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
+                        $set: {
                           google_authenticator_ascii: secret.ascii,
-                          google_authenticator: true,
-                      },
-                      { upsert: true }
-                  );
+                          google_authenticator: 1,
+                        },
+                      });
                   return res.json({
                       status: 1,
                       data: secret.otpauth_url,
                       key: secret.base32
                   })
               } else {
-                  await db.collection('settings').update(
-                      {user_id: user},
-                      {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
-                          google_authenticator_ascii: s.google_authenticator_ascii,
-                          google_authenticator: false
-                      },
-                      { upsert: true }
-                  );
+                await User.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1725,13 +1701,13 @@ exports.generateauthtoken = async (req, res)=>{
               })
           } catch (error) {
               return res.json({
-                  status: -5,
+                  status: 0,
                   msg: `Error: ${error.message}`
               })
           }
       } else {
           return res.json({
-              status: -4,
+              status: -5,
               msg: "Invalid API call*"
           })
       }
@@ -1742,3 +1718,88 @@ exports.generateauthtoken = async (req, res)=>{
   //     })
   // }
 }
+
+exports.verifyauthtoken = async (req, res) =>{
+  const speakeasy = require("speakeasy");
+  const bcrypt = require('bcryptjs');
+  try {
+      const {email} = req.body; 
+      if (email) {
+          const token = req.body.token?req.body.token:false;
+          if (token) {            
+             const s = await User.find({ email : email  });
+             console.log(s[0].google_authenticator);
+              if (s && s[0].google_authenticator) {
+                  const verified = await speakeasy.totp.verify({
+                      secret: s.google_authenticator_ascii,
+                      encoding:  'ascii',
+                      token: token
+                  });
+                  if (verified) {
+                      const session_id = await bcrypt.hash(email, 2)+Date.now();                     
+                      return res.json({
+                          status: 1, 
+                          session_id: req.session.session_id,
+                          msg: "Login Successfull!"
+                      })
+                  } else {
+                      return res.json({
+                          status: 0,
+                          msg: 'Invalid Token'
+                      })
+                  }
+              } else {
+                  return res.json({
+                      status: 0,
+                      msg: 'Google 2FA is not activated'
+                  })
+              }    
+          } else {
+              return res.json({
+                  status: 0,
+                  msg: "Invalid API call"
+              })
+          }
+      } else {
+          return res.json({
+              status: -4,
+              msg: "Invalid API call**"
+          })
+      }
+  } catch (error) {
+      return res.json({
+          status: -5,
+          msg: `Error: ${error.message}`
+      })
+  }
+}
+
+exports.notificationSettings = async (req, res) => {
+  const settings = require('../models/settings');
+  try{
+    const { email, unusual_activity, new_browser, sales, new_features, tips } = req.body;   
+    await settings.updateOne({ email : email }, { $set : { 
+      unusual_activity : unusual_activity,
+      new_browser      : new_browser,
+      sales            : sales,
+      latest_news      : sales,
+      new_features     : new_features,
+      updates          : new_features,
+      tips             : tips
+     } }).then((data) => {
+       //console.log("updated");
+       return res.status(200).json({
+         status : 1,
+         message : "Notification updated successfully"
+       })
+     }).catch((error) => {
+      return res.status(400).json({
+        status : 0,
+        message : "Something went wrong"
+      })
+     })
+  }catch(error){
+    console.log("Error in notification settings" + error);
+  }
+}
+

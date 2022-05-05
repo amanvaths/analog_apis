@@ -15,7 +15,9 @@ const {
   updateSetting,
   change_password,
   login_activity,
-  generateauthtoken
+  generateauthtoken,
+  verifyauthtoken,
+  notificationSettings
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -42,8 +44,9 @@ router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
 router.post('/generateauthtoken', generateauthtoken);
-// router.post('/settings', settings);
+ router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
+router.post('/notificationSettings', notificationSettings);
 
 
 /**
