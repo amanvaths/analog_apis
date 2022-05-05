@@ -14,7 +14,9 @@ const {
   settings,
   updateSetting,
   change_password,
-  login_activity
+  login_activity,
+  getAffiliates,
+  generateauthtoken
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -38,8 +40,13 @@ router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
 router.post('/loginhistory', loginhistory);
 router.post('/levels', levels);
+router.post('/settings', settings);
+router.post('/change_password', change_password);
+router.post('/login_activity', login_activity);
+router.post('/getAffiliates', getAffiliates);
+router.post('/generateauthtoken', generateauthtoken);
 // router.post('/settings', settings);
-router.post('/settings', updateSetting);
+router.post('/settings1', updateSetting);
 
 
 /**
