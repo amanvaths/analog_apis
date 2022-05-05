@@ -13,7 +13,8 @@ const {
   transaction_update,
   settings,
   change_password,
-  login_activity
+  login_activity,
+  generateauthtoken
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -39,6 +40,7 @@ router.post('/levels', levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
+router.post('/generateauthtoken', generateauthtoken);
 
 /**
  * Admin Routes
