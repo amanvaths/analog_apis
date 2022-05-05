@@ -13,7 +13,8 @@ const {
   transaction_update,
   settings,
   change_password,
-  login_activity
+  login_activity,
+  getAffiliates
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -39,6 +40,7 @@ router.post('/levels', levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
+router.post('/getAffiliates', getAffiliates);
 
 /**
  * Admin Routes
@@ -55,6 +57,7 @@ router.get('/alluserbydate', alluserbydate);
 router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
+
 
 
 
