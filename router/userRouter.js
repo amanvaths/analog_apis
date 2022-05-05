@@ -12,7 +12,9 @@ const {
   transaction_history,
   transaction_update,
   settings,
-  updateSetting
+  updateSetting,
+  change_password,
+  login_activity
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
