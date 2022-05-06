@@ -1,6 +1,38 @@
 
 const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
+
+async function getCMCData(base_currency=false, currency=false) {
+  try {
+    const query_coin_symbol_array = [
+      "btc",
+      "eth",
+      "trx",
+      "usdt",
+      "busd",
+      "shib",
+      "bnb",
+      "matic",
+      "sol",
+    ];
+    var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
+    var conver_currency = currency ? currency :"usd";
+    const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
+    const axios = require("axios");
+    const ress = await axios.get(final_third_party_api_url, {
+      headers: {
+        "Content-Type": "Application/json",
+        // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
+        "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+    console.log(ress.data.data);
+    return ress.data.data;
+  } catch (error) {
+    return false;
+  }
+}
 exports.createOrder = async (req, res)=> {
     const wallet = require("../models/userWallet");
     try {
@@ -8,9 +40,18 @@ exports.createOrder = async (req, res)=> {
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
         const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
-     
+        req.body.currency="inr";
+        req.body.base_currency=req.body.currencyType.toLowerCase();
+        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+        const price_in_inr = cmcdata.TRX.quote.INR.price;
+        console.log(currencyT.balance)
+        console.log(currencyT.compairC)
+        console.log(currencyT.currencyT)
+
         if(currencyT && compairC && currencyT.balance >= amount ) {
                 let compairVal = mul(raw_price,amount);
+                // console.log("raw_price",raw_price)
+                // console.log("compare_rpu",compairVal)
                 let CTbalance = sub(currencyT.balance, amount) > 0 ?sub(currencyT.balance, amount):0; 
                 let CCbalance = add(compairC.balance, compairVal);
                 await wallet.updateOne({_id:currencyT._id},{
