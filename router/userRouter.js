@@ -93,7 +93,7 @@ async function getCMCData(req, res) {
       "matic",
       "sol",
     ];
-    var coin_symbols = query_coin_symbol_array.join(",");
+    var coin_symbols = req.body.base_currency ? req.body.base_currency : query_coin_symbol_array.join(",");
     var conver_currency = req.body.currency ? req.body.currency : "usd";
     const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
     const ress = await axios.get(final_third_party_api_url, {
