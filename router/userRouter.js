@@ -18,7 +18,7 @@ const {
   // generateauthtoken,
   verifyauthtoken,
   notificationSettings,
-  //getAffiliates,
+  getAffiliates,
   generateauthtoken
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -46,7 +46,7 @@ router.post('/levels', levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
-// router.post('/getAffiliates', getAffiliates);
+ router.post('/getAffiliates', getAffiliates);
 router.post('/generateauthtoken', generateauthtoken);
  router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
