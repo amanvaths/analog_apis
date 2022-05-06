@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
+    order_id: { type: Date, },
     email : { type : String , required : true},
     date : {type: Date, default: Date.now},    
     amount : { type : Number , default: 0 }, 
