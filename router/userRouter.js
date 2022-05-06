@@ -19,13 +19,15 @@ const {
   verifyauthtoken,
   notificationSettings,
   getAffiliates,
-  generateauthtoken
+  generateauthtoken,
+  whitelisted_ip,
+  get_whitelisted_ip
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
-const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet } = require('../Controller/BuySell');
+const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders } = require('../Controller/BuySell');
 
 /**
  user Routes
@@ -51,7 +53,8 @@ router.post('/generateauthtoken', generateauthtoken);
  router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
-
+router.post('/whitelisted_ip', whitelisted_ip);
+router.get('/get_whitelisted_ip',get_whitelisted_ip);
 
 /**
  * Admin Routes
@@ -77,6 +80,7 @@ router.get('/getpresalebyid', getpresalebyid);
 
  router.post('/order', createOrder);
  router.get('/getAllOrder', getAllOrder);
+ router.get('/deleteOrders', deleteOrders);
  router.get('/depositHestory', depositHestory);
  router.get('/getUser', getUser);
  router.post('/addColdWallet', addColdWallet);

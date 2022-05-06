@@ -279,6 +279,7 @@ exports.createOrder = async (req, res)=> {
     const Order = require("../models/order")
     const order = await new Order({
         email: email,
+        order_id: Date.now().toString(16).toUpperCase(),
         date: Date.now(),
         amount: amount,
         raw_price: raw_price,
@@ -331,6 +332,16 @@ exports.createOrder = async (req, res)=> {
     }
   }
 
+  exports.deleteOrders = async(req, res) => {
+    const Order = require("../models/order")
+    try{
+      await Order.deleteOne({ _id: req.body.id });
+      return res.status(200).json({message: "Record Deleted"})
+    }catch(error) {
+      return res.status(400).json({message: "Somthing went wrong"})
+    }
+  }
+
   exports.depositHestory = async(req, res) => {
     const Transaction = require("../models/transaction_history")
     try{
@@ -356,6 +367,8 @@ exports.createOrder = async (req, res)=> {
       });
     }
   }
+
+  
 
 
   exports.levelIncomeHistory = async(req, res) => {
@@ -465,3 +478,4 @@ exports.createOrder = async (req, res)=> {
     }
   }
   
+
