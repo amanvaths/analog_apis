@@ -18,8 +18,7 @@ const {
   generateauthtoken,
   verifyauthtoken,
   notificationSettings,
-  getAffiliates,
-  generateauthtoken
+  getAffiliates,  
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
