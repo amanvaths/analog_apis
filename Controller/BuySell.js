@@ -56,6 +56,7 @@ exports.createOrder = async (req, res)=> {
         date: Date.now(),
         raw_price: raw_price,
         amount: amount,
+        cVolume: Number(amount * raw_price),
         currency_type: currencyType,
         compair_currency: compairCurrency
       });
