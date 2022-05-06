@@ -1,17 +1,59 @@
 
 const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
+
+async function getCMCData(base_currency=false, currency=false) {
+  try {
+    const query_coin_symbol_array = [
+      "btc",
+      "eth",
+      "trx",
+      "usdt",
+      "busd",
+      "shib",
+      "bnb",
+      "matic",
+      "sol",
+    ];
+    var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
+    var conver_currency = currency ? currency :"usd";
+    const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
+    const axios = require("axios");
+    const ress = await axios.get(final_third_party_api_url, {
+      headers: {
+        "Content-Type": "Application/json",
+        // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
+        "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+    console.log(ress.data.data);
+    return ress.data.data;
+  } catch (error) {
+    return false;
+  }
+}
 exports.createOrder = async (req, res)=> {
     const wallet = require("../models/userWallet");
     try {
       const { amount, raw_price,  currencyType, compairCurrency, email } = req.body;
+      console.log( req.body)
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
         const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
-     
-        if(currencyT && compairC && currencyT.balance >= amount ) {
-                let compairVal = mul(raw_price,amount);
-                let CTbalance = sub(currencyT.balance, amount) > 0 ?sub(currencyT.balance, amount):0; 
+        req.body.currency="inr";
+        req.body.base_currency=req.body.currencyType.toLowerCase();
+        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+        const price_in_inr = cmcdata.TRX.quote.INR.price;
+        
+
+        const ANA_price =10;
+        const one_ANA_in=ANA_price/price_in_inr;
+        let compairVal = mul(one_ANA_in,raw_price);
+       
+        if(currencyT.balance >= compairVal ) {
+              
+                let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
                 let CCbalance = add(compairC.balance, compairVal);
                 await wallet.updateOne({_id:currencyT._id},{
                     $set:{
@@ -33,7 +75,7 @@ exports.createOrder = async (req, res)=> {
             return res.json({
                 status: 400,
                 error: true,
-                message: "Invalid Request",
+                message: "Insufficient "+req.body.currencyType+" Balance",
               });
         }    
         
@@ -53,6 +95,7 @@ exports.createOrder = async (req, res)=> {
     const Order = require("../models/order")
     const order = await new Order({
         email: email,
+        order_id: Date.now().toString(16).toUpperCase(),
         date: Date.now(),
         raw_price: raw_price,
         amount: amount,
@@ -81,12 +124,12 @@ exports.createOrder = async (req, res)=> {
   exports.getAllOrder = async(req, res) => {
     const Order = require("../models/order")
     try{
-      const { query } = req.query
-      // console.log("quary", req.quary)
-      // const page = quary.page
-      // const per_page = quary.per_page
-      // delete quary.page
-      // delete quary.per_page
+      const query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
+      // console.log("quary", query)
       const order = await Order.find({query})
       return res.json({
         status: 200,
@@ -105,14 +148,24 @@ exports.createOrder = async (req, res)=> {
     }
   }
 
+  exports.deleteOrders = async(req, res) => {
+    const Order = require("../models/order")
+    try{
+      await Order.deleteOne({ _id: req.body.id });
+      return res.status(200).json({message: "Record Deleted"})
+    }catch(error) {
+      return res.status(400).json({message: "Somthing went wrong"})
+    }
+  }
+
   exports.depositHestory = async(req, res) => {
     const Transaction = require("../models/transaction_history")
     try{
-      const { query } = req.query
-      // const page = parems.page
-      // const per_page = parems.per_page
-      // delete quary.page
-      // delete quary.per_page
+      const query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const transaction = await Transaction.find({query})
       return res.json({
         status: 200,
@@ -131,11 +184,17 @@ exports.createOrder = async (req, res)=> {
     }
   }
 
+  
+
 
   exports.levelIncomeHistory = async(req, res) => {
     const Transaction = require("../models/transaction_history")
     try{
-      const { query } = rew.query
+      const  query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const transaction = await Transaction.find(query)
       return res.json({
         status: 200,
@@ -157,8 +216,11 @@ exports.createOrder = async (req, res)=> {
   exports.getUser = async(req, res) => {
     const User = require("../models/user")
     try{
-      const { query } = req.query
-      console.log(req.query)
+      const  query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const user = await User.find(query)
       return res.json({
         status: 200,
@@ -232,3 +294,4 @@ exports.createOrder = async (req, res)=> {
     }
   }
   
+
