@@ -13,6 +13,7 @@ const buySchema = new mongoose.Schema({
     bonus_percent : { type : Number , default : 0 },
     from_user : {type: String},
     from_level : {type: String},
+    currency:{type: String},
     bonus_type : {type: String, required : true}
 }, { timestamps: true});
 
