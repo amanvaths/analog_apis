@@ -22,7 +22,7 @@ const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
-const { createOrder } = require('../Controller/BuySell');
+const { createOrder, getAllOrder } = require('../Controller/BuySell');
 
 /**
  user Routes
@@ -72,6 +72,8 @@ router.get('/getpresalebyid', getpresalebyid);
  */
 
  router.post('/order', createOrder);
+ router.get('/getAllOrder', getAllOrder);
+
 
 
 async function getCMCData(req, res) {

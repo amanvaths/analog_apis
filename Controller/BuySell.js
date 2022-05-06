@@ -1,4 +1,5 @@
 
+const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
 exports.createOrder = async (req, res)=> {
     const wallet = require("../models/userWallet");
@@ -49,18 +50,17 @@ exports.createOrder = async (req, res)=> {
 
 
   async function OrderHistory(amount,  raw_price,  currencyType,  compairCurrency,  email) {
-    const Buy = require("../models/buy")
-    const buy = new Buy({
+    const Order = require("../models/order")
+    const order = await new Order({
         email: email,
         date: Date.now(),
-        status: 1,
-        token_price: raw_price,
-        token_quantity: amount,
+        raw_price: raw_price,
+        amount: amount,
         currency_type: currencyType,
         compair_currency: compairCurrency
       });
 
-      buy.save((error, data) => {
+      order.save((error, data) => {
         if (error) {
           console.log("Error from: OrderHistory", error.message);
           return ({
@@ -75,4 +75,30 @@ exports.createOrder = async (req, res)=> {
               });
         }
       });
+  }
+
+  exports.getAllOrder = async(req, res) => {
+    const Order = require("../models/order")
+    try{
+      const { quary } = req.quary
+      const page = quary.page
+      const per_page = quary.per_page
+      delete quary.page
+      delete quary.per_page
+      const order = await Order.find(quary).limit(per_page).skip((page-1)*per_page)
+      return res.json({
+        status: 200,
+        error: false,
+        order: order,
+      });
+
+    } catch(error){
+      console.log("Error from: createOrder ", error)
+      return res.json({
+        status: 400,
+        error: true,
+        message: "Somthing Went Wrong!!**********",
+        err: error.message,
+      });
+    }
   }
