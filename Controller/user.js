@@ -327,10 +327,10 @@ exports.signin = async (req, res) => {
             } catch (error) {
               console.log("error = " + error);
             }
-            // **  login history  end -----------------  */
+    // **  login history  end -----------------  */ 
 
-            session.userid = _id;
-            session.email = email;
+           session.userid=_id;
+           session.email = email;                   
 
             res.status(200).json({
               status: 1,
@@ -559,71 +559,45 @@ exports.resetPassword = async (req, res) => {
 };
 
 async function createWallet(email) {
-  const btc_wallet = await createBTCAddress();
-  const eth_wallet = await createETHAddress();
-  const trx_wallet = await createTRXAddress();
-  const solana_wallet = await createSolanaAddress();
-
-  // 1 BTC wallet
-  storeWallet(
-    email,
-    btc_wallet.address,
-    btc_wallet.privateKey,
-    btc_wallet.type,
-    btc_wallet.symbol
-  );
+  const btc_wallet        = await createBTCAddress();
+  const eth_wallet        = await createETHAddress();
+  const trx_wallet        = await createTRXAddress();
+  const solana_wallet     = await createSolanaAddress();
+ 
+  // 1 BTC wallet 
+  storeWallet(email, btc_wallet.address, btc_wallet.privateKey,  btc_wallet.type, btc_wallet.symbol);
 
   // 2) INRX, ETH, BUSD,  BNB, SHIBA, MATIC
-  storeWallet(email, eth_wallet.address, eth_wallet.privateKey, "INRX", "INRX");
-  storeWallet(
-    email,
-    eth_wallet.address,
-    eth_wallet.privateKey,
-    "Etherium",
-    "ETH"
-  );
-  storeWallet(email, eth_wallet.address, eth_wallet.privateKey, "BUSD", "BUSD");
-  storeWallet(email, eth_wallet.address, eth_wallet.privateKey, "BNB", "BNB");
-  storeWallet(email, eth_wallet.address, eth_wallet.privateKey, "SHIB", "SHIB");
-  storeWallet(
-    email,
-    eth_wallet.address,
-    eth_wallet.privateKey,
-    "MATIC",
-    "MATIC"
-  );
-
-  // 3) USDT, TRX
-  storeWallet(email, trx_wallet.address, trx_wallet.privateKey, "USDT", "USDT");
-  storeWallet(email, trx_wallet.address, trx_wallet.privateKey, "TRON", "TRX");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "INRX", "INRX");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "Etherium", "ETH");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "BUSD", "BUSD");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "BNB", "BNB");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "SHIB", "SHIB");
+  storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "MATIC", "MATIC");
+  
+  // 3) USDT, TRX 
+  storeWallet(email, trx_wallet.address, trx_wallet.privateKey,  "USDT", "USDT");
+  storeWallet(email, trx_wallet.address, trx_wallet.privateKey,  "TRON", "TRX");
 
   // 4) SOLANA
-  storeWallet(
-    email,
-    solana_wallet.address,
-    solana_wallet.privateKey,
-    "SOLANA",
-    "SOL"
-  );
+  storeWallet(email, solana_wallet.address, solana_wallet.privateKey,  "SOLANA", "SOL");
+
 }
 
-async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol) {
-  try {
-    userWallet
-      .create({
-        email: email,
-        walletAddr: walletAddr,
-        privateKey: PrivateKey,
-        walleType: walleType,
-        symbol: symbol,
-      })
-      .then((data) => {
-        //console.log("currency stored");
-      })
-      .catch((err) => {
-        //console.log("Err in currency stored");
-      });
-  } catch (err) {
+async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol){
+  try{
+    userWallet.create({
+      email           : email,
+      walletAddr      : walletAddr,
+      privateKey      : PrivateKey,
+      walleType       : walleType,
+      symbol          : symbol
+    }).then((data) => {
+      //console.log("currency stored");
+    }).catch((err) => {
+      //console.log("Err in currency stored");
+    })
+  }catch(err){
     console.log("Error in storing user Wallet " + err);
   }
 }
@@ -1257,210 +1231,180 @@ function createDepositHistory(email, symbol, address, amount, balance) {
     return true;
   } catch (error) {
     return false;
-  }
+}
 }
 
 async function canUpdate(email) {
-  const transaction_history = require("../models/transaction_history");
-  try {
-    let last_deposit = await transaction_history
-      .findOne({ email: email })
-      .sort({ createdAt: -1 });
+const transaction_history = require('../models/transaction_history');
+try {
+    let last_deposit = await transaction_history.findOne({ email: email }).sort({ createdAt: -1 });
     if (last_deposit) {
-      let last_created = last_deposit.createdAt
-        ? last_deposit.createdAt
-        : undefined;
-      if (last_created) {
-        let d = new Date(last_created).getTime();
-        if (d) {
-          if (new Date().getTime() - d > 3000) {
-            return true;
-          } else {
-            return false;
-          }
+        let last_created = last_deposit.createdAt ? last_deposit.createdAt : undefined;
+        if (last_created) {
+            let d = new Date(last_created).getTime();
+            if (d) {
+                if (new Date().getTime() - d > 3000) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
+            }
         } else {
-          return true;
+            return true;
         }
-      } else {
-        return true;
-      }
     } else {
-      return true;
+        return true;
     }
-  } catch (error) {
-    console.log("error in canupdate: ", error.message);
+} catch (error) {
+    console.log("error in canupdate: ", error.message)
     return false;
+}
+}
+
+
+exports.settings = async (req, res) => {
+  const { email, task } = req.body;  
+  switch(task){
+    case "username" :
+          try{
+            await User.findOne({ username : req.body.username }).exec( async(err, data) => {
+                if(data){
+                  return res.status(200).json({
+                    status  :  -1,
+                    message : "Username Already Exits"                      
+                  });  
+                }else{
+                  await User.updateOne({ email: email }, { $set: { username : req.body.username, } }).then((data) => {
+                      return res.status(200).json({
+                        status  :  1,
+                        message : "Username updated successfully"                      
+                      });
+                    }).catch((err) => {
+                      return res.status(400).json({
+                        "status" : 0,
+                        "message " : "something went wrong"                         
+                      });
+                    })                 
+                }
+            })
+          }catch(err){
+              console.log("Error in Updating username " + err);
+          }
+      break;                          
+    case "contact" :
+          try{
+            await User.findOne({ contact_no : req.body.contact }).exec( async(err, data) => {
+                if(data){
+                  return res.status(200).json({
+                    status  :  -1,
+                    message : "Contact no. Already Exits"                      
+                  });  
+                }else{
+                  await User.updateOne({ email: email }, { $set: { contact_no : req.body.contact, } }).then((data) => {
+                    return res.status(200).json({
+                          status  :  1,
+                          message : "Contact no. updated successfully"   
+                      }).catch((err) => {
+                        return res.status(400).json({
+                          status  :  0,
+                          message : "something went wrong"                      
+                        });
+                      }) 
+                })
+              }
+            })
+          }catch(err){
+              console.log("Error in Updating Contact no.  " + err);
+          }
+          break;              
+    case "currency" :  
+          try{  
+                await User.updateOne({ email: email }, { $set: { currency : req.body.currency, } }).then((data) => {
+                    if(data){
+                      return res.status(200).json({
+                        status  :  1,
+                        message : "Currency updated successfully"                      
+                      });
+                    }                                       
+                  }).catch((error) => {                   
+                      return res.status(400).json({
+                        "status" : 0,
+                        "message " : "something went wrong"
+                      });                  
+                  }) 
+          }catch(err){
+              console.log("Error in Updating Currency " + err);
+          }
+          break;     
+    case "personal_information" :
+            try{            
+              const _user = await User.findOne({ email : email }); 
+              return res.status(200).json({
+                status : 1,
+                username : _user.username,
+                contact_no : _user.contact_no,
+                currency : _user.currency,
+                email : email
+              })
+            }catch(err){
+                console.log("Error in Personal Information " + err);
+            }
+            break; 
   }
 }
 
-exports.settings = async (req, res) => {
-  const { email, task } = req.body;
-  switch (task) {
-    case "username":
-      try {
-        await User.findOne({ username: req.body.username }).exec(
-          async (err, data) => {
-            if (data) {
-              return res.status(200).json({
-                status: -1,
-                message: "Username Already Exits",
-              });
-            } else {
-              await User.updateOne(
-                { email: email },
-                { $set: { username: req.body.username } }
-              )
-                .then((data) => {
-                  return res.status(200).json({
-                    status: 1,
-                    message: "Username updated successfully",
-                  });
-                })
-                .catch((err) => {
-                  return res.status(400).json({
-                    status: 0,
-                    "message ": "something went wrong",
-                  });
-                });
-            }
-          }
-        );
-      } catch (err) {
-        console.log("Error in Updating username " + err);
-      }
-      break;
-    case "contact":
-      try {
-        await User.findOne({ contact_no: req.body.contact }).exec(
-          async (err, data) => {
-            if (data) {
-              return res.status(200).json({
-                status: -1,
-                message: "Contact no. Already Exits",
-              });
-            } else {
-              await User.updateOne(
-                { email: email },
-                { $set: { contact_no: req.body.contact } }
-              ).then((data) => {
-                return res
-                  .status(200)
-                  .json({
-                    status: 1,
-                    message: "Contact no. updated successfully",
-                  })
-                  .catch((err) => {
-                    return res.status(400).json({
-                      status: 0,
-                      message: "something went wrong",
-                    });
-                  });
-              });
-            }
-          }
-        );
-      } catch (err) {
-        console.log("Error in Updating Contact no.  " + err);
-      }
-      break;
-    case "currency":
-      try {
-        await User.updateOne(
-          { email: email },
-          { $set: { currency: req.body.currency } }
-        )
-          .then((data) => {
-            if (data) {
-              return res.status(200).json({
-                status: 1,
-                message: "Currency updated successfully",
-              });
-            }
-          })
-          .catch((error) => {
-            return res.status(400).json({
-              status: 0,
-              "message ": "something went wrong",
-            });
-          });
-      } catch (err) {
-        console.log("Error in Updating Currency " + err);
-      }
-      break;
-    case "personal_information":
-      try {
-        const _user = await User.findOne({ email: email });
-        return res.status(200).json({
-          status: 1,
-          username: _user.username,
-          contact_no: _user.contact_no,
-          currency: _user.currency,
-          email: email,
-        });
-      } catch (err) {
-        console.log("Error in Personal Information " + err);
-      }
-      break;
-  }
-};
-
-exports.change_password = async (req, res) => {
-  try {
-    const old_password = req.body.old_password ? req.body.old_password : "";
-    const new_password = req.body.new_password ? req.body.new_password : "";
-    const hashPassword = await bcrypt.hash(new_password, 10);
-    const _user = await User.findOne({ email: email });
-    if (_user && _user.password) {
-      if (bcrypt.compareSync(old_password, _user.password)) {
-        // console.log("executed");
-        await User.updateOne(
-          { email: email },
-          { $set: { password: hashPassword } }
-        )
-          .then((data) => {
-            return res.json({
-              status: 1,
-              message: "Password changed successfully",
-            });
-          })
-          .catch((error) => {
+exports.change_password = async(req, res) => { 
+    try{
+      const old_password = req.body.old_password?req.body.old_password:"";
+      const new_password = req.body.new_password?req.body.new_password:"";           
+      const hashPassword = await bcrypt.hash(new_password, 10);
+      const _user = await User.findOne({ email : email }); 
+      if (_user && _user.password) {
+        if (bcrypt.compareSync(old_password, _user.password)) {
+         // console.log("executed");
+            await User.updateOne({ email : email }, { $set : { password : hashPassword } }).then((data) => {
+              return res.json({
+                      status: 1,
+                      message: "Password changed successfully"
+                  })           
+            }).catch((error) => {
+              return res.json({
+                        status: 0,
+                        message: "Something went wrong"
+                    })
+            })
+        }else{
             return res.json({
               status: 0,
-              message: "Something went wrong",
-            });
-          });
-      } else {
-        return res.json({
-          status: 0,
-          message: "Invalid password",
-        });
-      }
+              message: "Invalid password"
+          })
+        }
     }
-  } catch (err) {
-    console.log("Error in Change password " + err);
-  }
-};
+    }catch(err){
+        console.log("Error in Change password " + err);
+    }   
+}
 
 exports.login_activity = async (req, res) => {
   const {email} = req.body;
   try{  
       await User.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
         return res.status(200).json({
-          status: 1,
-          message: "Login activity updated successfully",
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          status: 0,
-          message: "Something went wrong",
-        });
-      });
-  } catch (err) {
-    console.log("Error in Updating Login activity" + err);
-  }
-};
-
+          status  :  1,
+          message : "Login activity updated successfully"                      
+        });                  
+        }).catch((error) => {
+          return res.status(400).json({
+            status  :  0,
+            message : "Something went wrong"                      
+          });
+        }) 
+    }catch(err){
+        console.log("Error in Updating Login activity" + err);
+    }
+}
 
 
 /*
@@ -1728,52 +1672,28 @@ exports.generateauthtoken = async (req, res)=>{
       const user = await User.findOne({ email : email });
       if (user) {
           try {
-              const google_auth = req.body.state?req.body.state:false;
-              // const {db} = await connectToDatabase(true);
-              // const s = await db.collection('settings').findOne({user_id: user});
+              const google_auth = req.body.state?req.body.state:false;             
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: email
                   });
-                  console.log(secret.ascii);
-                  return res.send(secret.ascii);
-                  await db.collection('settings').update(
-                      {user_id: user},
+                  // console.log(secret.ascii);             
+                  await User.updateOne(
+                      {email: email},
                       {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
+                        $set: {
                           google_authenticator_ascii: secret.ascii,
-                          google_authenticator: true,
-                      },
-                      { upsert: true }
-                  );
+                          google_authenticator: 1,
+                        },
+                      });
                   return res.json({
                       status: 1,
                       data: secret.otpauth_url,
                       key: secret.base32
                   })
               } else {
-                  await db.collection('settings').update(
-                      {user_id: user},
-                      {
-                          _id: s._id,
-                          user_id: user,
-                          affiliate_shield: s.affiliate_shield,
-                          profit_shield: s.profit_shield,
-                          voting_ticket: s.voting_ticket,
-                          transaction_password: s.transaction_password,
-                          activity_permission: s.activity_permission,
-                          google_authenticator_ascii: s.google_authenticator_ascii,
-                          google_authenticator: false
-                      },
-                      { upsert: true }
-                  );
+                await User.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1781,13 +1701,13 @@ exports.generateauthtoken = async (req, res)=>{
               })
           } catch (error) {
               return res.json({
-                  status: -5,
+                  status: 0,
                   msg: `Error: ${error.message}`
               })
           }
       } else {
           return res.json({
-              status: -4,
+              status: -5,
               msg: "Invalid API call*"
           })
       }
@@ -1799,21 +1719,87 @@ exports.generateauthtoken = async (req, res)=>{
   // }
 }
 
-exports.getAffiliates = async (req, res) => {
+exports.verifyauthtoken = async (req, res) =>{
+  const speakeasy = require("speakeasy");
+  const bcrypt = require('bcryptjs');
   try {
-    const userID = req.body.user_id;
-    const page = req.body.page ? req.body.page : 1;
-    const limit = req.body.limit ? req.body.limit : 10;
-    const skip = page * limit;
-    if (userID) {
-      const affiliates = await User.find({ refferal: userID });
-      if (affiliates && affiliates.length > 0) {
-        return res.status(200).json(affiliates);
+      const {email} = req.body; 
+      if (email) {
+          const token = req.body.token?req.body.token:false;
+          if (token) {            
+             const s = await User.find({ email : email  });
+             console.log(s[0].google_authenticator);
+              if (s && s[0].google_authenticator) {
+                  const verified = await speakeasy.totp.verify({
+                      secret: s.google_authenticator_ascii,
+                      encoding:  'ascii',
+                      token: token
+                  });
+                  if (verified) {
+                      const session_id = await bcrypt.hash(email, 2)+Date.now();                     
+                      return res.json({
+                          status: 1, 
+                          session_id: req.session.session_id,
+                          msg: "Login Successfull!"
+                      })
+                  } else {
+                      return res.json({
+                          status: 0,
+                          msg: 'Invalid Token'
+                      })
+                  }
+              } else {
+                  return res.json({
+                      status: 0,
+                      msg: 'Google 2FA is not activated'
+                  })
+              }    
+          } else {
+              return res.json({
+                  status: 0,
+                  msg: "Invalid API call"
+              })
+          }
+      } else {
+          return res.json({
+              status: -4,
+              msg: "Invalid API call**"
+          })
       }
-      return res.status(400).json({ message: "unable to find affiliates, you do not have any affiliate." });
-    }
-    return res.status(400).json({ message: "Invalid request." });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+      return res.json({
+          status: -5,
+          msg: `Error: ${error.message}`
+      })
   }
-};
+}
+
+exports.notificationSettings = async (req, res) => {
+  const settings = require('../models/settings');
+  try{
+    const { email, unusual_activity, new_browser, sales, new_features, tips } = req.body;   
+    await settings.updateOne({ email : email }, { $set : { 
+      unusual_activity : unusual_activity,
+      new_browser      : new_browser,
+      sales            : sales,
+      latest_news      : sales,
+      new_features     : new_features,
+      updates          : new_features,
+      tips             : tips
+     } }).then((data) => {
+       //console.log("updated");
+       return res.status(200).json({
+         status : 1,
+         message : "Notification updated successfully"
+       })
+     }).catch((error) => {
+      return res.status(400).json({
+        status : 0,
+        message : "Something went wrong"
+      })
+     })
+  }catch(error){
+    console.log("Error in notification settings" + error);
+  }
+}
+

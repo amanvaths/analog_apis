@@ -37,8 +37,8 @@ const userSchema = new mongoose.Schema(
     isVarify: { type: Number, default: 0 },
     login_activity : { type : Number },
     currency : { type: String, default: "USDT" },
-    // google_authenticator_ascii: secret.ascii,
-    // google_authenticator: true,
+    google_authenticator_ascii: { type: String },
+    google_authenticator: { type: Number },
   },
   { timestamps: true }
 );

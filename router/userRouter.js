@@ -15,6 +15,9 @@ const {
   updateSetting,
   change_password,
   login_activity,
+  generateauthtoken,
+  verifyauthtoken,
+  notificationSettings,
   getAffiliates,
   generateauthtoken
 } = require("../Controller/user");
@@ -45,8 +48,9 @@ router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
 router.post('/getAffiliates', getAffiliates);
 router.post('/generateauthtoken', generateauthtoken);
-// router.post('/settings', settings);
+ router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
+router.post('/notificationSettings', notificationSettings);
 
 
 /**
