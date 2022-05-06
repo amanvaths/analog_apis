@@ -37,6 +37,7 @@ exports.createOrder = async (req, res)=> {
     const wallet = require("../models/userWallet");
     try {
       const { amount, raw_price,  currencyType, compairCurrency, email } = req.body;
+      console.log( req.body)
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
         const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
@@ -44,15 +45,15 @@ exports.createOrder = async (req, res)=> {
         req.body.base_currency=req.body.currencyType.toLowerCase();
         const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
         const price_in_inr = cmcdata.TRX.quote.INR.price;
-        console.log(currencyT.balance)
-        console.log(currencyT.compairC)
-        console.log(currencyT.currencyT)
+        
 
-        if(currencyT && compairC && currencyT.balance >= amount ) {
-                let compairVal = mul(raw_price,amount);
-                // console.log("raw_price",raw_price)
-                // console.log("compare_rpu",compairVal)
-                let CTbalance = sub(currencyT.balance, amount) > 0 ?sub(currencyT.balance, amount):0; 
+        const ANA_price =10;
+        const one_ANA_in=ANA_price/price_in_inr;
+        let compairVal = mul(one_ANA_in,raw_price);
+       
+        if(currencyT.balance >= compairVal ) {
+              
+                let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
                 let CCbalance = add(compairC.balance, compairVal);
                 await wallet.updateOne({_id:currencyT._id},{
                     $set:{
@@ -74,7 +75,7 @@ exports.createOrder = async (req, res)=> {
             return res.json({
                 status: 400,
                 error: true,
-                message: "Invalid Request",
+                message: "Insufficient "+req.body.currencyType+" Balance",
               });
         }    
         
