@@ -81,12 +81,12 @@ exports.createOrder = async (req, res)=> {
   exports.getAllOrder = async(req, res) => {
     const Order = require("../models/order")
     try{
-      const { query } = req.query
-      // console.log("quary", req.quary)
-      // const page = quary.page
-      // const per_page = quary.per_page
-      // delete quary.page
-      // delete quary.per_page
+      const query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
+      // console.log("quary", query)
       const order = await Order.find({query})
       return res.json({
         status: 200,
@@ -108,11 +108,11 @@ exports.createOrder = async (req, res)=> {
   exports.depositHestory = async(req, res) => {
     const Transaction = require("../models/transaction_history")
     try{
-      const { query } = req.query
-      // const page = parems.page
-      // const per_page = parems.per_page
-      // delete quary.page
-      // delete quary.per_page
+      const query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const transaction = await Transaction.find({query})
       return res.json({
         status: 200,
@@ -135,7 +135,11 @@ exports.createOrder = async (req, res)=> {
   exports.levelIncomeHistory = async(req, res) => {
     const Transaction = require("../models/transaction_history")
     try{
-      const { query } = rew.query
+      const  query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const transaction = await Transaction.find(query)
       return res.json({
         status: 200,
@@ -157,8 +161,11 @@ exports.createOrder = async (req, res)=> {
   exports.getUser = async(req, res) => {
     const User = require("../models/user")
     try{
-      const { query } = req.query
-      console.log(req.query)
+      const  query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
       const user = await User.find(query)
       return res.json({
         status: 200,
