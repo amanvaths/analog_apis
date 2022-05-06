@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema(
     currency : { type: String, default: "USDT" },
     google_authenticator_ascii: { type: String },
     google_authenticator: { type: Number },
+    affilites_wallet : { type: Number, default: 0 },
+    bounty_wallet : { type: Number, default: 0 },
+    airdrop_wallet : { type: Number, default: 0 },
+    inherited_wallet : { type: Number, default: 0 },
+    handout_wallet : { type: Number, default: 0 },
+    inceptive_wallet : { type: Number, default: 0 },
   },
   { timestamps: true }
 );

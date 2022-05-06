@@ -1710,9 +1710,9 @@ exports.generateauthtoken = async (req, res)=>{
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
-                      name: email
-                  });
-                  // console.log(secret.ascii);             
+                      name: user.user_id
+                  });                 
+                
                   await User.updateOne(
                       {email: email},
                       {
@@ -1759,51 +1759,61 @@ exports.verifyauthtoken = async (req, res) =>{
   try {
       const {email} = req.body; 
       if (email) {
-          const token = req.body.token?req.body.token:false;
+          const token = req.body.token?req.body.token:false;        
+
           if (token) {            
-             const s = await User.find({ email : email  });
-             console.log(s[0].google_authenticator);
-              if (s && s[0].google_authenticator) {
+             const s = await User.find({ email : email  });           
+             /**
+              *  To generate token 
+             */
+            //  var token1 = speakeasy.totp({
+            //   secret: s[0].google_authenticator_ascii,
+            //   encoding: 'ascii'
+            // });
+            //   console.log(token1);
+
+            /** end generate token  */
+       
+              if (s && s[0].google_authenticator) {               
                   const verified = await speakeasy.totp.verify({
-                      secret: s.google_authenticator_ascii,
+                      secret: s[0].google_authenticator_ascii,
                       encoding:  'ascii',
                       token: token
-                  });
-                  if (verified) {
-                      const session_id = await bcrypt.hash(email, 2)+Date.now();                     
+                  });                 
+                  if (verified) {                                          
                       return res.json({
-                          status: 1, 
-                          session_id: req.session.session_id,
-                          msg: "Login Successfull!"
+                          status : 1, 
+                          email  : email,
+                          message: "Login Successfull!"
                       })
                   } else {
                       return res.json({
                           status: 0,
-                          msg: 'Invalid Token'
+                          message: 'Invalid Token'
                       })
                   }
               } else {
                   return res.json({
                       status: 0,
-                      msg: 'Google 2FA is not activated'
+                      message: 'Google 2FA is not activated'
                   })
               }    
           } else {
               return res.json({
                   status: 0,
-                  msg: "Invalid API call"
+                  message: "Invalid API call"
               })
           }
       } else {
           return res.json({
               status: -4,
-              msg: "Invalid API call**"
+              message: "Invalid API call**"
           })
       }
   } catch (error) {
       return res.json({
           status: -5,
-          msg: `Error: ${error.message}`
+          message: `Error: ${error.message}`
       })
   }
 }
@@ -1840,7 +1850,7 @@ exports.notificationSettings = async (req, res) => {
 exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
-    const refferal = await findRefferalCode(email);      
+    const refferal = await findUserId(email);      
     const page = req.body.page ? req.body.page : 1;
     const limit = req.body.limit ? req.body.limit : 10;
     const skip = page * limit;
@@ -1857,7 +1867,46 @@ exports.getAffiliates = async (req, res) => {
   }
 };
 
-async function findRefferalCode(email){
+async function findUserId(email){
   const refferalCode = await User.findOne({ email : email });
   return refferalCode.user_id;
+}
+
+exports.whitelisted_ip = async (req, res) => {
+  try{
+    const { email, ip, } = req.body;
+    const _user = await User.findOne({ email : email });
+    if(_user && ip){
+      const whitelistedIpModel = require('../models/whitelisted_ip'); 
+        await whitelistedIpModel.create({
+          email :  email,
+          user_id : _user.user_id,
+          ip : ip
+        }).then((data) => {
+           return res.status(200).json({ message : "IP added successfully" });
+        }).catch((error) => {
+          return res.status(400).json({ message : "something went wrong" });
+        })
+    }
+
+  }catch(error){
+    console.log("Error in Whitelisted ips" + error);
+  }
+}
+
+
+exports.get_whitelisted_ip = async (req, res) => {
+  try{
+    const { email } = req.body;  
+    if(email){
+      const whitelistedIpModel = require('../models/whitelisted_ip');            
+      await whitelistedIpModel.find({ email : email }).then((data) => {
+           return res.status(200).json({ data });
+        }).catch((error) => {
+          return res.status(400).json({ message : "something went wrong" });
+        })
+    }
+  }catch(error){
+    console.log("Error in Whitelisted ips" + error);
+  }
 }

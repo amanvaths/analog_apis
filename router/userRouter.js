@@ -19,7 +19,9 @@ const {
   verifyauthtoken,
   notificationSettings,
   getAffiliates,
-  generateauthtoken
+  generateauthtoken,
+  whitelisted_ip,
+  get_whitelisted_ip
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -51,7 +53,8 @@ router.post('/generateauthtoken', generateauthtoken);
  router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
-
+router.post('/whitelisted_ip', whitelisted_ip);
+router.get('/get_whitelisted_ip',get_whitelisted_ip);
 
 /**
  * Admin Routes
