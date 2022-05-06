@@ -34,7 +34,7 @@ router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
-router.get("/getCoinData", getCMCData);
+router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
 router.post('/loginhistory', loginhistory);
@@ -81,7 +81,7 @@ async function getCMCData(req, res) {
       "sol",
     ];
     var coin_symbols = query_coin_symbol_array.join(",");
-    var conver_currency = "usd";
+    var conver_currency = req.body.currency ? req.body.currency : "usd";
     const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
     const ress = await axios.get(final_third_party_api_url, {
       headers: {
