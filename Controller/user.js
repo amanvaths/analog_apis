@@ -12,6 +12,7 @@ const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
 const login_history = require("../models/login_history");
 const session = require("express-session");
+const { findOne } = require("../models/user");
 const url = 'http://localhost:3001';
 app.use(
   session({
@@ -1390,13 +1391,13 @@ exports.settings = async (req, res) => {
 
 exports.change_password = async(req, res) => { 
     try{
+      const { email } = req.body;
       const old_password = req.body.old_password?req.body.old_password:"";
       const new_password = req.body.new_password?req.body.new_password:"";           
       const hashPassword = await bcrypt.hash(new_password, 10);
       const _user = await User.findOne({ email : email }); 
       if (_user && _user.password) {
-        if (bcrypt.compareSync(old_password, _user.password)) {
-         // console.log("executed");
+        if (bcrypt.compareSync(old_password, _user.password)) {     
             await User.updateOne({ email : email }, { $set : { password : hashPassword } }).then((data) => {
               return res.json({
                       status: 1,
@@ -1838,12 +1839,13 @@ exports.notificationSettings = async (req, res) => {
 
 exports.getAffiliates = async (req, res) => {
   try {
-    const userID = req.body.user_id;
+    const { email } = req.body;
+    const refferal = await findRefferalCode(email);      
     const page = req.body.page ? req.body.page : 1;
     const limit = req.body.limit ? req.body.limit : 10;
     const skip = page * limit;
-    if (userID) {
-      const affiliates = await User.find({ refferal: userID });
+    if (refferal) {
+      const affiliates = await User.find({ refferal });
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
@@ -1854,3 +1856,8 @@ exports.getAffiliates = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+async function findRefferalCode(email){
+  const refferalCode = await User.findOne({ email : email });
+  return refferalCode.user_id;
+}
