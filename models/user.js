@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
     wallet_balance: { type: Number, default: 0 },
     otp: { type: Number, default: 0 },
     isVarify: { type: Number, default: 0 },
-    login_activity : { type : Number },
+    login_activity : { type : Number, default: 0 },
     currency : { type: String, default: "USDT" },
     google_authenticator_ascii: { type: String },
     google_authenticator: { type: Number },

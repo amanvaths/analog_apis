@@ -12,6 +12,7 @@ const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
 const login_history = require("../models/login_history");
 const session = require("express-session");
+const url = 'http://localhost:3001';
 app.use(
   session({
     secret: "thisissecratekey",
@@ -68,11 +69,10 @@ async function sendMail(email, subject, message) {
 function emailTemplate(user, msg) {
   const template = `
   <html>
- <head>
-    
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/dashlite.css?ver=3.0.2" />
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/theme.css?ver=3.0.2">
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/style-email.css" />
+ <head>    
+     <link rel="stylesheet" href="${url}/assets/css/dashlite.css?ver=3.0.2" />
+     <link rel="stylesheet" href="${url}/assets/css/theme.css?ver=3.0.2">
+     <link rel="stylesheet" href="${url}/assets/css/style-email.css" />
  </head>
  <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
     
@@ -85,7 +85,7 @@ function emailTemplate(user, msg) {
                                       <tr>
                                           <td class="text-center pb-4">
                                               <a href="#">
-                                                  <img class="email-logo" src="http://localhost:3000/images/logo-dark.png" alt="logo">
+                                                  <img class="email-logo" src="${url}/images/logo-dark.png" alt="logo">
                                                  </a>
                                                  <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
                                              </td>
@@ -95,8 +95,7 @@ function emailTemplate(user, msg) {
                                  <table class="email-body">
                                      <tbody>
                                          <tr>
-                                             <td class="p-3 p-sm-5">
-                                                 <p><strong>Hello ${user}</strong>,</p>
+                                             <td class="p-3 p-sm-5">                                                
                                                  <p>
                                                     ${msg}                                                
                                                  </p>                                                  
@@ -115,12 +114,12 @@ function emailTemplate(user, msg) {
                                              <td class="text-center pt-4">
                                                  <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
                                                  <ul class="email-social">
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/facebook.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/twitter.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/youtube.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/medium.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="${url}/images/socials/facebook.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="${url}/images/socials/twitter.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="${url}/images/socials/youtube.png" alt=""></a></li>
+                                                     <li><a href="#"><img src="${url}/images/socials/medium.png" alt=""></a></li>
                                                  </ul>
-                                                 <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="http://localhost:3000">analog.com</a>. 
+                                                 <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${url}">analog.com</a>. 
                                                  </p>
                                              </td>
                                          </tr>
@@ -271,8 +270,8 @@ exports.signin = async (req, res) => {
           });
         }
         if (user) {
-          console.log(user);
-          const { _id, email, password, isVarify } = user;
+          //console.log(user);
+          const { _id, email, password, isVarify, username, login_activity } = user;
 
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
@@ -283,54 +282,66 @@ exports.signin = async (req, res) => {
             }
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
               expiresIn: "1h",
-            });
+            });    
 
-            // browser name
-            ua = req.headers["user-agent"];
-            const deviceDetector = new DeviceDetector();
-            const userAgent = ua;
-            const device = deviceDetector.parse(userAgent);
-            console.log(device.client.name);
-            // browser name
+                      // browser name
+                      ua = req.headers["user-agent"];
+                      const deviceDetector = new DeviceDetector();
+                      const userAgent = ua;
+                      const device = deviceDetector.parse(userAgent);
+                      console.log(device.client.name);
+                      // browser name
 
-            // **  login history
-            let ip =
-              (req.headers["x-forwarded-for"] || "").split(",")[0] ||
-              req.connection.remoteAddress;
-            //let device          = req.headers['user-agent'];
-            let br = req.headers["sec-ch-ua"];
-            let brr = br ? br.split(",") : "";
-            //let browser_name    = brr?brr[0].split(';')[0]:"";
-            const browser_name = device.client.name;
-            //browser_name        = browser_name?browser_name.substr(1, browser_name.length-2):"";
-            let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
-            browser_version = browser_version
-              ? browser_version.substr(1, browser_version.length - 2)
-              : "";
-            console.log(
-              ip +
-                " =ip" +
-                "device= " +
-                device +
-                " browser_name= " +
-                browser_version
-            );
-            try {
-              const _login_history = new login_history({
-                email: email,
-                request_address: ip,
-                request_device: device.device.type,
-                browser_name: browser_name,
-                browser_version: device.device.version,
-              });
-              _login_history.save();
-            } catch (error) {
-              console.log("error = " + error);
-            }
+                      // **  login history
+                      let ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;       
+                      let br = req.headers["sec-ch-ua"];
+                      let brr = br ? br.split(",") : "";           
+                      const browser_name = device.client.name;          
+                      let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
+                      browser_version = browser_version ? browser_version.substr(1, browser_version.length - 2) : "";
+                    // console.log(ip + "=ip" + "device= " + device + " browser_name= " + browser_version);
+                   // console.log(login_activity + " login activity");
+                    if(login_activity == 1){
+                      try {
+                        await login_history.create({
+                          email: email,
+                          request_address: ip,
+                          request_device: device.device.type,
+                          browser_name: browser_name,
+                          browser_version: device.device.version,
+                        });                       
+                      } catch (error) {
+                        console.log("error = " + error);
+                      }
+                    }
     // **  login history  end -----------------  */ 
 
            session.userid=_id;
-           session.email = email;                   
+           session.email = email;  
+
+           const notificationModel = require('../models/settings');
+           const notification = await notificationModel.findOne({ email : email });             
+           const login_ip = await login_history.count({ email : email, request_address : ip });
+          // console.log(login_ip);
+           if(notification.unusual_activity == 1 && login_ip ==0 ){
+              var subject = "Unusual login in Analog Account";
+              var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
+              Browser Name : ${browser_name} <br>
+              IP : ${ip} <br>
+              If it's not you please change your password.</h5>`;
+              sendMail(email, subject, msg);
+           }
+
+           const login_browser = await login_history.count({ email : email, new_browser : browser_name });
+           if(notification.new_browser == 1 && login_browser == 0){
+            var subject = "Login with New browser in Analog Account";
+            var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
+            Browser Name : ${browser_name} <br>
+            IP : ${ip} <br>
+            If it's not you please change your password.</h5>`;
+            sendMail(email, subject, msg);            
+         }
+
 
             res.status(200).json({
               status: 1,
@@ -436,7 +447,7 @@ exports.forgetPassword = async (req, res) => {
           if (user) {
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
-            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='http://localhost:3000/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
+            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
               email: req.body.email,
@@ -877,13 +888,11 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "TRX",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory(email, "TRX", wallet[0].walletAddr, new_transaction, new_w_balance );          
+
+                   var subject = "New TRX Transaction";
+                   var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} TRX deposited in your account`;            
+                   sendMail(email, subject, msg);                 
               }
             }
           }
@@ -932,6 +941,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New ETH Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} ETH deposited in your account`;            
+                sendMail(email, subject, msg);  
               }
             }
           }
@@ -980,6 +993,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New BNB Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BNB deposited in your account`;            
+                sendMail(email, subject, msg); 
               }
             }
           }
@@ -1028,6 +1045,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New MATIC Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} MATIC deposited in your account`;            
+                sendMail(email, subject, msg); 
               }
             }
           }
@@ -1083,6 +1104,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New USDT Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} USDT deposited in your account`;            
+                sendMail(email, subject, msg); 
               }
             }
           }
@@ -1138,6 +1163,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New BUSD Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BUSD deposited in your account`;            
+                sendMail(email, subject, msg); 
               }
             }
           }
@@ -1193,6 +1222,10 @@ exports.transaction_update = async (req, res) => {
                   new_transaction,
                   new_w_balance
                 );
+
+                var subject = "New SHIB Transaction";
+                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} SHIB deposited in your account`;            
+                sendMail(email, subject, msg); 
               }
             }
           }
@@ -1803,3 +1836,21 @@ exports.notificationSettings = async (req, res) => {
   }
 }
 
+exports.getAffiliates = async (req, res) => {
+  try {
+    const userID = req.body.user_id;
+    const page = req.body.page ? req.body.page : 1;
+    const limit = req.body.limit ? req.body.limit : 10;
+    const skip = page * limit;
+    if (userID) {
+      const affiliates = await User.find({ refferal: userID });
+      if (affiliates && affiliates.length > 0) {
+        return res.status(200).json(affiliates);
+      }
+      return res.status(400).json({ message: "unable to find affiliates, you do not have any affiliate." });
+    }
+    return res.status(400).json({ message: "Invalid request." });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
