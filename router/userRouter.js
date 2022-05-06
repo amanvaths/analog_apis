@@ -15,16 +15,17 @@ const {
   updateSetting,
   change_password,
   login_activity,
-  generateauthtoken,
+  // generateauthtoken,
   verifyauthtoken,
   notificationSettings,
-  getAffiliates,  
+  //getAffiliates,
+  generateauthtoken
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
-const { createOrder } = require('../Controller/BuySell');
+const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet } = require('../Controller/BuySell');
 
 /**
  user Routes
@@ -37,7 +38,7 @@ router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
-router.get("/getCoinData", getCMCData);
+router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
 router.post('/loginhistory', loginhistory);
@@ -45,7 +46,7 @@ router.post('/levels', levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
-router.post('/getAffiliates', getAffiliates);
+// router.post('/getAffiliates', getAffiliates);
 router.post('/generateauthtoken', generateauthtoken);
  router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
@@ -75,6 +76,14 @@ router.get('/getpresalebyid', getpresalebyid);
  */
 
  router.post('/order', createOrder);
+ router.get('/getAllOrder', getAllOrder);
+ router.get('/depositHestory', depositHestory);
+ router.get('/getUser', getUser);
+ router.post('/addColdWallet', addColdWallet);
+ router.get('/getColdWallet', getColdWallet);
+
+
+
 
 
 async function getCMCData(req, res) {
@@ -90,8 +99,8 @@ async function getCMCData(req, res) {
       "matic",
       "sol",
     ];
-    var coin_symbols = query_coin_symbol_array.join(",");
-    var conver_currency = "usd";
+    var coin_symbols = req.body.base_currency ? req.body.base_currency : query_coin_symbol_array.join(",");
+    var conver_currency = req.body.currency ? req.body.currency : "usd";
     const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
     const ress = await axios.get(final_third_party_api_url, {
       headers: {
