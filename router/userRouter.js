@@ -15,6 +15,9 @@ const {
   updateSetting,
   change_password,
   login_activity,
+  generateauthtoken,
+  verifyauthtoken,
+  notificationSettings,
   getAffiliates,
   generateauthtoken
 } = require("../Controller/user");
@@ -22,6 +25,7 @@ const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
+const { createOrder, getAllOrder } = require('../Controller/BuySell');
 
 /**
  user Routes
@@ -44,8 +48,9 @@ router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
 router.post('/getAffiliates', getAffiliates);
 router.post('/generateauthtoken', generateauthtoken);
-// router.post('/settings', settings);
+ router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
+router.post('/notificationSettings', notificationSettings);
 
 
 /**
@@ -64,6 +69,14 @@ router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
 
+
+
+/**
+ * order
+ */
+
+ router.post('/order', createOrder);
+ router.get('/getAllOrder', getAllOrder);
 
 
 

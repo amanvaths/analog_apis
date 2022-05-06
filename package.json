@@ -13,6 +13,7 @@
     "@solana/web3.js": "^1.41.1",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "bitcore-lib": "^8.25.25",
     "cors": "^2.8.5",
     "device-detector-js": "^3.0.3",
