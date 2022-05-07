@@ -847,80 +847,69 @@ exports.transaction_update = async (req, res) => {
   if (email) {
     let go = await canUpdate(email);
     if (go) {
-      var walletETH = await userWallet.find({ email: email, symbol: "ETH" });
-      var walletTRX = await userWallet.find({ email: email, symbol: "TRX" });
-      var walletBNB = await userWallet.find({ email: email, symbol: "BNB" });
-      var walletMATIC = await userWallet.find({
-        email: email,
-        symbol: "MATIC",
-      });
-      var walletUSDT = await userWallet.find({ email: email, symbol: "USDT" });
-      var walletBUSD = await userWallet.find({ email: email, symbol: "BUSD" });
-      var walletSHIB = await userWallet.find({ email: email, symbol: "SHIB" });
+      var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
+      var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
+      var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
+      var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC",});
+      var walletUSDT    = await userWallet.findOne({ email: email, symbol: "USDT" });
+      var walletBUSD    = await userWallet.findOne({ email: email, symbol: "BUSD" });
+      var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
 
-      if (walletTRX && walletTRX[0].symbol == "TRX") {
+      if (walletTRX && walletTRX.symbol == "TRX") {
         console.log("TRX");
         try {
           let wallet = walletTRX;
           const decimal = 1e6;
-          let trx_balance = await tronWeb.trx.getBalance(
-            walletTRX[0].walletAddr
-          );
+          let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
           console.log(trx_balance / decimal + " TRX balance");
           const balance = trx_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;           
             const new_w_balance = balance;
             /**
              * update user's wallet
              */
-            if (new_w_balance != w_balance) {
+        
+
               await userWallet.updateOne(
                 { email: email, symbol: "TRX" },
                 {
                   $set: {
                     balance: new_w_balance,
-                    old_balanace: w_balance,
+                    v_balanace: w_balance,
                   },
                 }
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(email, "TRX", wallet[0].walletAddr, new_transaction, new_w_balance );          
+                createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
 
                    var subject = "New TRX Transaction";
-                   var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} TRX deposited in your account`;            
+                   var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
                    sendMail(email, subject, msg);                 
-              }
-            }
+              }         
           }
         } catch (err) {
           console.log("Error in getting TRX balance " + err);
         }
       }
 
-      if (walletETH && walletETH[0].symbol == "ETH") {
+      if (walletETH && walletETH.symbol == "ETH") {
         console.log("ETH");
         try {
           let wallet = walletETH;
           const decimal = 1e18;
-          let eth_balance = await web3Eth.eth.getBalance(
-            walletETH[0].walletAddr
-          );
+          let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
           console.log(eth_balance / decimal + " ETH balance");
           const balance = eth_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -937,16 +926,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "ETH",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New ETH Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} ETH deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} ETH deposited in your account`;            
                 sendMail(email, subject, msg);  
               }
             }
@@ -956,23 +939,19 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletBNB && walletBNB[0].symbol == "BNB") {
+      if (walletBNB && walletBNB.symbol == "BNB") {
         console.log("BNB");
         try {
           let wallet = walletBNB;
           const decimal = 1e18;
-          const bnb_balance = await web3Bnb.eth.getBalance(
-            walletBNB[0].walletAddr
-          );
+          const bnb_balance = await web3Bnb.eth.getBalance(walletBNB.walletAddr);
           console.log(bnb_balance / decimal + " BNB balance");
           const balance = bnb_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -989,16 +968,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "BNB",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New BNB Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BNB deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BNB deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1008,23 +981,21 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletMATIC && walletMATIC[0].symbol == "MATIC") {
+      if (walletMATIC && walletMATIC.symbol == "MATIC") {
         console.log("MATIC");
         try {
           let wallet = walletMATIC;
           const decimal = 1e18;
-          const matic_balance = await web3Matic.eth.getBalance(
-            wallet[0].walletAddr
-          );
+          console.log(wallet.walletAddr);
+          const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
           console.log(matic_balance / decimal + " Matic balance");
           const balance = matic_balance / decimal;
+
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1041,16 +1012,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "MATIC",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "MATIC", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New MATIC Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} MATIC deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} MATIC deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1060,18 +1025,14 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletUSDT && walletUSDT[0].symbol == "USDT") {
+      if (walletUSDT && walletUSDT.symbol == "USDT") {
         console.log("USDT");
         try {
           let wallet = walletUSDT;
           const decimal = 1e6;
-          tronWeb.setAddress(wallet[0].walletAddr);
-          const instance = await tronWeb
-            .contract()
-            .at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-          const hex_balance = await instance
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          tronWeb.setAddress(wallet.walletAddr);
+          const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+          const hex_balance = await instance.balanceOf(wallet.walletAddr).call();
           const usdt_balance = Number(hex_balance._hex);
 
           if (usdt_balance > 0) {
@@ -1080,9 +1041,7 @@ exports.transaction_update = async (req, res) => {
              */
 
             let balance = usdt_balance ? usdt_balance / decimal : 0;
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1100,16 +1059,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "USDT",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "USDT", wallet.walletAddr, new_transaction, new_w_balance );
 
                 var subject = "New USDT Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} USDT deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} USDT deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1119,18 +1072,13 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletBUSD && walletBUSD[0].symbol == "BUSD") {
+      if (walletBUSD && walletBUSD.symbol == "BUSD") {
         console.log("BUSD");
         try {
           let wallet = walletBUSD;
-          var contract = new web3Bnb.eth.Contract(
-            dex,
-            "0x1004f1CD9e4530736AadC051a62b0992c198758d"
-          );
+          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d");
           const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
           console.log("Bal: ", bal);
           let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
 
@@ -1159,16 +1107,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "BUSD",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "BUSD", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New BUSD Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BUSD deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BUSD deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1178,18 +1120,14 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletSHIB && walletSHIB[0].symbol == "SHIB") {
+      if (walletSHIB && walletSHIB.symbol == "SHIB") {
         console.log("SHIB");
         try {
           let wallet = walletSHIB;
-          var contract = new web3Bnb.eth.Contract(
-            dex,
-            "0x1004f1CD9e4530736AadC051a62b0992c198758d"
+          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d"
           );
           const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
           console.log("Bal: ", bal);
           let shib_balance = bal ? bal / Number(`1e${decimal}`) : 0;
 
@@ -1198,9 +1136,7 @@ exports.transaction_update = async (req, res) => {
              * check for w balance
              */
             let balance = shib_balance ? shib_balance / decimal : 0;
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet[0].balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1218,16 +1154,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "SHIB",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "SHIB", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New SHIB Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} SHIB deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} SHIB deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1879,10 +1809,12 @@ exports.add_whitelisted_ip = async (req, res) => {
           user_id : _user.user_id,
           ip : ip
         }).then((data) => {
-           return res.status(200).json({ message : "IP added successfully" });
+           return res.status(200).json({ status:1, message : "IP added successfully" });
         }).catch((error) => {
-          return res.status(400).json({ message : "something went wrong" });
+          return res.status(400).json({ status:0, message : "something went wrong" });
         })
+    }else{
+      return res.status(400).json({ status:0, message : "Invalid User" });
     }
 
   }catch(error){
@@ -1899,7 +1831,7 @@ exports.get_whitelisted_ip = async (req, res) => {
       await whitelistedIpModel.find({ email : email }).then((data) => {
            return res.status(200).json({ data });
         }).catch((error) => {
-          return res.status(400).json({ message : "something went wrong" });
+          return res.status(400).json({ status:0, message : "something went wrong" });
         })
     }
   }catch(error){
@@ -1913,10 +1845,10 @@ exports.removeWhiteListedIp = async (req, res) => {
     const { _id } = req.body;
     console.log(_id);
     await whitelisted_ip_model.deleteOne({ _id : _id }).then((data) => {
-      return res.status(200).json({ message : "Deleted successfully" });
+      return res.status(200).json({ status:1, message : "Deleted successfully" });
     }).catch((error) => {
       console.log("Error in removing whitelisted ip " + error)
-      return res.status(400).json({ message : "Something went wrong" })      
+      return res.status(400).json({ status:0,  message : "Something went wrong" })      
     })
   }catch(error){
     console.log("Error in remove whitelisted ip " + error);
