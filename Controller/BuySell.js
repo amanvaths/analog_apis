@@ -43,33 +43,33 @@ exports.createOrder = async (req, res)=> {
     try {
       const { amount, currencyType, compairCurrency, email } = req.body;
       let quantity=req.body.raw_price;
-      console.log( req.body)
+      // console.log( req.body)
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
         const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
-        const presale = Presale.findOne({createdAt: 1, coinremaining: {$gte: quantity}})
+        const presale = await Presale.findOne({status: 1})
         req.body.currency="inr";
         req.body.base_currency=req.body.currencyType.toLowerCase();
         const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
         const price_in_inr = cmcdata.TRX.quote.INR.price;
-        
+        console.log("presale", presale)
 
-        const ANA_price =10;
+        const ANA_price = presale.price;
         const one_ANA_in=ANA_price/price_in_inr;
         let compairVal = mul(one_ANA_in,quantity);
-        console.log(req.body)
+        // console.log(req.body)
         if(currencyT.balance >= compairVal ) {
           
                 let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
                 let CCbalance = add(compairC.balance, compairVal);
                 await wallet.updateOne({_id:currencyT._id},{
                     $set:{
-                        balance:CTbalance
+                        balance: CTbalance
                     }
                 })
-                await presale.updateOne({createdAt:1,},{
+                await Presale.updateOne({_id: presale._id },{
                     $set:{
-                      coinremaining:CTbalance
+                      coinremaining: presale.coinremaining - amount
                     }
                 })
                 await wallet.updateOne({_id:compairC._id},{
@@ -485,4 +485,5 @@ exports.createOrder = async (req, res)=> {
     }
   }
   
+
 
