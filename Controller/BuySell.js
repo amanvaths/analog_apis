@@ -37,7 +37,7 @@ async function getCMCData(base_currency=false, currency=false) {
     return false;
   }
 }
-exports.createOrder = async (req, res)=> {
+exports.createOrder = async (req, res)=> { 
     const wallet = require("../models/userWallet");
     const Presale = require("../models/presale");
     try {
