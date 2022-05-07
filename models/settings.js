@@ -12,7 +12,7 @@ const settingsSchema = new mongoose.Schema(
     tips                     : { type: Number, default: 0 },  
     google_authenticator_ascii  : { type: String },
     google_authenticator        : { type: Number, default: 0 },
-    login_activity           : { type : Number, default: 0 },
+    login_activity           : { type : Number, default: 1 },
   },
   { timestamps: true }
 );

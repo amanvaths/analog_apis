@@ -30,6 +30,8 @@ const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getreferal } = require('../Controller/BuySell');
+const { userDeposit } = require('../Controller/userDeposit');
+
 
 /**
  user Routes
@@ -95,7 +97,10 @@ router.get('/getpresalebyid', getpresalebyid);
  router.get('/userAllRecords', userAllRecords);
 
 
-
+/**
+user Deposits
+ */
+router.post('/userDeposit', userDeposit);
 
 
 

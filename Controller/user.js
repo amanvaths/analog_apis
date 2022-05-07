@@ -850,7 +850,7 @@ exports.transaction_update = async (req, res) => {
       var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
       var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
       var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
-      var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC",});
+      var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC"});
       var walletUSDT    = await userWallet.findOne({ email: email, symbol: "USDT" });
       var walletBUSD    = await userWallet.findOne({ email: email, symbol: "BUSD" });
       var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
@@ -867,13 +867,14 @@ exports.transaction_update = async (req, res) => {
             /**
              * check for w balance
              */
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;           
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
+            const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
             const new_w_balance = balance;
+            const updated_balance = new_w_balance ;
             /**
              * update user's wallet
-             */
-        
-
+             */ 
+             if (new_w_balance != w_balance) {
               await userWallet.updateOne(
                 { email: email, symbol: "TRX" },
                 {
@@ -892,6 +893,7 @@ exports.transaction_update = async (req, res) => {
                    sendMail(email, subject, msg);                 
               }         
           }
+        }
         } catch (err) {
           console.log("Error in getting TRX balance " + err);
         }
@@ -985,8 +987,7 @@ exports.transaction_update = async (req, res) => {
         console.log("MATIC");
         try {
           let wallet = walletMATIC;
-          const decimal = 1e18;
-          console.log(wallet.walletAddr);
+          const decimal = 1e18;          
           const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
           console.log(matic_balance / decimal + " Matic balance");
           const balance = matic_balance / decimal;
@@ -1372,203 +1373,6 @@ exports.login_activity = async (req, res) => {
         console.log("Error in Updating Login activity" + err);
     }
 }
-
-
-/*
-exports.settings = async (req, res) => {
-  const { email, task } = req.body;
-  switch (task) {
-    case "username":
-      try {
-        await User.findOne({ username: req.body.username }).exec(
-          async (err, data) => {
-            if (data) {
-              return res.status(200).json({
-                status: -1,
-                message: "Username Already Exits",
-              });
-            } else {
-              await User.updateOne(
-                { email: email },
-                {
-                  $set: {
-                    username: req.body.username,
-                  },
-                }
-              ).exec(async (err, data) => {
-                if (err) {
-                  return res.status(400).json({
-                    status: 0,
-                    "message ": "something went wrong",
-                  });
-                }
-                if (data) {
-                  return res.status(200).json({
-                    status: 1,
-                    message: "Username updated successfully",
-                  });
-                }
-              });
-            }
-          }
-        );
-      } catch (err) {
-        console.log("Error in Updating username " + err);
-      }
-      break;
-    case "contact":
-      try {
-        await User.findOne({ contact_no: req.body.contact }).exec(
-          async (err, data) => {
-            if (data) {
-              return res.status(200).json({
-                status: -1,
-                message: "Contact no. Already Exits",
-              });
-            } else {
-              await User.updateOne(
-                { email: email },
-                {
-                  $set: {
-                    contact_no: req.body.contact,
-                  },
-                }
-              ).exec(async (err, data) => {
-                if (err) {
-                  return res.status(400).json({
-                    status: 0,
-                    "message ": "something went wrong",
-                  });
-                }
-                if (data) {
-                  return res.status(200).json({
-                    status: 1,
-                    message: "Contact no. updated successfully",
-                  });
-                }
-              });
-            }
-          }
-        );
-      } catch (err) {
-        console.log("Error in Updating Contact no.  " + err);
-      }
-      break;
-
-    case "currency":
-      try {
-        await User.updateOne(
-          { email: email },
-          {
-            $set: {
-              currency: req.body.currency,
-            },
-          }
-        ).exec(async (err, data) => {
-          if (err) {
-            return res.status(400).json({
-              status: 0,
-              "message ": "something went wrong",
-            });
-          }
-          if (data) {
-            return res.status(200).json({
-              status: 1,
-              message: "Currency updated successfully",
-            });
-          }
-        });
-      } catch (err) {
-        console.log("Error in Updating Currency " + err);
-      }
-      break;
-
-    case "login_activity":
-      try {
-        await User.updateOne(
-          { email: email },
-          {
-            $set: {
-              login_activity: req.body.login_activity,
-            },
-          }
-        ).exec(async (err, data) => {
-          if (err) {
-            return res.status(400).json({
-              status: 0,
-              "message ": "something went wrong",
-            });
-          }
-          if (data) {
-            return res.status(200).json({
-              status: 1,
-              message: "Login activity updated successfully",
-            });
-          }
-        });
-      } catch (err) {
-        console.log("Error in Updating Login activity" + err);
-      }
-      break;
-    case "change_password":
-      try {
-        const old_password = req.body.old_password ? req.body.old_password : "";
-        const new_password = req.body.new_password ? req.body.new_password : "";
-        const hashPassword = await bcrypt.hash(new_password, 10);
-        const _user = await User.findOne({ email: email });
-        if (_user && _user.password) {
-          if (bcrypt.compareSync(old_password, _user.password)) {
-            // console.log("executed");
-            await User.updateOne(
-              { email: email },
-              {
-                $set: {
-                  password: hashPassword,
-                },
-              }
-            ).exec((err, data) => {
-              if (err) {
-                return res.json({
-                  status: 0,
-                  message: "Invalid password",
-                });
-              }
-              if (data) {
-                return res.json({
-                  status: 1,
-                  message: "Password changed successfully",
-                });
-              }
-            });
-          } else {
-            return res.json({
-              status: 0,
-              message: "Invalid password",
-            });
-          }
-        }
-      } catch (err) {
-        console.log("Error in Change password " + err);
-      }
-      break;
-
-    case "personal_information":
-      try {
-        const _user = await User.findOne({ email: email });
-        return res.status(200).json({
-          status: 1,
-          username: _user.username,
-          contact_no: _user.contact_no,
-          currency: _user.currency,
-          email: email,
-        });
-      } catch (err) {
-        console.log("Error in Personal Information " + err);
-      }
-      break;
-  }
-};
-*/
 
 
 exports.updateSetting = async (req, res) => {
