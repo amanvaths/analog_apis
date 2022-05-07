@@ -37,32 +37,39 @@ async function getCMCData(base_currency=false, currency=false) {
     return false;
   }
 }
-exports.createOrder = async (req, res)=> {
+exports.createOrder = async (req, res)=> { 
     const wallet = require("../models/userWallet");
+    const Presale = require("../models/presale");
     try {
       const { amount, currencyType, compairCurrency, email } = req.body;
       let quantity=req.body.raw_price;
-      console.log( req.body)
+      // console.log( req.body)
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
         const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
+        const presale = await Presale.findOne({status: 1})
         req.body.currency="inr";
         req.body.base_currency=req.body.currencyType.toLowerCase();
         const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
         const price_in_inr = cmcdata.TRX.quote.INR.price;
-        
+        console.log("presale", presale)
 
-        const ANA_price =10;
+        const ANA_price = presale.price;
         const one_ANA_in=ANA_price/price_in_inr;
         let compairVal = mul(one_ANA_in,quantity);
-        console.log(req.body)
+        // console.log(req.body)
         if(currencyT.balance >= compairVal ) {
           
                 let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
                 let CCbalance = add(compairC.balance, compairVal);
                 await wallet.updateOne({_id:currencyT._id},{
                     $set:{
-                        balance:CTbalance
+                        balance: CTbalance
+                    }
+                })
+                await Presale.updateOne({_id: presale._id },{
+                    $set:{
+                      coinremaining: presale.coinremaining - amount
                     }
                 })
                 await wallet.updateOne({_id:compairC._id},{
@@ -81,7 +88,7 @@ exports.createOrder = async (req, res)=> {
                 //var Percent = db.collection('referral_percents');
                 const token_buying = req.body.token_quantity
                 const token_price = req.body.token_price
-                const token_quantity = token_buying*token_price
+                const token_quantity = req.body.token_quantity
 
                 const percnt = await Bonus.findOne();
                 console.log(percnt.buying_bonus);
@@ -102,17 +109,17 @@ exports.createOrder = async (req, res)=> {
                 let refuser3="";
                 // get referral ids 
                
-                    let rid = await User.findOne({  my_referral_code : referral1 });
+                    let rid = await User.findOne({  user_id : referral1 });
                     if(rid){
                         refuser1= rid.email
                         referral2=rid.refferal
                         ref2 = (lev2/100) * token_quantity;
-                        let ridi = await User.findOne({  my_referral_code : referral2 });
+                        let ridi = await User.findOne({  user_id : referral2 });
                            if(ridi){
                           refuser2= ridi.email
                                referral3=ridi.refferal
                                ref3 = (lev3/100) * token_quantity;
-                             let ridim = await User.findOne({  my_referral_code : referral3 });
+                             let ridim = await User.findOne({  user_id : referral3 });
                              if(ridim){
                                 refuser3= ridim.email
                               }
@@ -478,4 +485,5 @@ exports.createOrder = async (req, res)=> {
     }
   }
   
+
 
