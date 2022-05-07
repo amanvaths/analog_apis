@@ -59,8 +59,10 @@ exports.presalelevel = async (req, res) => {
                         const data = Presale.insertMany([{
                             levelname : req.body.levelname, 
                             coinquantity : req.body.coinquantity,
+                            coinremaining : req.body.coinquantity,
                             price : req.body.coinprice,
-                            duration : req.body.duration
+                            duration : req.body.duration,
+                            status : 0
                         }])
 
                         if (data) {  
@@ -116,6 +118,7 @@ exports.updatepresale = async (req, res) => {
             coinquantity:req.body.coinquantity,
             price:req.body.price,
             duration:req.body.duration,
+            status:req.body.status
         }
        }
     )
