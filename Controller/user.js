@@ -270,10 +270,12 @@ exports.signin = async (req, res) => {
             message: "Email not registered",
           });
         }
-        if (user) {
-          //console.log(user);
-          const { _id, email, password, isVarify, username, login_activity } = user;
-
+        if (user) {        
+          const settingsModel = require('../models/settings');
+          const { _id, email, password, isVarify, username } = user;
+          const settings = await settingsModel.find({ email : email });
+         // console.log(settings[0].login_activity);        
+          const login_activity = settings[0].login_activity;        
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
               return res.status(400).json({
@@ -1423,8 +1425,9 @@ exports.change_password = async(req, res) => {
 
 exports.login_activity = async (req, res) => {
   const {email} = req.body;
-  try{  
-      await User.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
+  try{
+      const settingsModel = require('../models/settings');       
+      await settingsModel.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
         return res.status(200).json({
           status  :  1,
           message : "Login activity updated successfully"                      
@@ -1642,14 +1645,7 @@ exports.updateSetting = async (req, res) => {
   const User = require("../models/user")
   const bcrypt = require("bcrypt")
   try {
-    const { 
-      email,
-      username,
-      contact_no,
-      currency,
-      password,
-      login_activity,
-    } = req.body
+    const { email, username, contact_no, currency, password, } = req.body  
 
     await User.findOne({ email: email }).exec(async (err, data) => {
       if (data) {
@@ -1674,8 +1670,7 @@ exports.updateSetting = async (req, res) => {
             $set: {
               username: username ? username : data.username,
               contact_no: contact_no ? contact_no: data.contact_no,
-              currency: currency ? currency : data.currency,
-              login_activity: login_activity ? login_activity: data.login_activity,
+              currency: currency ? currency : data.currency,           
               password: password ? hashPassword : data.password,
             },
           }
@@ -1706,14 +1701,14 @@ exports.generateauthtoken = async (req, res)=>{
       const user = await User.findOne({ email : email });
       if (user) {
           try {
-              const google_auth = req.body.state?req.body.state:false;             
+              const google_auth = req.body.state?req.body.state:false; 
+              const settings = require('../models/settings');            
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: user.user_id
-                  });                 
-                
-                  await User.updateOne(
+                  });  
+                  await settings.updateOne(
                       {email: email},
                       {
                         $set: {
@@ -1727,7 +1722,7 @@ exports.generateauthtoken = async (req, res)=>{
                       key: secret.base32
                   })
               } else {
-                await User.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
+                await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1756,13 +1751,14 @@ exports.generateauthtoken = async (req, res)=>{
 exports.verifyauthtoken = async (req, res) =>{
   const speakeasy = require("speakeasy");
   const bcrypt = require('bcryptjs');
+  const settings = require('../models/settings');
   try {
       const {email} = req.body; 
       if (email) {
           const token = req.body.token?req.body.token:false;        
 
           if (token) {            
-             const s = await User.find({ email : email  });           
+             const s = await settings.find({ email : email  });           
              /**
               *  To generate token 
              */
@@ -1910,3 +1906,56 @@ exports.get_whitelisted_ip = async (req, res) => {
     console.log("Error in Whitelisted ips" + error);
   }
 }
+
+exports.configSettings = async (req, res) => { 
+  try{
+    const settingsModel = require('../models/settings');
+    const {email}  = req.body;
+    const _user    = await User.findOne({ email: email });
+    const s        = await settingsModel.findOne({ email: email });
+    if(_user && s){
+      return res.status(200).json({
+        currency_preference : _user.currency ,
+        notification        : s.unusual_activity,
+        new_browser         : s.new_browser,
+        sales               : s.sales,
+        latest_news         : s.latest_news,
+        new_features        : s.new_features,
+        updates             : s.updates,
+        tips                : s.tips,
+        google_authenticator: s.google_authenticator,
+        login_activity      : s.login_activity,        
+      })
+    }
+  }catch(error){
+    console.log("Error in config settings " + error);
+  }
+  
+}
+
+exports.userWalletData = async (req, res) => {
+  const orders = require('../models/order');
+  try{
+      const {email} = req.body;     
+      const _user            = await User.findOne({ email: email });  
+      const _orders          = await  orders.findOne({ email : email }).sort('-date');    
+      const totalWallet      = await orders.count({ email : email }).distinct('currency_type');      
+      const totalTransaction = await orders.count({ email : email });
+          return res.status(200).json({
+            user_id            : _user.user_id,
+            affilites_wallet   : _user.affilites_wallet,
+            bounty_wallet      : _user.bounty_wallet,
+            airdrop_wallet     : _user.airdrop_wallet,
+            inherited_wallet   : _user.inherited_wallet,
+            handout_wallet     : _user.handout_wallet,
+            inceptive_wallet   : _user.inceptive_wallet,
+            last_activity      : _orders.createdAt,
+            total_wallet       : totalWallet.length,
+            total_transaction  : totalTransaction
+          });     
+  }catch(error){
+    console.log("Error in user Wallet data " + error)
+  }
+}
+
+

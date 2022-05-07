@@ -14,14 +14,15 @@ const {
   settings,
   updateSetting,
   change_password,
-  login_activity,
-  // generateauthtoken,
+  login_activity, 
   verifyauthtoken,
   notificationSettings,
   getAffiliates,
   generateauthtoken,
   whitelisted_ip,
-  get_whitelisted_ip
+  get_whitelisted_ip,
+  userWalletData,
+  configSettings
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -55,6 +56,8 @@ router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
 router.post('/whitelisted_ip', whitelisted_ip);
 router.get('/get_whitelisted_ip',get_whitelisted_ip);
+router.get('/userWalletData', userWalletData);
+router.get('/configSettings', configSettings);
 
 /**
  * Admin Routes
