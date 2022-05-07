@@ -23,8 +23,7 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,
-  anaPrice
+  removeWhiteListedIp,  
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
@@ -61,7 +60,7 @@ router.post('/get_whitelisted_ip',get_whitelisted_ip);
 router.post('/userWalletData', userWalletData);
 router.post('/configSettings', configSettings);
 router.post('/removeWhiteListedIp', removeWhiteListedIp);
-router.post('/anaPrice', anaPrice);
+
 
 /**
  * Admin Routes

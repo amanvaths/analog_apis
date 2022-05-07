@@ -1868,7 +1868,7 @@ async function findUserId(email){
   return refferalCode.user_id;
 }
 
-exports.whitelisted_ip = async (req, res) => {
+exports.add_whitelisted_ip = async (req, res) => {
   try{
     const { email, ip, } = req.body;
     const _user = await User.findOne({ email : email });
@@ -1929,6 +1929,7 @@ exports.configSettings = async (req, res) => {
     const {email}  = req.body;
     const _user    = await User.findOne({ email: email });
     const s        = await settingsModel.findOne({ email: email });
+    const orders    = await preSaleModel.findOne({ status: 1 });
     if(_user && s){
       return res.status(200).json({
         currency_preference : _user.currency ,
@@ -1940,13 +1941,13 @@ exports.configSettings = async (req, res) => {
         updates             : s.updates,
         tips                : s.tips,
         google_authenticator: s.google_authenticator,
-        login_activity      : s.login_activity,        
+        login_activity      : s.login_activity,
+        anaPrice            : orders.price       
       })
     }
   }catch(error){
     console.log("Error in config settings " + error);
-  }
-  
+  }  
 }
 
 exports.userWalletData = async (req, res) => {
@@ -1974,18 +1975,6 @@ exports.userWalletData = async (req, res) => {
   }
 }
 
-exports.anaPrice = async (req, res) => {
-  try{     
-      const preSaleModel = require('../models/presale');
-      const orders = await preSaleModel.findOne({ status: 1 });
-      return res.status(200).json({
-        price  : orders.price,
-        status : orders.status
-      })
-  }catch(error){
-    console.log("Error in Ana price " + error);
-  }
-}
 
 
 
