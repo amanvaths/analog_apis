@@ -1910,11 +1910,12 @@ exports.get_whitelisted_ip = async (req, res) => {
 exports.removeWhiteListedIp = async (req, res) => {
   try{
     const whitelisted_ip_model = require('../models/whitelisted_ip');
-    const { email, id } = req.body;
-    await whitelisted_ip_model.remove({ email : email, _id : id }).then((data) => {
+    const { _id } = req.body;
+    await whitelisted_ip_model.remove({ _id : _id }).then((data) => {
       return res.status(200).json({ message : "Deleted successfully" });
     }).catch((error) => {
       console.log("Error in removing whitelisted ip " + error)
+      return res.status(400).json({ message : "Something went wrong" })      
     })
   }catch(error){
     console.log("Error in remove whitelisted ip " + error);
@@ -1972,6 +1973,15 @@ exports.userWalletData = async (req, res) => {
   }
 }
 
+exports.anaPrice = async (req, res) => {
+  try{
+      const { email } = req.body;
+      const preSaleModel = require('../models/presale');
+      const oders = await preSaleModel.findOne({ email : email, status })
+  }catch(error){
+    console.log()
+  }
+}
 
 
 
