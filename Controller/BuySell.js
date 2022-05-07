@@ -51,13 +51,13 @@ exports.createOrder = async (req, res)=> {
         req.body.currency="inr";
         req.body.base_currency=req.body.currencyType.toLowerCase();
         const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-        const price_in_inr = cmcdata.TRX.quote.INR.price;
-        console.log("presale", presale)
-
+        const price_in_inr = cmcdata[req.body.currencyType].quote.INR.price;
         const ANA_price = presale.price;
         const one_ANA_in=ANA_price/price_in_inr;
+        console.log("hello",quantity)
+        console.log("one",one_ANA_in)
         let compairVal = mul(one_ANA_in,quantity);
-        // console.log(req.body)
+         
         if(currencyT.balance >= compairVal ) {
           
                 let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
@@ -77,11 +77,14 @@ exports.createOrder = async (req, res)=> {
                         balance:CCbalance
                     }
                 })
-                await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email)
+                var order_id =Date.now().toString(16).toUpperCase();
+                await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id)
                 // referral commission
+                console.log("yaha",order_id)
                 await  User.findOne({ email :email })
           .exec(async (error, user) => {
               if (user){ 
+                
                 req.body.token_quantity=quantity;
                 req.body.token_price=ANA_price;
                 var db = mongoose.connection;
@@ -126,7 +129,6 @@ exports.createOrder = async (req, res)=> {
                            }
                     }
            
-               
                 user_purchase = await User.updateOne({
                     email: req.body.email
                 }, {
@@ -145,9 +147,12 @@ exports.createOrder = async (req, res)=> {
                         token_price : req.body.token_price,
                         token_buying : req.body.token_quantity,
                         token_quantity : token_quantity,
+                        currency_price : one_ANA_in,
+                        currenty_prefer: req.body.base_currency,
                         bonus_percent : bonus_perc,
                         currency : currencyType,
-                        bonus_type : "Buying"
+                        bonus_type : "Buying",
+                        order_id : order_id
                     }]).then((result)=>{
                         if(referral1 && refuser1){
                             const _userref1 = Buy.insertMany([{
@@ -160,7 +165,8 @@ exports.createOrder = async (req, res)=> {
                                 bonus : ref1,
                                 bonus_percent : lev1,
                                 from_level:1,
-                                currency : currencyType
+                                currency : currencyType,
+                                order_id : order_id
                             }]).then(async (de) => {
                                 user_purchase = await User.updateOne({
                                     email: refuser1
@@ -189,7 +195,8 @@ exports.createOrder = async (req, res)=> {
                                     bonus : ref2,
                                     bonus_percent : lev2,
                                     from_level:2,
-                                    currency : currencyType
+                                    currency : currencyType,
+                                    order_id : order_id
                                 }]).then(async (te) => {
                                     user_purchase = await User.updateOne({
                                         email: refuser2
@@ -218,7 +225,8 @@ exports.createOrder = async (req, res)=> {
                                         bonus : ref3,
                                         bonus_percent : lev3,
                                         from_level:3,
-                                        currency : currencyType
+                                        currency : currencyType,
+                                        order_id : order_id
                                     }]).then(async (ke) => {
                                         user_purchase = await User.updateOne({
                                             email: refuser3
@@ -282,11 +290,11 @@ exports.createOrder = async (req, res)=> {
   }
 
 
-  async function OrderHistory(amount,  raw_price,quantity,  currencyType,  compairCurrency,  email) {
+  async function OrderHistory(amount,  raw_price,quantity,  currencyType,  compairCurrency,  email, orderid) {
     const Order = require("../models/order")
     const order = await new Order({
         email: email,
-        order_id: Date.now().toString(16).toUpperCase(),
+        order_id: orderid,
         date: Date.now(),
         amount: amount,
         raw_price: raw_price,

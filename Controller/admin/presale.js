@@ -62,7 +62,7 @@ exports.presalelevel = async (req, res) => {
                             coinremaining : req.body.coinquantity,
                             price : req.body.coinprice,
                             duration : req.body.duration,
-                            status : 0
+                            status : req.body.status,
                         }])
 
                         if (data) {  
@@ -110,6 +110,13 @@ exports.deletepresale = async (req, res) => {
 }
 
 exports.updatepresale = async (req, res) => { 
+
+    const resp = await Presale.updateMany({}, {
+        $set :{
+            status:0
+        }
+       }
+    )
     const result = await Presale.updateOne({
         _id: req.body._id
     }, {

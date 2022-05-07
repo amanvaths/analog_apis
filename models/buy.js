@@ -14,7 +14,8 @@ const buySchema = new mongoose.Schema({
     from_user : {type: String},
     from_level : {type: String},
     currency:{type: String},
-    bonus_type : {type: String, required : true}
+    bonus_type : {type: String, required : true},
+    order_id : {type: String, required : true}
 }, { timestamps: true});
 
 
