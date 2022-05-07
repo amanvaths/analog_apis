@@ -19,7 +19,7 @@ const {
   notificationSettings,
   getAffiliates,
   generateauthtoken,
-  whitelisted_ip,
+  add_whitelisted_ip,
   get_whitelisted_ip,
   userWalletData,
   configSettings,
@@ -55,7 +55,7 @@ router.post('/generateauthtoken', generateauthtoken);
  router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
-router.post('/whitelisted_ip', whitelisted_ip);
+router.post('/add_whitelisted_ip', add_whitelisted_ip);
 router.post('/get_whitelisted_ip',get_whitelisted_ip);
 router.post('/userWalletData', userWalletData);
 router.post('/configSettings', configSettings);
