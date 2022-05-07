@@ -8,7 +8,7 @@ const userWalletSchema = new mongoose.Schema(
     walletType      : { type: String },
     symbol          : { type: String },
     balance         : { type: Number, default: 0 },
-    old_balanace    : { type: Number, default: 0 },
+    v_balanace      : { type: Number, default: 0 },
     isBuy           : { type: Number, default: 1 }, 
   },
   { timestamps: true }

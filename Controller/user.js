@@ -270,10 +270,12 @@ exports.signin = async (req, res) => {
             message: "Email not registered",
           });
         }
-        if (user) {
-          //console.log(user);
-          const { _id, email, password, isVarify, username, login_activity } = user;
-
+        if (user) {        
+          const settingsModel = require('../models/settings');
+          const { _id, email, password, isVarify, username } = user;
+          const settings = await settingsModel.find({ email : email });
+         // console.log(settings[0].login_activity);        
+          const login_activity = settings[0].login_activity;        
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
               return res.status(400).json({
@@ -845,80 +847,69 @@ exports.transaction_update = async (req, res) => {
   if (email) {
     let go = await canUpdate(email);
     if (go) {
-      var walletETH = await userWallet.find({ email: email, symbol: "ETH" });
-      var walletTRX = await userWallet.find({ email: email, symbol: "TRX" });
-      var walletBNB = await userWallet.find({ email: email, symbol: "BNB" });
-      var walletMATIC = await userWallet.find({
-        email: email,
-        symbol: "MATIC",
-      });
-      var walletUSDT = await userWallet.find({ email: email, symbol: "USDT" });
-      var walletBUSD = await userWallet.find({ email: email, symbol: "BUSD" });
-      var walletSHIB = await userWallet.find({ email: email, symbol: "SHIB" });
+      var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
+      var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
+      var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
+      var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC",});
+      var walletUSDT    = await userWallet.findOne({ email: email, symbol: "USDT" });
+      var walletBUSD    = await userWallet.findOne({ email: email, symbol: "BUSD" });
+      var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
 
-      if (walletTRX && walletTRX[0].symbol == "TRX") {
+      if (walletTRX && walletTRX.symbol == "TRX") {
         console.log("TRX");
         try {
           let wallet = walletTRX;
           const decimal = 1e6;
-          let trx_balance = await tronWeb.trx.getBalance(
-            walletTRX[0].walletAddr
-          );
+          let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
           console.log(trx_balance / decimal + " TRX balance");
           const balance = trx_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;           
             const new_w_balance = balance;
             /**
              * update user's wallet
              */
-            if (new_w_balance != w_balance) {
+        
+
               await userWallet.updateOne(
                 { email: email, symbol: "TRX" },
                 {
                   $set: {
                     balance: new_w_balance,
-                    old_balanace: w_balance,
+                    v_balanace: w_balance,
                   },
                 }
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(email, "TRX", wallet[0].walletAddr, new_transaction, new_w_balance );          
+                createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
 
                    var subject = "New TRX Transaction";
-                   var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} TRX deposited in your account`;            
+                   var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
                    sendMail(email, subject, msg);                 
-              }
-            }
+              }         
           }
         } catch (err) {
           console.log("Error in getting TRX balance " + err);
         }
       }
 
-      if (walletETH && walletETH[0].symbol == "ETH") {
+      if (walletETH && walletETH.symbol == "ETH") {
         console.log("ETH");
         try {
           let wallet = walletETH;
           const decimal = 1e18;
-          let eth_balance = await web3Eth.eth.getBalance(
-            walletETH[0].walletAddr
-          );
+          let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
           console.log(eth_balance / decimal + " ETH balance");
           const balance = eth_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -935,16 +926,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "ETH",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New ETH Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} ETH deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} ETH deposited in your account`;            
                 sendMail(email, subject, msg);  
               }
             }
@@ -954,23 +939,19 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletBNB && walletBNB[0].symbol == "BNB") {
+      if (walletBNB && walletBNB.symbol == "BNB") {
         console.log("BNB");
         try {
           let wallet = walletBNB;
           const decimal = 1e18;
-          const bnb_balance = await web3Bnb.eth.getBalance(
-            walletBNB[0].walletAddr
-          );
+          const bnb_balance = await web3Bnb.eth.getBalance(walletBNB.walletAddr);
           console.log(bnb_balance / decimal + " BNB balance");
           const balance = bnb_balance / decimal;
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -987,16 +968,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "BNB",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New BNB Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BNB deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BNB deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1006,23 +981,21 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletMATIC && walletMATIC[0].symbol == "MATIC") {
+      if (walletMATIC && walletMATIC.symbol == "MATIC") {
         console.log("MATIC");
         try {
           let wallet = walletMATIC;
           const decimal = 1e18;
-          const matic_balance = await web3Matic.eth.getBalance(
-            wallet[0].walletAddr
-          );
+          console.log(wallet.walletAddr);
+          const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
           console.log(matic_balance / decimal + " Matic balance");
           const balance = matic_balance / decimal;
+
           if (balance > 0) {
             /**
              * check for w balance
              */
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1039,16 +1012,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "MATIC",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "MATIC", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New MATIC Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} MATIC deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} MATIC deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1058,18 +1025,14 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletUSDT && walletUSDT[0].symbol == "USDT") {
+      if (walletUSDT && walletUSDT.symbol == "USDT") {
         console.log("USDT");
         try {
           let wallet = walletUSDT;
           const decimal = 1e6;
-          tronWeb.setAddress(wallet[0].walletAddr);
-          const instance = await tronWeb
-            .contract()
-            .at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-          const hex_balance = await instance
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          tronWeb.setAddress(wallet.walletAddr);
+          const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+          const hex_balance = await instance.balanceOf(wallet.walletAddr).call();
           const usdt_balance = Number(hex_balance._hex);
 
           if (usdt_balance > 0) {
@@ -1078,9 +1041,7 @@ exports.transaction_update = async (req, res) => {
              */
 
             let balance = usdt_balance ? usdt_balance / decimal : 0;
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1098,16 +1059,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "USDT",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "USDT", wallet.walletAddr, new_transaction, new_w_balance );
 
                 var subject = "New USDT Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} USDT deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} USDT deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1117,18 +1072,13 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletBUSD && walletBUSD[0].symbol == "BUSD") {
+      if (walletBUSD && walletBUSD.symbol == "BUSD") {
         console.log("BUSD");
         try {
           let wallet = walletBUSD;
-          var contract = new web3Bnb.eth.Contract(
-            dex,
-            "0x1004f1CD9e4530736AadC051a62b0992c198758d"
-          );
+          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d");
           const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
           console.log("Bal: ", bal);
           let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
 
@@ -1157,16 +1107,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "BUSD",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "BUSD", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New BUSD Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} BUSD deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BUSD deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1176,18 +1120,14 @@ exports.transaction_update = async (req, res) => {
         }
       }
 
-      if (walletSHIB && walletSHIB[0].symbol == "SHIB") {
+      if (walletSHIB && walletSHIB.symbol == "SHIB") {
         console.log("SHIB");
         try {
           let wallet = walletSHIB;
-          var contract = new web3Bnb.eth.Contract(
-            dex,
-            "0x1004f1CD9e4530736AadC051a62b0992c198758d"
+          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d"
           );
           const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods
-            .balanceOf(wallet[0].walletAddr)
-            .call();
+          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
           console.log("Bal: ", bal);
           let shib_balance = bal ? bal / Number(`1e${decimal}`) : 0;
 
@@ -1196,9 +1136,7 @@ exports.transaction_update = async (req, res) => {
              * check for w balance
              */
             let balance = shib_balance ? shib_balance / decimal : 0;
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
+            const w_balance = wallet[0].balance ? parseFloat(wallet.balance) : 0;
             const new_w_balance = balance;
             /**
              * update user's wallet
@@ -1216,16 +1154,10 @@ exports.transaction_update = async (req, res) => {
               );
               if (balance > 0) {
                 const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(
-                  email,
-                  "SHIB",
-                  wallet[0].walletAddr,
-                  new_transaction,
-                  new_w_balance
-                );
+                createDepositHistory( email, "SHIB", wallet.walletAddr, new_transaction, new_w_balance);
 
                 var subject = "New SHIB Transaction";
-                var msg = `<h5>Hello ${wallet[0].username}, <br> ${new_transaction} SHIB deposited in your account`;            
+                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} SHIB deposited in your account`;            
                 sendMail(email, subject, msg); 
               }
             }
@@ -1423,8 +1355,9 @@ exports.change_password = async(req, res) => {
 
 exports.login_activity = async (req, res) => {
   const {email} = req.body;
-  try{  
-      await User.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
+  try{
+      const settingsModel = require('../models/settings');       
+      await settingsModel.updateOne({ email: email }, { $set: { login_activity : req.body.login_activity, } }).then((data) => {
         return res.status(200).json({
           status  :  1,
           message : "Login activity updated successfully"                      
@@ -1642,14 +1575,7 @@ exports.updateSetting = async (req, res) => {
   const User = require("../models/user")
   const bcrypt = require("bcrypt")
   try {
-    const { 
-      email,
-      username,
-      contact_no,
-      currency,
-      password,
-      login_activity,
-    } = req.body
+    const { email, username, contact_no, currency, password, } = req.body  
 
     await User.findOne({ email: email }).exec(async (err, data) => {
       if (data) {
@@ -1674,8 +1600,7 @@ exports.updateSetting = async (req, res) => {
             $set: {
               username: username ? username : data.username,
               contact_no: contact_no ? contact_no: data.contact_no,
-              currency: currency ? currency : data.currency,
-              login_activity: login_activity ? login_activity: data.login_activity,
+              currency: currency ? currency : data.currency,           
               password: password ? hashPassword : data.password,
             },
           }
@@ -1706,14 +1631,14 @@ exports.generateauthtoken = async (req, res)=>{
       const user = await User.findOne({ email : email });
       if (user) {
           try {
-              const google_auth = req.body.state?req.body.state:false;             
+              const google_auth = req.body.state?req.body.state:false; 
+              const settings = require('../models/settings');            
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: user.user_id
-                  });                 
-                
-                  await User.updateOne(
+                  });  
+                  await settings.updateOne(
                       {email: email},
                       {
                         $set: {
@@ -1727,7 +1652,7 @@ exports.generateauthtoken = async (req, res)=>{
                       key: secret.base32
                   })
               } else {
-                await User.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
+                await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1756,13 +1681,14 @@ exports.generateauthtoken = async (req, res)=>{
 exports.verifyauthtoken = async (req, res) =>{
   const speakeasy = require("speakeasy");
   const bcrypt = require('bcryptjs');
+  const settings = require('../models/settings');
   try {
       const {email} = req.body; 
       if (email) {
           const token = req.body.token?req.body.token:false;        
 
           if (token) {            
-             const s = await User.find({ email : email  });           
+             const s = await settings.find({ email : email  });           
              /**
               *  To generate token 
              */
@@ -1859,11 +1785,11 @@ exports.getAffiliates = async (req, res) => {
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
-      return res.status(400).json({ message: "unable to find affiliates, you do not have any affiliate." });
+      return res.status(400).json({ status: 0, message: "unable to find affiliates, you do not have any affiliate." });
     }
-    return res.status(400).json({ message: "Invalid request." });
+    return res.status(400).json({ status: 0, message: "Invalid request." });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ status: 0, message: error.message });
   }
 };
 
@@ -1872,7 +1798,7 @@ async function findUserId(email){
   return refferalCode.user_id;
 }
 
-exports.whitelisted_ip = async (req, res) => {
+exports.add_whitelisted_ip = async (req, res) => {
   try{
     const { email, ip, } = req.body;
     const _user = await User.findOne({ email : email });
@@ -1883,10 +1809,12 @@ exports.whitelisted_ip = async (req, res) => {
           user_id : _user.user_id,
           ip : ip
         }).then((data) => {
-           return res.status(200).json({ message : "IP added successfully" });
+           return res.status(200).json({ status:1, message : "IP added successfully" });
         }).catch((error) => {
-          return res.status(400).json({ message : "something went wrong" });
+          return res.status(400).json({ status:0, message : "something went wrong" });
         })
+    }else{
+      return res.status(400).json({ status:0, message : "Invalid User" });
     }
 
   }catch(error){
@@ -1903,10 +1831,82 @@ exports.get_whitelisted_ip = async (req, res) => {
       await whitelistedIpModel.find({ email : email }).then((data) => {
            return res.status(200).json({ data });
         }).catch((error) => {
-          return res.status(400).json({ message : "something went wrong" });
+          return res.status(400).json({ status:0, message : "something went wrong" });
         })
     }
   }catch(error){
     console.log("Error in Whitelisted ips" + error);
   }
 }
+
+exports.removeWhiteListedIp = async (req, res) => {
+  try{
+    const whitelisted_ip_model = require('../models/whitelisted_ip');
+    const { _id } = req.body;
+    console.log(_id);
+    await whitelisted_ip_model.deleteOne({ _id : _id }).then((data) => {
+      return res.status(200).json({ status:1, message : "Deleted successfully" });
+    }).catch((error) => {
+      console.log("Error in removing whitelisted ip " + error)
+      return res.status(400).json({ status:0,  message : "Something went wrong" })      
+    })
+  }catch(error){
+    console.log("Error in remove whitelisted ip " + error);
+  }
+}
+
+exports.configSettings = async (req, res) => { 
+  try{
+    const settingsModel = require('../models/settings');
+    const {email}  = req.body;
+    const _user    = await User.findOne({ email: email });
+    const s        = await settingsModel.findOne({ email: email });
+    const orders    = await preSaleModel.findOne({ status: 1 });
+    if(_user && s){
+      return res.status(200).json({
+        currency_preference : _user.currency ,
+        notification        : s.unusual_activity,
+        new_browser         : s.new_browser,
+        sales               : s.sales,
+        latest_news         : s.latest_news,
+        new_features        : s.new_features,
+        updates             : s.updates,
+        tips                : s.tips,
+        google_authenticator: s.google_authenticator,
+        login_activity      : s.login_activity,
+        anaPrice            : orders.price       
+      })
+    }
+  }catch(error){
+    console.log("Error in config settings " + error);
+  }  
+}
+
+exports.userWalletData = async (req, res) => {
+  const orders = require('../models/order');
+  try{
+      const {email} = req.body;     
+      const _user            = await User.findOne({ email: email });  
+      const _orders          = await  orders.findOne({ email : email }).sort('-date');    
+      const totalWallet      = await orders.count({ email : email }).distinct('currency_type');      
+      const totalTransaction = await orders.count({ email : email });
+          return res.status(200).json({
+            user_id            : _user.user_id,
+            affilites_wallet   : _user.affilites_wallet,
+            bounty_wallet      : _user.bounty_wallet,
+            airdrop_wallet     : _user.airdrop_wallet,
+            inherited_wallet   : _user.inherited_wallet,
+            handout_wallet     : _user.handout_wallet,
+            inceptive_wallet   : _user.inceptive_wallet,
+            last_activity      : _orders.createdAt,
+            total_wallet       : totalWallet.length,
+            total_transaction  : totalTransaction
+          });     
+  }catch(error){
+    console.log("Error in user Wallet data " + error)
+  }
+}
+
+
+
+

@@ -438,6 +438,31 @@ exports.createOrder = async (req, res)=> {
     }
   }
 
+  exports.getreferal = async(req, res) => {
+    const Referal = require("../models/buy")
+    try{
+      const  query  = req.query
+      const page = query.page
+      const per_page = query.per_page
+      delete query.page
+      delete query.per_page
+      const ref = await Referal.find(query)
+      return res.json({
+        status: 200,
+        error: false,
+        ref: ref,
+      });
+
+    }catch(error) {
+      console.log("Error from: allUser ", error)
+      return res.json({
+        status: 400,
+        error: true,
+        message: "Somthing Went Wrong!!**********",
+        err: error.message,
+      });
+    }
+  }
 
   // exports.cryptoSetting = async(req, res) => {
 
@@ -493,5 +518,35 @@ exports.createOrder = async (req, res)=> {
     }
   }
   
+
+  exports.userAllRecords = async(req, res) => {
+    try{
+      const Income = require("../models/buy")
+      const User = require("../models/user")
+      const Trans = require("../models/user")
+      const { email } = req.query
+      let income = await Income.aggregate([
+        {
+          $match: { email: email}
+        },
+        {
+          $group: {
+            _id:  "bonus_type",
+            total_token_quantity: { $sum: "$token_quantity"},
+            total_token_buying: { $sum: "$token_buying"},
+            total_bonus: { $sum: "$bonus"},
+            bonus: { $first: "$bonus"}
+          },
+        },
+      ])
+
+      const totalUser = await User.find().count()
+      return res.status(200).json({ income: income, totalUser: totalUser})
+
+    } catch(error) {
+      return res.status(400).json({ Error: "Somthing went wrong"})
+
+    }
+  }
 
 
