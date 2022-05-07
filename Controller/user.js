@@ -1907,6 +1907,20 @@ exports.get_whitelisted_ip = async (req, res) => {
   }
 }
 
+exports.removeWhiteListedIp = async (req, res) => {
+  try{
+    const whitelisted_ip_model = require('../models/whitelisted_ip');
+    const { email, id } = req.body;
+    await whitelisted_ip_model.remove({ email : email, _id : id }).then((data) => {
+      return res.status(200).json({ message : "Deleted successfully" });
+    }).catch((error) => {
+      console.log("Error in removing whitelisted ip " + error)
+    })
+  }catch(error){
+    console.log("Error in remove whitelisted ip " + error);
+  }
+}
+
 exports.configSettings = async (req, res) => { 
   try{
     const settingsModel = require('../models/settings');
@@ -1957,5 +1971,7 @@ exports.userWalletData = async (req, res) => {
     console.log("Error in user Wallet data " + error)
   }
 }
+
+
 
 

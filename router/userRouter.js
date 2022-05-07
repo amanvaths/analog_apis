@@ -55,9 +55,9 @@ router.post('/generateauthtoken', generateauthtoken);
 router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
 router.post('/whitelisted_ip', whitelisted_ip);
-router.get('/get_whitelisted_ip',get_whitelisted_ip);
-router.get('/userWalletData', userWalletData);
-router.get('/configSettings', configSettings);
+router.post('/get_whitelisted_ip',get_whitelisted_ip);
+router.post('/userWalletData', userWalletData);
+router.post('/configSettings', configSettings);
 
 /**
  * Admin Routes
