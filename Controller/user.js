@@ -1785,11 +1785,11 @@ exports.getAffiliates = async (req, res) => {
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
-      return res.status(400).json({ message: "unable to find affiliates, you do not have any affiliate." });
+      return res.status(400).json({ status: 0, message: "unable to find affiliates, you do not have any affiliate." });
     }
-    return res.status(400).json({ message: "Invalid request." });
+    return res.status(400).json({ status: 0, message: "Invalid request." });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ status: 0, message: error.message });
   }
 };
 
