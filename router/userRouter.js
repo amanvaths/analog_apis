@@ -29,7 +29,7 @@ const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
-const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders } = require('../Controller/BuySell');
+const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getreferal } = require('../Controller/BuySell');
 
 /**
  user Routes
@@ -88,9 +88,12 @@ router.get('/getpresalebyid', getpresalebyid);
  router.get('/getAllOrder', getAllOrder);
  router.get('/deleteOrders', deleteOrders);
  router.get('/depositHestory', depositHestory);
+ router.get('/getreferal', getreferal);
  router.get('/getUser', getUser);
  router.post('/addColdWallet', addColdWallet);
  router.get('/getColdWallet', getColdWallet);
+ router.get('/userAllRecords', userAllRecords);
+
 
 
 
