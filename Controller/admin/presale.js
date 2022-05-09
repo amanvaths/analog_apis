@@ -150,3 +150,11 @@ exports.updatepresale = async (req, res) => {
         
           res.status(200).json({_data:user});
     }
+
+    exports.anaPrice = async (req, res) => { 
+        const {_id} = req.query
+        const user = await Presale.findOne({status:1});
+        // console.log(user,"user")
+        
+          res.status(200).json({_data:user});
+    }

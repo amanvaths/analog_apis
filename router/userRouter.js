@@ -28,7 +28,7 @@ const {
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
-const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid} = require('../Controller/admin/presale');
+const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getreferal } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
 
@@ -62,6 +62,7 @@ router.post('/get_whitelisted_ip',get_whitelisted_ip);
 router.post('/userWalletData', userWalletData);
 router.post('/configSettings', configSettings);
 router.post('/removeWhiteListedIp', removeWhiteListedIp);
+router.post('/anaPrice', anaPrice);
 
 
 /**
