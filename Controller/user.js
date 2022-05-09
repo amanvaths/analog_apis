@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
 const login_history = require("../models/login_history");
+const preSaleModel = require("../models/presale");
 const session = require("express-session");
 const { findOne } = require("../models/user");
 const url = 'http://localhost:3001';

@@ -42,7 +42,7 @@ exports.createOrder = async (req, res)=> {
     const Presale = require("../models/presale");
     try {
       const { amount, currencyType, compairCurrency, email } = req.body;
-      let quantity=req.body.raw_price;
+      let quantity=req.body.amount;
       // console.log( req.body)
       const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
         const currencyT = walletData.find((wall => wall.symbol == currencyType ))
