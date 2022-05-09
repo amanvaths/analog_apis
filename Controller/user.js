@@ -1581,11 +1581,12 @@ exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
     const refferal = await findUserId(email);      
+    console.log(refferal)
     const page = req.body.page ? req.body.page : 1;
     const limit = req.body.limit ? req.body.limit : 10;
     const skip = page * limit;
     if (refferal) {
-      const affiliates = await User.find({ refferal });
+      const affiliates = await User.find({ refferal: refferal });
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
