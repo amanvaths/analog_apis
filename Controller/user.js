@@ -1745,9 +1745,32 @@ exports.userWalletData = async (req, res) => {
   }
 }
 
-exports.update_reffral = async (req, res) => {
-  const { userId } = req.body;
-
+exports.update_refferal = async (req, res) => {
+  const { email, refferal_id } = req.body;
+  try{
+     const _u = await User.count({ email: refferal_id });
+     console.log(_u);
+      if(_u > 0 ){
+       User.updateOne({ email: email }, {$set : { refferal: refferal_id }}).then(() => {
+         return res.status(200).json({
+            status : 1,
+            message : "Updated successfully"
+          })
+       }).catch((error) => {
+        return res.status(400).json({
+          status : 0,
+          message : "Something went wrong"
+        })
+       });
+      }else{
+        return res.status(400).json({
+          status : 0,
+          message : "Invalid refferal Code"
+        })
+      }
+  }catch(error){
+    console.log("Error in update refferal " + error);
+  }
 }
 
 
