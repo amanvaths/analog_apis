@@ -260,7 +260,7 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
   if (email && checkEmail(email) && password) {
@@ -275,8 +275,7 @@ exports.signin = async (req, res) => {
         if (user) {        
           const settingsModel = require('../models/settings');
           const { _id, email, password, isVarify, username } = user;
-          const settings = await settingsModel.find({ email : email });
-         // console.log(settings[0].login_activity);        
+          const settings = await settingsModel.find({ email : email });            
           const login_activity = settings[0].login_activity;        
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
@@ -304,8 +303,7 @@ exports.signin = async (req, res) => {
                       const browser_name = device.client.name;          
                       let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
                       browser_version = browser_version ? browser_version.substr(1, browser_version.length - 2) : "";
-                    // console.log(ip + "=ip" + "device= " + device + " browser_name= " + browser_version);
-                   // console.log(login_activity + " login activity");
+                  
                     if(login_activity == 1){
                       try {
                         await login_history.create({
@@ -345,32 +343,14 @@ exports.signin = async (req, res) => {
             IP : ${ip} <br>
             If it's not you please change your password.</h5>`;
             sendMail(email, subject, msg);            
-         }
-
-
-         const settingsModel = require('../models/settings');           
-         const s             = await settingsModel.findOne({ email: email });
-         const orders        = await preSaleModel.findOne({ status: 1 });
-         if(user && s){
+         }        
            return res.status(200).json({
              status              : 1,
              token               : token,
              user                : _id,
              email               : email,
-             message             : "Login Successful",
-             currency_preference : user.currency ,
-             notification        : s.unusual_activity,
-             new_browser         : s.new_browser,
-             sales               : s.sales,
-             latest_news         : s.latest_news,
-             new_features        : s.new_features,
-             updates             : s.updates,
-             tips                : s.tips,
-             google_authenticator: s.google_authenticator,
-             login_activity      : s.login_activity,
-             anaPrice            : orders.price       
-           })
-         }           
+             message             : "Login Successful",                  
+           });           
           } else {
             return res.status(400).json({
               status: 0,
@@ -1450,14 +1430,13 @@ exports.updateSetting = async (req, res) => {
 exports.generateauthtoken = async (req, res)=>{
  // if (req.session.session_id) {
   const speakeasy = require("speakeasy");
-      const { email } = req.body;
+  var QRCode = require('qrcode');
+      const { email, google_auth, token } = req.body;
       const user = await User.findOne({ email : email });
       if (user) {
-          try {
-              const { google_auth, token } = req.body; 
-              var QRCode = require('qrcode');
+          try {   
               const settings = require('../models/settings');                       
-              if (google_auth != undefined) { 
+              if (google_auth != undefined) {               
                   var secret = speakeasy.generateSecret({
                       name: user.user_id,
                       length : 20
@@ -1511,7 +1490,7 @@ exports.generateauthtoken = async (req, res)=>{
               }  
                    
               } else {
-                await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
+                await settings.updateOne( {email: email}, { $set: { google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1766,6 +1745,9 @@ exports.userWalletData = async (req, res) => {
   }
 }
 
+exports.update_reffral = async (req, res) => {
+  const { userId } = req.body;
 
+}
 
 
