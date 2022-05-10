@@ -1449,18 +1449,18 @@ exports.updateSetting = async (req, res) => {
 
 exports.generateauthtoken = async (req, res)=>{
  // if (req.session.session_id) {
+  const speakeasy = require("speakeasy");
       const { email } = req.body;
       const user = await User.findOne({ email : email });
       if (user) {
           try {
-              const google_auth = req.body.state?req.body.state:false; 
-              const token       = req.body.otp?req.body.otp:0;   
+              const { google_auth, token } = req.body; 
               var QRCode = require('qrcode');
-              const settings = require('../models/settings');            
-              if (google_auth) {
-                  const speakeasy = require("speakeasy");
+              const settings = require('../models/settings');                       
+              if (google_auth != undefined) { 
                   var secret = speakeasy.generateSecret({
-                      name: user.user_id
+                      name: user.user_id,
+                      length : 20
                   }); 
                   await settings.updateOne(
                       {email: email},
@@ -1476,11 +1476,11 @@ exports.generateauthtoken = async (req, res)=>{
                       key: secret.base32,
                       qr_url : qr_url
                   })               
-              }else if(token){
-
-                if (settings && settings[0].google_authenticator) {               
+              }else if(token != undefined){
+              const s = await settings.findOne({ email: email });
+                if (s && s.google_authenticator == 0) {               
                   const verified = await speakeasy.totp.verify({
-                      secret: s[0].google_authenticator_ascii,
+                      secret: s.google_authenticator_ascii,
                       encoding:  'ascii',
                       token: token
                   });                 
@@ -1506,7 +1506,7 @@ exports.generateauthtoken = async (req, res)=>{
               } else {
                   return res.json({
                       status: 0,
-                      message: 'Google 2FA is not activated'
+                      message: 'Google 2FA is already activated'
                   })
               }  
                    
