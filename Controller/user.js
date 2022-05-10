@@ -14,7 +14,7 @@ const login_history = require("../models/login_history");
 const preSaleModel = require("../models/presale");
 const session = require("express-session");
 const { findOne } = require("../models/user");
-const url = 'http://localhost:3001';
+const url = 'http://localhost:3000';
 app.use(
   session({
     secret: "thisissecratekey",
@@ -347,13 +347,29 @@ exports.signin = async (req, res) => {
          }
 
 
-            res.status(200).json({
-              status: 1,
-              token: token,
-              user: _id,
-              email: email,
-              message: "Login Successful",
-            });
+         const settingsModel = require('../models/settings');           
+         const s             = await settingsModel.findOne({ email: email });
+         const orders        = await preSaleModel.findOne({ status: 1 });
+         if(_user && s){
+           return res.status(200).json({
+             status              : 1,
+             token               : token,
+             user                : _id,
+             email               : email,
+             message             : "Login Successful",
+             currency_preference : user.currency ,
+             notification        : s.unusual_activity,
+             new_browser         : s.new_browser,
+             sales               : s.sales,
+             latest_news         : s.latest_news,
+             new_features        : s.new_features,
+             updates             : s.updates,
+             tips                : s.tips,
+             google_authenticator: s.google_authenticator,
+             login_activity      : s.login_activity,
+             anaPrice            : orders.price       
+           })
+         }           
           } else {
             return res.status(400).json({
               status: 0,
@@ -1437,12 +1453,14 @@ exports.generateauthtoken = async (req, res)=>{
       if (user) {
           try {
               const google_auth = req.body.state?req.body.state:false; 
+             // console.log(google_auth + "executed"+ email);
               const settings = require('../models/settings');            
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: user.user_id
                   });  
+                
                   await settings.updateOne(
                       {email: email},
                       {
@@ -1712,6 +1730,9 @@ exports.userWalletData = async (req, res) => {
     console.log("Error in user Wallet data " + error)
   }
 }
+
+
+
 
 
 

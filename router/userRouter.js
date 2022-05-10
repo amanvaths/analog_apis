@@ -43,7 +43,7 @@ router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin', signin);
-router.post('/transaction_history', transaction_history);
+router.post('/transaction_history', userDeposit);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
 router.post("/transaction_update", transaction_update);
@@ -101,7 +101,7 @@ router.get('/getpresalebyid', getpresalebyid);
 /**
 user Deposits
  */
-router.post('/userDeposit', userDeposit);
+//router.post('/userDeposit', userDeposit);
 
 
 
