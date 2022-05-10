@@ -1749,7 +1749,7 @@ exports.update_refferal = async (req, res) => {
   const { email, refferal_id } = req.body;
   try{
      const _u = await User.count({ email: refferal_id });
-     console.log(_u);
+    // console.log(_u);
       if(_u > 0 ){
        User.updateOne({ email: email }, {$set : { refferal: refferal_id }}).then(() => {
          return res.status(200).json({

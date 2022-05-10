@@ -127,7 +127,7 @@ async function getCMCData(req, res) {
         "Access-Control-Allow-Origin": "*",
       },
     });
-    console.log(ress.data.data);
+    //console.log(ress.data.data);
     return res.status(200).json(ress.data.data);
   } catch (error) {
     return res.status(400).json({ message: error.message });
