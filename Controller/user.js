@@ -30,6 +30,7 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+
 function randomString(length, chars) {
   var mask = "";
   if (chars.indexOf("a") > -1) mask += "abcdefghijklmnopqrstuvwxyz";
@@ -1453,6 +1454,7 @@ exports.generateauthtoken = async (req, res)=>{
       if (user) {
           try {
               const google_auth = req.body.state?req.body.state:false; 
+              const token       = req.body.otp?req.body.otp:0;   
               var QRCode = require('qrcode');
               const settings = require('../models/settings');            
               if (google_auth) {
@@ -1464,18 +1466,50 @@ exports.generateauthtoken = async (req, res)=>{
                       {email: email},
                       {
                         $set: {
-                          google_authenticator_ascii: secret.ascii,
-                          google_authenticator: 1,
+                          google_authenticator_ascii: secret.ascii,                        
                         },
                       });                  
-                 const qr_url = await QRCode.toDataURL(secret.otpauth_url);  
-                 //console.log(qr_url)                 
+                 const qr_url = await QRCode.toDataURL(secret.otpauth_url);                  
                   return res.json({
                       status: 1,
                       data: secret.otpauth_url,
                       key: secret.base32,
                       qr_url : qr_url
                   })               
+              }else if(token){
+
+                if (settings && settings[0].google_authenticator) {               
+                  const verified = await speakeasy.totp.verify({
+                      secret: s[0].google_authenticator_ascii,
+                      encoding:  'ascii',
+                      token: token
+                  });                 
+                  if (verified) { 
+                    await settings.updateOne(
+                      {email: email},
+                      {
+                        $set: {                     
+                          google_authenticator: 1,
+                        },
+                      });                                          
+                      return res.json({
+                          status : 1, 
+                          email  : email,
+                          message: "2FA Authentication Enabled"
+                      })
+                  } else {
+                      return res.json({
+                          status: 0,
+                          message: 'Invalid Token'
+                      })
+                  }
+              } else {
+                  return res.json({
+                      status: 0,
+                      message: 'Google 2FA is not activated'
+                  })
+              }  
+                   
               } else {
                 await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
@@ -1510,8 +1544,7 @@ exports.verifyauthtoken = async (req, res) =>{
   try {
       const {email} = req.body; 
       if (email) {
-          const token = req.body.token?req.body.token:false;        
-
+          const token = req.body.token?req.body.token:false; 
           if (token) {            
              const s = await settings.find({ email : email  });           
              /**
@@ -1548,8 +1581,8 @@ exports.verifyauthtoken = async (req, res) =>{
                       status: 0,
                       message: 'Google 2FA is not activated'
                   })
-              }    
-          } else {
+              }   
+          } else  {
               return res.json({
                   status: 0,
                   message: "Invalid API call"

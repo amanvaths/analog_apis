@@ -118,8 +118,7 @@ exports.userDeposit = async (req, res) => {
               const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
               const v_balance  = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;  
               const new_w_balance = balance;                
-              const ac_balance =  new_w_balance + v_balance;
-            //  console.log(v_balance, )
+              const ac_balance =  new_w_balance - v_balance;         
               /**
                * update user's wallet
                */ 
@@ -129,7 +128,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       balance     : new_w_balance,
-                      v_balance  : v_balance,
+                      v_balance   : v_balance,
                       ac_balance  : ac_balance
                     },
                   }

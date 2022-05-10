@@ -32,24 +32,22 @@ const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPr
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getreferal } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
 
-
 /**
  user Routes
  */
-
 router.post("/sendotp", sendotp);
 router.post("/varify", varify);
 router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin', signin);
-router.post('/transaction_history', userDeposit);
+router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
-router.post("/getwalletdata", walletData);
-router.post("/transaction_update", transaction_update);
-router.post('/loginhistory', loginhistory);
-router.post('/levels', levels);
-router.post('/settings', settings);
+router.post("/getwalletdata", requireSignin, walletData);
+router.post("/transaction_update", userDeposit);
+router.post('/loginhistory', requireSignin, loginhistory);
+router.post('/levels', requireSignin, levels);
+router.post('/settings', requireSignin, settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
  router.post('/getAffiliates', getAffiliates);
@@ -136,3 +134,17 @@ async function getCMCData(req, res) {
   }
 }
 module.exports = router;
+
+
+async function requireSignin(req, res, next) {
+  if (req.headers.authorization) {
+    const token = req.headers.authorization.split(" ")[1];
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user;
+    next();
+  } else {
+    return res.status(400).json({ message: "Authorization required" });
+  }
+  //jwt.decode()
+};
+ 
