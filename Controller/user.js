@@ -350,7 +350,7 @@ exports.signin = async (req, res) => {
          const settingsModel = require('../models/settings');           
          const s             = await settingsModel.findOne({ email: email });
          const orders        = await preSaleModel.findOne({ status: 1 });
-         if(_user && s){
+         if(user && s){
            return res.status(200).json({
              status              : 1,
              token               : token,
@@ -1453,14 +1453,13 @@ exports.generateauthtoken = async (req, res)=>{
       if (user) {
           try {
               const google_auth = req.body.state?req.body.state:false; 
-             // console.log(google_auth + "executed"+ email);
+              var QRCode = require('qrcode');
               const settings = require('../models/settings');            
               if (google_auth) {
                   const speakeasy = require("speakeasy");
                   var secret = speakeasy.generateSecret({
                       name: user.user_id
-                  });  
-                
+                  }); 
                   await settings.updateOne(
                       {email: email},
                       {
@@ -1468,12 +1467,15 @@ exports.generateauthtoken = async (req, res)=>{
                           google_authenticator_ascii: secret.ascii,
                           google_authenticator: 1,
                         },
-                      });
+                      });                  
+                 const qr_url = await QRCode.toDataURL(secret.otpauth_url);  
+                 //console.log(qr_url)                 
                   return res.json({
                       status: 1,
                       data: secret.otpauth_url,
-                      key: secret.base32
-                  })
+                      key: secret.base32,
+                      qr_url : qr_url
+                  })               
               } else {
                 await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
               }
@@ -1599,13 +1601,13 @@ exports.notificationSettings = async (req, res) => {
 exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
-    const refferal = await findUserId(email);      
-    console.log(refferal)
+    const userId = await findUserId(email); 
     const page = req.body.page ? req.body.page : 1;
     const limit = req.body.limit ? req.body.limit : 10;
     const skip = page * limit;
-    if (refferal) {
-      const affiliates = await User.find({ refferal: refferal });
+    if (userId) {   
+      const affiliates = await User.find({ refferal: userId });
+      console.log(affiliates);
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
@@ -1730,9 +1732,6 @@ exports.userWalletData = async (req, res) => {
     console.log("Error in user Wallet data " + error)
   }
 }
-
-
-
 
 
 
