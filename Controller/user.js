@@ -1591,7 +1591,7 @@ exports.notificationSettings = async (req, res) => {
       sales_latest_news: sales,           
       new_features_updates: new_features,             
       tips             : tips
-     } }).then((data) => {
+     } }, {upsert: true}).then((data) => {
        return res.status(200).json({
          status : 1,
          message : "Notification updated successfully"
@@ -1702,8 +1702,8 @@ exports.configSettings = async (req, res) => {
         currency_preference : _user.currency ,
         unusual_activity    : s.unusual_activity,
         new_browser         : s.new_browser,
-        sales_latest_news   : s.sales,                
-        new_features_updates: s.new_features,                  
+        sales_latest_news   : s.sales_latest_news,                
+        new_features_updates: s.new_features_updates,                  
         tips                : s.tips,
         google_authenticator: s.google_authenticator,
         login_activity      : s.login_activity,
