@@ -1,4 +1,7 @@
 const userWallet = require('../models/userWallet');
+const nodemailer = require("nodemailer");
+const url = 'http://localhost:3000';
+
 exports.userDeposit = async (req, res) => {
     const Web3 = require("web3");
   
@@ -113,33 +116,29 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-              const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0; 
-              //check for admin transfer
-              const admin_transfer = wallet.admin_transfer ? parseFloat(wallet.admin_transfer) : 0;            
-              const balance_without_admin_transfer = balance - admin_transfer;
-              const updated_balance = balance_without_admin_transfer - v_balance;
+              const v_balance  = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;  
+              const new_w_balance = balance;                
+              const ac_balance =  new_w_balance - v_balance;         
               /**
                * update user's wallet
                */ 
-              //console.log(updated_balance + " Updated balance");
-               if (updated_balance >= 0) {
-                const new_v_balance = v_balance + updated_balance;
-                const new_w_balance = w_balance + updated_balance;
-
+               if (new_w_balance != w_balance) {
                 await userWallet.updateOne(
                   { email: email, symbol: "TRX" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      v_balanace: new_v_balance,
+                      balance     : new_w_balance,
+                      v_balance   : v_balance,
+                      ac_balance  : ac_balance
                     },
                   }
                 );
-                if (updated_balance > 0) {                
-                   createDepositHistory(email, "TRX", wallet.walletAddr, updated_balance, updated_balance );          
+                if (balance > 0) {
+                  const new_transaction = new_w_balance - w_balance;
+                  createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
   
                      var subject = "New TRX Transaction";
-                     var msg = `<h5>Hello ${wallet.username}, <br> ${updated_balance} TRX deposited in your account`;            
+                     var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
                      sendMail(email, subject, msg);                 
                 }         
             }
@@ -157,6 +156,10 @@ exports.userDeposit = async (req, res) => {
             let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
             console.log(eth_balance / decimal + " ETH balance");
             const balance = eth_balance / decimal;
+            const v_balance  = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;  
+            const new_w_balance = balance;                
+            const ac_balance =  new_w_balance + v_balance;
+
             if (balance > 0) {
               /**
                * check for w balance
@@ -171,8 +174,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "ETH" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance     : new_w_balance,
+                      v_balance   : v_balance,
+                      ac_balance  : ac_balance
                     },
                   }
                 );
@@ -203,8 +207,10 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-              const new_w_balance = balance;
+              const w_balance       = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const new_w_balance   = balance;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
+              const ac_balance      = new_w_balance + v_balance;
               /**
                * update user's wallet
                */
@@ -213,8 +219,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BNB" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance       : new_w_balance,
+                      v_balance     : v_balance,
+                      ac_balance    : ac_balance
                     },
                   }
                 );
@@ -238,9 +245,11 @@ exports.userDeposit = async (req, res) => {
           try {
             let wallet = walletMATIC;
             const decimal = 1e18;          
-            const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
+            const matic_balance      = await web3Matic.eth.getBalance(wallet.walletAddr);
             console.log(matic_balance / decimal + " Matic balance");
-            const balance = matic_balance / decimal;
+            const balance            = matic_balance / decimal;
+            const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
+            const ac_balance         =  new_w_balance + v_balance;
   
             if (balance > 0) {
               /**
@@ -256,8 +265,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "MATIC" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance       : new_w_balance,
+                      v_balance     : v_balance,
+                      ac_balance    : ac_balance
                     },
                   }
                 );
@@ -292,8 +302,11 @@ exports.userDeposit = async (req, res) => {
                */
   
               let balance = usdt_balance ? usdt_balance / decimal : 0;
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-              const new_w_balance = balance;
+              const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const new_w_balance      = balance;
+              const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
+              const ac_balance         = new_w_balance + v_balance;
+
               /**
                * update user's wallet
                */
@@ -303,8 +316,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "USDT" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance           : new_w_balance,
+                      v_balance         : v_balance,
+                      ac_balance        : ac_balance
                     },
                   }
                 );
@@ -338,10 +352,10 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               let balance = busd_balance ? busd_balance / decimal : 0;
-              const w_balance = wallet[0].balance
-                ? parseFloat(wallet[0].balance)
-                : 0;
-              const new_w_balance = balance;
+              const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const new_w_balance      = balance;
+              const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
+              const ac_balance         = new_w_balance + v_balance;
               /**
                * update user's wallet
                */
@@ -351,8 +365,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BUSD" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance       : new_w_balance,
+                      v_balance    : v_balance,
+                      ac_balance    : ac_balance
                     },
                   }
                 );
@@ -386,9 +401,12 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              let balance = shib_balance ? shib_balance / decimal : 0;
-              const w_balance = wallet[0].balance ? parseFloat(wallet.balance) : 0;
-              const new_w_balance = balance;
+              let balance               = shib_balance ? shib_balance / decimal : 0;
+              const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const new_w_balance       = balance;
+              const v_balance           = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
+              const ac_balance          = new_w_balance + v_balance;
+
               /**
                * update user's wallet
                */
@@ -398,8 +416,9 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "SHIBA" },
                   {
                     $set: {
-                      balance: new_w_balance,
-                      old_balanace: w_balance,
+                      balance           : new_w_balance,
+                      v_balance        : v_balance,
+                      ac_balance        : ac_balance
                     },
                   }
                 );
@@ -482,3 +501,98 @@ exports.userDeposit = async (req, res) => {
   }
   }
   
+
+  async function sendMail(email, subject, message) {
+    var transporter = nodemailer.createTransport({
+      host: "mail.tronexa.com",
+      port: 465,
+      auth: {
+        user: "analog@tronexa.com",
+        pass: "Analog@123",
+      },
+    });
+  
+    var mailOptions = {
+      from: "analog@tronexa.com",
+      to: email,
+      subject: subject,
+      html: emailTemplate(email, message),
+    };
+  
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+  }
+  
+  function emailTemplate(user, msg) {
+    const template = `
+    <html>
+   <head>    
+       <link rel="stylesheet" href="${url}/assets/css/dashlite.css?ver=3.0.2" />
+       <link rel="stylesheet" href="${url}/assets/css/theme.css?ver=3.0.2">
+       <link rel="stylesheet" href="${url}/assets/css/style-email.css" />
+   </head>
+   <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
+      
+                   <table class="email-wraper">
+                       <tbody>
+                           <tr>
+                            <td class="py-5">
+                                <table class="email-header">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center pb-4">
+                                                <a href="#">
+                                                    <img class="email-logo" src="${url}/images/logo-dark.png" alt="logo">
+                                                   </a>
+                                                   <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
+                                               </td>
+                                           </tr>
+                                       </tbody>
+                                   </table>
+                                   <table class="email-body">
+                                       <tbody>
+                                           <tr>
+                                               <td class="p-3 p-sm-5">                                                
+                                                   <p>
+                                                      ${msg}                                                
+                                                   </p>                                                  
+                                                   <p class="mt-4">---- 
+                                                       <br> Regards
+                                                       <br>
+                                                       Analog
+                                                   </p>
+                                               </td>
+                                           </tr>
+                                       </tbody>
+                                   </table>
+                                   <table class="email-footer">
+                                       <tbody>
+                                           <tr>
+                                               <td class="text-center pt-4">
+                                                   <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
+                                                   <ul class="email-social">
+                                                       <li><a href="#"><img src="${url}/images/socials/facebook.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${url}/images/socials/twitter.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${url}/images/socials/youtube.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${url}/images/socials/medium.png" alt=""></a></li>
+                                                   </ul>
+                                                   <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${url}">analog.com</a>. 
+                                                   </p>
+                                               </td>
+                                           </tr>
+                                       </tbody>
+                                   </table>
+                               </td>
+                           </tr>
+                       </tbody>
+                   </table>         
+  </body>
+  </html>
+    `;
+    return template;
+  }
