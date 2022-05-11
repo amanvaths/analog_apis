@@ -5,9 +5,6 @@ const User = require('../models/user');
 const Buy = require('../models/buy');
 const Bonus = require('../models/referral_percent');
 const PriceChange = require('../models/priceChange');
-const User = require("../models/user");
-const Buy = require("../models/buy");
-const Bonus = require("../models/referral_percent");
 
 async function getCMCData(base_currency = false, currency = false) {
   try {
