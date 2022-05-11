@@ -1701,6 +1701,7 @@ exports.configSettings = async (req, res) => {
       return res.status(200).json({
         username            : _user.username,
         user_id             : _user.user_id,
+        refferal            : _user.refferal,
         currency_preference : _user.currency ,
         unusual_activity    : s.unusual_activity,
         new_browser         : s.new_browser,
@@ -1745,9 +1746,8 @@ exports.userWalletData = async (req, res) => {
 exports.update_refferal = async (req, res) => {
   const { email, refferalCode } = req.body;
   try{
-     const _u    = await User.count({ email: refferalCode });
-     const _user = await User.findOne({ email : email });
-      if(_u && _user.refferalCode.length <= 0){       
+     const _u    = await User.count({ user_id : refferalCode });
+      if(_u){       
        User.updateOne({ email: email }, {$set : { refferal: refferalCode }}).then(() => {
          return res.status(200).json({
             status : 1,
