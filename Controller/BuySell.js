@@ -438,15 +438,15 @@ exports.createOrder = async (req, res)=> {
     }
   }
 
-  exports.getreferal = async(req, res) => {
-    const Referal = require("../models/buy")
+  exports.getIncome = async(req, res) => {
+    const Income = require("../models/buy")
     try{
       const  query  = req.query
       const page = query.page
       const per_page = query.per_page
       delete query.page
       delete query.per_page
-      const ref = await Referal.find(query)
+      const ref = await Income.find(query)
       return res.json({
         status: 200,
         error: false,
