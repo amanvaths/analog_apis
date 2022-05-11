@@ -21,9 +21,10 @@ app.use(cors({
 const userRouter = require('./router/userRouter')
 app.use('/api',userRouter);
 
-app.get('/get', async function(req, res) {   
-  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-return res.send(fullUrl);
+app.get('/get',requireSignin, async function(req, res) {   
+    return res.status(200).json({
+        msg : "scs"
+    })
 });
 
 app.listen(port, '0.0.0.0' , () => {
@@ -32,75 +33,19 @@ app.listen(port, '0.0.0.0' , () => {
 
 
 
-function template(user, msg){
- var template = `<html>
- <head>
-    
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/dashlite.css?ver=3.0.2" />
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/theme.css?ver=3.0.2">
-     <link rel="stylesheet" href="http://localhost:3000/assets/css/style-email.css" />
- </head>
- <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
-    
-                 <table class="email-wraper">
-                     <tbody>
-                         <tr>
-                          <td class="py-5">
-                              <table class="email-header">
-                                  <tbody>
-                                      <tr>
-                                          <td class="text-center pb-4">
-                                              <a href="#">
-                                                  <img class="email-logo" src="http://localhost:3000/images/logo-dark.png" alt="logo">
-                                                 </a>
-                                                 <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                                 <table class="email-body">
-                                     <tbody>
-                                         <tr>
-                                             <td class="p-3 p-sm-5">
-                                                 <p><strong>Hello ${user}</strong>,</p>
-                                                 <p>
-                                                    ${msg}                                                
-                                                 </p>                                                  
-                                                 <p class="mt-4">---- 
-                                                     <br> Regards
-                                                     <br>
-                                                     Analog
-                                                 </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                                 <table class="email-footer">
-                                     <tbody>
-                                         <tr>
-                                             <td class="text-center pt-4">
-                                                 <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
-                                                 <ul class="email-social">
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/facebook.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/twitter.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/youtube.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="http://localhost:3000/images/socials/medium.png" alt=""></a></li>
-                                                 </ul>
-                                                 <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="http://localhost:3000">analog.com</a>. 
-                                                 </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                             </td>
-                         </tr>
-                     </tbody>
-                 </table>         
-</body>
-</html>`;
-}
-
-
+async function requireSignin(req, res, next) {
+    console.log(req.headers.authorization);
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.split(" ")[1];
+      const user = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = user;
+       next();  
+    } else {
+      return res.status(400).json({ message: "Authorization required" });
+    }
+    //jwt.decode()
+  };
+   
 
 
 

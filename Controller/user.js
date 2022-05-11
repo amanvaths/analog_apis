@@ -1703,7 +1703,7 @@ exports.configSettings = async (req, res) => {
     if(_user && s){
       return res.status(200).json({
         currency_preference : _user.currency ,
-        notification        : s.unusual_activity,
+        unusual_activity    : s.unusual_activity,
         new_browser         : s.new_browser,
         sales               : s.sales,
         latest_news         : s.latest_news,
