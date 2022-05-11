@@ -259,6 +259,7 @@ exports.signup = async (req, res) => {
   }
 };
 
+
 exports.signin = async (req, res) => {
   //console.log(req.body);
   const email = req.body.email ? req.body.email : "";
@@ -1747,6 +1748,8 @@ exports.update_refferal = async (req, res) => {
   const { email, refferalCode } = req.body;
   try{
      const _u    = await User.count({ user_id : refferalCode });
+     const _user = await User.findOne({ email : email });
+     if(_user.user_id != refferalCode){ 
       if(_u){       
        User.updateOne({ email: email }, {$set : { refferal: refferalCode }}).then(() => {
          return res.status(200).json({
@@ -1765,6 +1768,12 @@ exports.update_refferal = async (req, res) => {
           message : "Invalid refferal Code or Already updated"
         })
       }
+    }else{
+      return res.status(400).json({
+          status : 0,
+          message : "Something went wrong"
+        })
+    }
   }catch(error){
     console.log("Error in update refferal " + error);
   }
