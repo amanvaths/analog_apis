@@ -1699,6 +1699,7 @@ exports.configSettings = async (req, res) => {
     const orders    = await preSaleModel.findOne({ status: 1 });
     if(_user && s){
       return res.status(200).json({
+        username            : _user.username,
         currency_preference : _user.currency ,
         unusual_activity    : s.unusual_activity,
         new_browser         : s.new_browser,
@@ -1741,12 +1742,12 @@ exports.userWalletData = async (req, res) => {
 }
 
 exports.update_refferal = async (req, res) => {
-  const { email, refferal_id } = req.body;
+  const { email, refferalCode } = req.body;
   try{
-     const _u    = await User.count({ email: refferal_id });
+     const _u    = await User.count({ email: refferalCode });
      const _user = await User.findOne({ email : email });
-      if(_u && _user.refferal_id.length <= 0){       
-       User.updateOne({ email: email }, {$set : { refferal: refferal_id }}).then(() => {
+      if(_u && _user.refferalCode.length <= 0){       
+       User.updateOne({ email: email }, {$set : { refferal: refferalCode }}).then(() => {
          return res.status(200).json({
             status : 1,
             message : "Updated successfully"
