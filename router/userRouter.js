@@ -23,20 +23,18 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  
+  removeWhiteListedIp,  update_refferal
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
-const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getreferal } = require('../Controller/BuySell');
+const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
-
 
 /**
  user Routes
  */
-
 router.post("/sendotp", sendotp);
 router.post("/varify", varify);
 router.post("/forget", forgetPassword);
@@ -46,9 +44,9 @@ router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
-router.post("/transaction_update", transaction_update);
-router.post('/loginhistory', loginhistory);
-router.post('/levels', levels);
+router.post("/transaction_update", userDeposit);
+router.post('/loginhistory',  loginhistory);
+router.post('/levels',  levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
@@ -63,7 +61,7 @@ router.post('/userWalletData', userWalletData);
 router.post('/configSettings', configSettings);
 router.post('/removeWhiteListedIp', removeWhiteListedIp);
 router.post('/anaPrice', anaPrice);
-
+router.post('/update_refferal', update_refferal);
 
 /**
  * Admin Routes
@@ -91,7 +89,7 @@ router.get('/getpresalebyid', getpresalebyid);
  router.get('/getAllOrder', getAllOrder);
  router.get('/deleteOrders', deleteOrders);
  router.get('/depositHestory', depositHestory);
- router.get('/getreferal', getreferal);
+ router.get('/getIncome', getIncome);
  router.get('/getUser', getUser);
  router.post('/addColdWallet', addColdWallet);
  router.get('/getColdWallet', getColdWallet);
@@ -101,7 +99,7 @@ router.get('/getpresalebyid', getpresalebyid);
 /**
 user Deposits
  */
-router.post('/userDeposit', userDeposit);
+//router.post('/userDeposit', userDeposit);
 
 
 
@@ -129,10 +127,24 @@ async function getCMCData(req, res) {
         "Access-Control-Allow-Origin": "*",
       },
     });
-    console.log(ress.data.data);
+    //console.log(ress.data.data);
     return res.status(200).json(ress.data.data);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 }
 module.exports = router;
+
+
+async function requireSignin(req, res, next) {
+  if (req.headers.authorization) {
+    const token = req.headers.authorization.split(" ")[1];
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user;
+    next();
+  } else {
+    return res.status(400).json({ message: "Authorization required" });
+  }
+  //jwt.decode()
+};
+ 
