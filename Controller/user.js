@@ -1588,13 +1588,10 @@ exports.notificationSettings = async (req, res) => {
     await settings.updateOne({ email : email }, { $set : { 
       unusual_activity : unusual_activity,
       new_browser      : new_browser,
-      sales            : sales,
-      latest_news      : sales,
-      new_features     : new_features,
-      updates          : new_features,
+      sales_latest_news: sales,           
+      new_features_updates: new_features,             
       tips             : tips
      } }).then((data) => {
-       //console.log("updated");
        return res.status(200).json({
          status : 1,
          message : "Notification updated successfully"
