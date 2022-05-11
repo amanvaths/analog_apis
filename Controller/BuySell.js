@@ -1,9 +1,10 @@
 const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
 const mongoose = require("mongoose");
-const User = require("../models/user");
-const Buy = require("../models/buy");
-const Bonus = require("../models/referral_percent");
+const User = require('../models/user');
+const Buy = require('../models/buy');
+const Bonus = require('../models/referral_percent');
+const PriceChange = require('../models/priceChange');
 
 async function getCMCData(base_currency = false, currency = false) {
   try {
@@ -38,283 +39,278 @@ async function getCMCData(base_currency = false, currency = false) {
     return false;
   }
 }
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res)=> { 
   const wallet = require("../models/userWallet");
   const Presale = require("../models/presale");
   try {
     const { amount, currencyType, compairCurrency, email } = req.body;
-    let quantity = req.body.amount;
+    let quantity=req.body.amount;
     // console.log( req.body)
-    const walletData = await wallet.find({
-      email: email,
-      symbol: { $in: [currencyType, compairCurrency] },
-    });
-    const currencyT = walletData.find((wall) => wall.symbol == currencyType);
-    const compairC = walletData.find((wall) => wall.symbol == compairCurrency);
-    const presale = await Presale.findOne({ status: 1 });
-    req.body.currency = "inr";
-    req.body.base_currency = req.body.currencyType.toLowerCase();
-    const cmcdata = await getCMCData(req.body.base_currency, req.body.currency);
-    const price_in_inr = cmcdata[req.body.currencyType].quote.INR.price;
-    const ANA_price = presale.price;
-    const one_ANA_in = ANA_price / price_in_inr;
-    console.log("hello", quantity);
-    console.log("one", one_ANA_in);
-    let compairVal = mul(one_ANA_in, quantity);
-
-    if (currencyT.balance >= compairVal) {
-      let CTbalance =
-        sub(currencyT.balance, compairVal) > 0
-          ? sub(currencyT.balance, compairVal)
-          : 0;
-      let CCbalance = add(compairC.balance, compairVal);
-      await wallet.updateOne(
-        { _id: currencyT._id },
-        {
-          $set: {
-            balance: CTbalance,
-          },
-        }
-      );
-      await Presale.updateOne(
-        { _id: presale._id },
-        {
-          $set: {
-            coinremaining: presale.coinremaining - amount,
-          },
-        }
-      );
-      await wallet.updateOne(
-        { _id: compairC._id },
-        {
-          $set: {
-            balance: CCbalance,
-          },
-        }
-      );
-      var order_id = Date.now().toString(16).toUpperCase();
-      await OrderHistory(
-        compairVal,
-        one_ANA_in,
-        quantity,
-        currencyType,
-        compairCurrency,
-        email,
-        order_id
-      );
-      // referral commission
-      console.log("yaha", order_id);
-      await User.findOne({ email: email }).exec(async (error, user) => {
-        if (user) {
-          req.body.token_quantity = quantity;
-          req.body.token_price = ANA_price;
-          var db = mongoose.connection;
-          //var Percent = db.collection('referral_percents');
-          const token_buying = req.body.token_quantity;
-          const token_price = req.body.token_price;
-          const token_quantity = req.body.token_quantity;
-
-          const percnt = await Bonus.findOne();
-          console.log(percnt.buying_bonus);
-          const bonus_perc = parseInt(percnt.buying_bonus);
-          const lev1 = parseInt(percnt.level1);
-          const lev2 = parseInt(percnt.level2);
-          const lev3 = parseInt(percnt.level3);
-          const buying_bonus = (bonus_perc / 100) * token_quantity;
-          const token_balance = token_quantity;
-          let referral1 = user.refferal;
-          let ref1 = (lev1 / 100) * token_quantity;
-          let ref2 = "";
-          let ref3 = "";
-          let referral2 = "";
-          let referral3 = "";
-          let refuser1 = "";
-          let refuser2 = "";
-          let refuser3 = "";
-          // get referral ids
-
-          let rid = await User.findOne({ user_id: referral1 });
-          if (rid) {
-            refuser1 = rid.email;
-            referral2 = rid.refferal;
-            ref2 = (lev2 / 100) * token_quantity;
-            let ridi = await User.findOne({ user_id: referral2 });
-            if (ridi) {
-              refuser2 = ridi.email;
-              referral3 = ridi.refferal;
-              ref3 = (lev3 / 100) * token_quantity;
-              let ridim = await User.findOne({ user_id: referral3 });
-              if (ridim) {
-                refuser3 = ridim.email;
-              }
-            }
-          }
-
-          user_purchase = await User.updateOne(
-            {
-              email: req.body.email,
-            },
-            {
-              $set: {},
-              $inc: {
-                buying_bonus: buying_bonus,
-                token_balance: token_balance,
-              },
-            }
-          ).then(async (d) => {
-            const _userbuy = Buy.insertMany([
-              {
-                email: req.body.email,
-                token_price: req.body.token_price,
-                token_buying: req.body.token_quantity,
-                token_quantity: token_quantity,
-                currency_price: one_ANA_in,
-                currenty_prefer: req.body.base_currency,
-                bonus_percent: bonus_perc,
-                currency: currencyType,
-                bonus_type: "Buying",
-                order_id: order_id,
-              },
-            ])
-              .then((result) => {
-                if (referral1 && refuser1) {
-                  const _userref1 = Buy.insertMany([
-                    {
-                      email: refuser1,
-                      token_price: req.body.token_price,
-                      token_buying: req.body.token_quantity,
-                      token_quantity: token_quantity,
-                      bonus_type: "Level",
-                      from_user: req.body.email,
-                      bonus: ref1,
-                      bonus_percent: lev1,
-                      from_level: 1,
-                      currency: currencyType,
-                      order_id: order_id,
-                    },
-                  ])
-                    .then(async (de) => {
-                      user_purchase = await User.updateOne(
-                        {
-                          email: refuser1,
-                        },
-                        {
-                          $set: {},
-                          $inc: {
-                            referral_bonus: ref1,
-                          },
-                        }
-                      );
-                    })
-                    .catch((error) => {
-                      console.log(error);
-                    });
-                }
-                if (referral2 && refuser2) {
-                  const _userref2 = Buy.insertMany([
-                    {
-                      email: refuser2,
-                      token_price: req.body.token_price,
-                      token_buying: req.body.token_quantity,
-                      token_quantity: token_quantity,
-                      bonus_type: "Level",
-                      from_user: req.body.email,
-                      bonus: ref2,
-                      bonus_percent: lev2,
-                      from_level: 2,
-                      currency: currencyType,
-                      order_id: order_id,
-                    },
-                  ])
-                    .then(async (te) => {
-                      user_purchase = await User.updateOne(
-                        {
-                          email: refuser2,
-                        },
-                        {
-                          $set: {},
-                          $inc: {
-                            referral_bonus: ref2,
-                          },
-                        }
-                      );
-                    })
-                    .catch((error) => {
-                      console.log(error);
-                    });
-                }
-                if (referral3 && refuser3) {
-                  const _userref3 = Buy.insertMany([
-                    {
-                      email: refuser3,
-                      token_price: req.body.token_price,
-                      token_buying: req.body.token_quantity,
-                      token_quantity: token_quantity,
-                      bonus_type: "Level",
-                      from_user: req.body.email,
-                      bonus: ref3,
-                      bonus_percent: lev3,
-                      from_level: 3,
-                      currency: currencyType,
-                      order_id: order_id,
-                    },
-                  ])
-                    .then(async (ke) => {
-                      user_purchase = await User.updateOne(
-                        {
-                          email: refuser3,
-                        },
-                        {
-                          $set: {},
-                          $inc: {
-                            referral_bonus: ref3,
-                          },
-                        }
-                      );
-                    })
-                    .catch((error) => {
-                      console.log("error_yaha_hai : ", error);
-                    });
-                }
-
-                if (result) {
-                  return res.status(200).json({
-                    status: "true",
-                    message:
-                      "Purchase of Token Quantiy " +
-                      token_quantity +
-                      " at the price of " +
-                      token_price +
-                      " is Successfull",
-                  });
-                }
+    const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
+      const currencyT = walletData.find((wall => wall.symbol == currencyType ))
+      const compairC = walletData.find((wall => wall.symbol == compairCurrency ))
+      const presale = await Presale.findOne({status: 1})
+      req.body.currency="inr";
+      req.body.base_currency=req.body.currencyType.toLowerCase();
+      const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+      const price_in_inr = cmcdata[req.body.currencyType].quote.INR.price;
+      const ANA_price = presale.price;
+      const one_ANA_in=ANA_price/price_in_inr;
+      console.log("hello",quantity)
+      console.log("one",one_ANA_in)
+      let compairVal = mul(one_ANA_in,quantity);
+       
+      if(currencyT.balance >= compairVal ) {
+        
+              //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
+              let CTbalance = currencyT.v_balance + compairVal; 
+              let CCbalance = add(compairC.balance, compairVal);
+              console.log("use balance",compairVal)
+              await wallet.updateOne({_id:currencyT._id},{
+                  $set:{
+                    v_balance: CTbalance
+                  }
               })
-              .catch((error) => {
-                console.log(error);
-              });
-          });
-        } else {
-          return res.status(400).json({
-            status: "ok",
-            message: "User Not Found",
-          });
+              await Presale.updateOne({_id: presale._id },{
+                  $set:{
+                    coinremaining: presale.coinremaining - quantity
+                  }
+              })
+              await wallet.updateOne({_id:compairC._id},{
+                  $set:{
+                      balance:CCbalance
+                  }
+              })
+              // token price update
+              const presaleag = await Presale.findOne({status: 1})
+              const remcoin = presaleag.coinremaining
+              const coinsquant = presaleag.coinquantity
+              const nowquant = coinsquant - remcoin
+              const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
+              if(percntsold>0){
+               const raise = (percntsold/ 100) * ANA_price
+               const newprice = (ANA_price + raise).toFixed(2)
+               await Presale.updateOne({status:1},{
+                $set:{
+                  price:newprice
+                }
+               })
+              console.log(percntsold)
+              console.log(newprice)
+              const priceupdt = PriceChange.insertMany([{
+                levelname : presaleag.levelname, 
+                coinquantity : coinsquant,
+                coinsold : nowquant,
+                oldprice : ANA_price,
+                changeprice : newprice,
+                changepercent : percntsold
+            }])
+              }
+              // token price update
+
+              var order_id =Date.now().toString(16).toUpperCase();
+              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id)
+              // referral commission
+              console.log("yaha",order_id)
+              await  User.findOne({ email :email })
+        .exec(async (error, user) => {
+            if (user){ 
+              
+              req.body.token_quantity=quantity;
+              req.body.token_price=ANA_price;
+              var db = mongoose.connection;
+              //var Percent = db.collection('referral_percents');
+              const token_buying = req.body.token_quantity
+              const token_price = req.body.token_price
+              const token_quantity = req.body.token_quantity
+
+              const percnt = await Bonus.findOne();
+              console.log(percnt.buying_bonus);
+              const bonus_perc = parseInt(percnt.buying_bonus)
+              const lev1 = parseInt(percnt.level1)
+              const lev2 = parseInt(percnt.level2)
+              const lev3 = parseInt(percnt.level3)
+              const buying_bonus = (bonus_perc/100) * token_quantity;
+              const token_balance = token_quantity
+              let referral1 = user.refferal;
+              let ref1 = (lev1/100) * token_quantity;
+              let ref2 = "";
+              let ref3 = "";
+              let referral2="";
+              let referral3="";
+              let refuser1="";
+              let refuser2="";
+              let refuser3="";
+              // get referral ids 
+             
+                  let rid = await User.findOne({  user_id : referral1 });
+                  if(rid){
+                      refuser1= rid.email
+                      referral2=rid.refferal
+                      ref2 = (lev2/100) * token_quantity;
+                      let ridi = await User.findOne({  user_id : referral2 });
+                         if(ridi){
+                        refuser2= ridi.email
+                             referral3=ridi.refferal
+                             ref3 = (lev3/100) * token_quantity;
+                           let ridim = await User.findOne({  user_id : referral3 });
+                           if(ridim){
+                              refuser3= ridim.email
+                            }
+                         }
+                  }
+         
+              user_purchase = await User.updateOne({
+                  email: req.body.email
+              }, {
+                  $set: {
+                    
+                  },
+                  $inc: {
+                      buying_bonus: buying_bonus,
+                      token_balance:  token_balance
+                  }
+              }
+  
+              ).then(async (d) => {
+                  const _userbuy = Buy.insertMany([{
+                      email : req.body.email, 
+                      token_price : req.body.token_price,
+                      token_buying : req.body.token_quantity,
+                      token_quantity : token_quantity,
+                      currency_price : one_ANA_in,
+                      currenty_prefer: req.body.base_currency,
+                      bonus_percent : bonus_perc,
+                      currency : currencyType,
+                      bonus_type : "Buying",
+                      order_id : order_id
+                  }]).then((result)=>{
+                      if(referral1 && refuser1){
+                          const _userref1 = Buy.insertMany([{
+                              email : refuser1, 
+                              token_price : req.body.token_price,
+                              token_buying : req.body.token_quantity,
+                              token_quantity : token_quantity,
+                              bonus_type : "Level",
+                              from_user : req.body.email,
+                              bonus : ref1,
+                              bonus_percent : lev1,
+                              from_level:1,
+                              currency : currencyType,
+                              order_id : order_id
+                          }]).then(async (de) => {
+                              user_purchase = await User.updateOne({
+                                  email: refuser1
+                              }, {
+                                  $set: {
+                                    
+                                  },
+                                  $inc: {
+                                      referral_bonus: ref1
+                                  }
+                              }
+                  
+                              )
+                          }).catch((error)=>{
+                              console.log(error)
+                              });
+                          }
+                          if(referral2 && refuser2){
+                              const _userref2 =  Buy.insertMany([{
+                                  email : refuser2, 
+                                  token_price : req.body.token_price,
+                                  token_buying : req.body.token_quantity,
+                                  token_quantity : token_quantity,
+                                  bonus_type : "Level",
+                                  from_user : req.body.email,
+                                  bonus : ref2,
+                                  bonus_percent : lev2,
+                                  from_level:2,
+                                  currency : currencyType,
+                                  order_id : order_id
+                              }]).then(async (te) => {
+                                  user_purchase = await User.updateOne({
+                                      email: refuser2
+                                  }, {
+                                      $set: {
+                                        
+                                      },
+                                      $inc: {
+                                          referral_bonus: ref2
+                                      }
+                                  }
+                      
+                                  )
+                              }).catch((error)=>{
+                                  console.log(error)
+                                  });
+                              }
+                          if(referral3 && refuser3){
+                                  const _userref3 = Buy.insertMany([{
+                                      email : refuser3, 
+                                      token_price : req.body.token_price,
+                                      token_buying : req.body.token_quantity,
+                                      token_quantity : token_quantity,
+                                      bonus_type : "Level",
+                                      from_user : req.body.email,
+                                      bonus : ref3,
+                                      bonus_percent : lev3,
+                                      from_level:3,
+                                      currency : currencyType,
+                                      order_id : order_id
+                                  }]).then(async (ke) => {
+                                      user_purchase = await User.updateOne({
+                                          email: refuser3
+                                      }, {
+                                          $set: {
+                                            
+                                          },
+                                          $inc: {
+                                              referral_bonus: ref3
+                                          }
+                                      }
+                          
+                                      )
+                                  }).catch((error)=>{
+                                      console.log("error_yaha_hai : ",error)
+                                      });
+                              }
+
+                              if(result){
+                                  return res.status(200).json({
+                                      status : "true",
+                                      message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+token_price+" is Successfull"
+                                  }); 
+                              }
+                  }).catch((error)=>{
+                  console.log(error)
+                  });
+                  
+                  
+                });
+            }else{ 
+              return res.status(400).json({
+                  status : "ok",
+                  message: "User Not Found"
+              });   
         }
-      });
-      // referral commission
-      return res.json({
-        status: 200,
-        error: false,
-        message: "Order Executed Successfully",
-      });
-    } else {
-      return res.json({
-        status: 400,
-        error: true,
-        message: "Insufficient " + req.body.currencyType + " Balance",
-      });
-    }
+        });
+              // referral commission
+              return res.json({
+                  status: 200,
+                  error: false,
+                  message: "Order Executed Successfully"
+                });
+      } else {
+          return res.json({
+              status: 400,
+              error: true,
+              message: "Insufficient "+req.body.currencyType+" Balance",
+            });
+      }    
+      
   } catch (error) {
-    console.log("Error from: createOrder ", error);
+      console.log("Error from: createOrder ", error)
     return res.json({
       status: 400,
       error: true,
@@ -322,7 +318,8 @@ exports.createOrder = async (req, res) => {
       err: error.message,
     });
   }
-};
+}
+
 
 async function OrderHistory(
   amount,
@@ -372,10 +369,11 @@ exports.getAllOrder = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
-    console.log(query) 
+    console.log(startDate
+      ,endDate) 
     if (startDate && endDate) {
         params.createdAt = { $gte: startDate , $lte: endDate};
     } else {
@@ -419,7 +417,7 @@ exports.depositHestory = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     console.log(query) 
@@ -455,7 +453,7 @@ exports.levelIncomeHistory = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     console.log(query) 
@@ -491,7 +489,7 @@ exports.getUser = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     if (startDate && endDate) {
