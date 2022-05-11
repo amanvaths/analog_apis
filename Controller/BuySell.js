@@ -369,10 +369,11 @@ exports.getAllOrder = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
-    console.log(query) 
+    console.log(startDate
+      ,endDate) 
     if (startDate && endDate) {
         params.createdAt = { $gte: startDate , $lte: endDate};
     } else {
@@ -416,7 +417,7 @@ exports.depositHestory = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     console.log(query) 
@@ -452,7 +453,7 @@ exports.levelIncomeHistory = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     console.log(query) 
@@ -488,7 +489,7 @@ exports.getUser = async (req, res) => {
     let endDate = query.endDate ? new Date((new Date(query.endDate)).setUTCHours(23,59,59)) : "";
     delete query.page;
     delete query.per_page;
-    delete query.startDate;
+    delete query.start;
     delete query.endDate;
     let params = {};
     if (startDate && endDate) {
