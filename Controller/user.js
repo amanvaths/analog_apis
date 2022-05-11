@@ -14,7 +14,7 @@ const login_history = require("../models/login_history");
 const preSaleModel = require("../models/presale");
 const session = require("express-session");
 const { findOne } = require("../models/user");
-const url = 'http://localhost:3001';
+const url = 'http://localhost:3000';
 app.use(
   session({
     secret: "thisissecratekey",
@@ -29,6 +29,7 @@ app.use(
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
 
 function randomString(length, chars) {
   var mask = "";
@@ -259,7 +260,7 @@ exports.signup = async (req, res) => {
 };
 
 exports.signin = async (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
   if (email && checkEmail(email) && password) {
@@ -274,8 +275,7 @@ exports.signin = async (req, res) => {
         if (user) {        
           const settingsModel = require('../models/settings');
           const { _id, email, password, isVarify, username } = user;
-          const settings = await settingsModel.find({ email : email });
-         // console.log(settings[0].login_activity);        
+          const settings = await settingsModel.find({ email : email });            
           const login_activity = settings[0].login_activity;        
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
@@ -303,8 +303,7 @@ exports.signin = async (req, res) => {
                       const browser_name = device.client.name;          
                       let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
                       browser_version = browser_version ? browser_version.substr(1, browser_version.length - 2) : "";
-                    // console.log(ip + "=ip" + "device= " + device + " browser_name= " + browser_version);
-                   // console.log(login_activity + " login activity");
+                  
                     if(login_activity == 1){
                       try {
                         await login_history.create({
@@ -344,16 +343,14 @@ exports.signin = async (req, res) => {
             IP : ${ip} <br>
             If it's not you please change your password.</h5>`;
             sendMail(email, subject, msg);            
-         }
-
-
-            res.status(200).json({
-              status: 1,
-              token: token,
-              user: _id,
-              email: email,
-              message: "Login Successful",
-            });
+         }        
+           return res.status(200).json({
+             status              : 1,
+             token               : token,
+             user                : _id,
+             email               : email,
+             message             : "Login Successful",                  
+           });           
           } else {
             return res.status(400).json({
               status: 0,
@@ -1432,32 +1429,68 @@ exports.updateSetting = async (req, res) => {
 
 exports.generateauthtoken = async (req, res)=>{
  // if (req.session.session_id) {
-      const { email } = req.body;
+  const speakeasy = require("speakeasy");
+  var QRCode = require('qrcode');
+      const { email, google_auth, token } = req.body;
       const user = await User.findOne({ email : email });
       if (user) {
-          try {
-              const google_auth = req.body.state?req.body.state:false; 
-              const settings = require('../models/settings');            
-              if (google_auth) {
-                  const speakeasy = require("speakeasy");
+          try {   
+              const settings = require('../models/settings');                       
+              if (google_auth != undefined) {               
                   var secret = speakeasy.generateSecret({
-                      name: user.user_id
-                  });  
+                      name: user.user_id,
+                      length : 20
+                  }); 
                   await settings.updateOne(
                       {email: email},
                       {
                         $set: {
-                          google_authenticator_ascii: secret.ascii,
-                          google_authenticator: 1,
+                          google_authenticator_ascii: secret.ascii,                        
                         },
-                      });
+                      });                  
+                 const qr_url = await QRCode.toDataURL(secret.otpauth_url);                  
                   return res.json({
                       status: 1,
                       data: secret.otpauth_url,
-                      key: secret.base32
-                  })
+                      key: secret.base32,
+                      qr_url : qr_url
+                  })               
+              }else if(token != undefined){
+              const s = await settings.findOne({ email: email });
+                if (s && s.google_authenticator == 0) {               
+                  const verified = await speakeasy.totp.verify({
+                      secret: s.google_authenticator_ascii,
+                      encoding:  'ascii',
+                      token: token
+                  });                 
+                  if (verified) { 
+                    await settings.updateOne(
+                      {email: email},
+                      {
+                        $set: {                     
+                          google_authenticator: 1,
+                        },
+                      });                                          
+                      return res.json({
+                          status : 1, 
+                          email  : email,
+                          message: "2FA Authentication Enabled"
+                      })
+                  } else {
+                      return res.json({
+                          status: 0,
+                          message: 'Invalid Token'
+                      })
+                  }
               } else {
-                await settings.updateOne( {email: email}, { $set: { google_authenticator_ascii: secret.ascii, google_authenticator: 0 } });
+                  return res.json({
+                      status: 0,
+                      message: 'Google 2FA is already activated'
+                  })
+              }  
+                   
+              } else {
+                await settings.updateOne( {email: email}, { $set: { google_authenticator: 0 } });
               }
               return res.json({
                   status: 1,
@@ -1490,8 +1523,7 @@ exports.verifyauthtoken = async (req, res) =>{
   try {
       const {email} = req.body; 
       if (email) {
-          const token = req.body.token?req.body.token:false;        
-
+          const token = req.body.token?req.body.token:false; 
           if (token) {            
              const s = await settings.find({ email : email  });           
              /**
@@ -1528,8 +1560,8 @@ exports.verifyauthtoken = async (req, res) =>{
                       status: 0,
                       message: 'Google 2FA is not activated'
                   })
-              }    
-          } else {
+              }   
+          } else  {
               return res.json({
                   status: 0,
                   message: "Invalid API call"
@@ -1581,13 +1613,13 @@ exports.notificationSettings = async (req, res) => {
 exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
-    const refferal = await findUserId(email);      
-    console.log(refferal)
+    const userId = await findUserId(email); 
     const page = req.body.page ? req.body.page : 1;
     const limit = req.body.limit ? req.body.limit : 10;
     const skip = page * limit;
-    if (refferal) {
-      const affiliates = await User.find({ refferal: refferal });
+    if (userId) {   
+      const affiliates = await User.find({ refferal: userId });
+      console.log(affiliates);
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
@@ -1713,6 +1745,32 @@ exports.userWalletData = async (req, res) => {
   }
 }
 
-
+exports.update_refferal = async (req, res) => {
+  const { email, refferal_id } = req.body;
+  try{
+     const _u = await User.count({ email: refferal_id });
+    // console.log(_u);
+      if(_u > 0 ){
+       User.updateOne({ email: email }, {$set : { refferal: refferal_id }}).then(() => {
+         return res.status(200).json({
+            status : 1,
+            message : "Updated successfully"
+          })
+       }).catch((error) => {
+        return res.status(400).json({
+          status : 0,
+          message : "Something went wrong"
+        })
+       });
+      }else{
+        return res.status(400).json({
+          status : 0,
+          message : "Invalid refferal Code"
+        })
+      }
+  }catch(error){
+    console.log("Error in update refferal " + error);
+  }
+}
 
 
