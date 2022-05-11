@@ -1743,9 +1743,9 @@ exports.userWalletData = async (req, res) => {
 exports.update_refferal = async (req, res) => {
   const { email, refferal_id } = req.body;
   try{
-     const _u = await User.count({ email: refferal_id });
-    // console.log(_u);
-      if(_u > 0 ){
+     const _u    = await User.count({ email: refferal_id });
+     const _user = await User.findOne({ email : email });
+      if(_u && _user.refferal_id.length <= 0){       
        User.updateOne({ email: email }, {$set : { refferal: refferal_id }}).then(() => {
          return res.status(200).json({
             status : 1,
@@ -1760,7 +1760,7 @@ exports.update_refferal = async (req, res) => {
       }else{
         return res.status(400).json({
           status : 0,
-          message : "Invalid refferal Code"
+          message : "Invalid refferal Code or Already updated"
         })
       }
   }catch(error){
