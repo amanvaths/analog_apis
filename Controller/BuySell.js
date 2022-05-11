@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const User = require('../models/user');
 const Buy = require('../models/buy');
 const Bonus = require('../models/referral_percent');
+const PriceChange = require('../models/priceChange');
 
 async function getCMCData(base_currency=false, currency=false) {
   try {
@@ -60,16 +61,18 @@ exports.createOrder = async (req, res)=> {
          
         if(currencyT.balance >= compairVal ) {
           
-                let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
+                //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
+                let CTbalance = currencyT.v_balance + compairVal; 
                 let CCbalance = add(compairC.balance, compairVal);
+                console.log("use balance",compairVal)
                 await wallet.updateOne({_id:currencyT._id},{
                     $set:{
-                        balance: CTbalance
+                      v_balance: CTbalance
                     }
                 })
                 await Presale.updateOne({_id: presale._id },{
                     $set:{
-                      coinremaining: presale.coinremaining - amount
+                      coinremaining: presale.coinremaining - quantity
                     }
                 })
                 await wallet.updateOne({_id:compairC._id},{
@@ -77,6 +80,33 @@ exports.createOrder = async (req, res)=> {
                         balance:CCbalance
                     }
                 })
+                // token price update
+                const presaleag = await Presale.findOne({status: 1})
+                const remcoin = presaleag.coinremaining
+                const coinsquant = presaleag.coinquantity
+                const nowquant = coinsquant - remcoin
+                const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
+                if(percntsold>0){
+                 const raise = (percntsold/ 100) * ANA_price
+                 const newprice = (ANA_price + raise).toFixed(2)
+                 await Presale.updateOne({status:1},{
+                  $set:{
+                    price:newprice
+                  }
+                 })
+                console.log(percntsold)
+                console.log(newprice)
+                const priceupdt = PriceChange.insertMany([{
+                  levelname : presaleag.levelname, 
+                  coinquantity : coinsquant,
+                  coinsold : nowquant,
+                  oldprice : ANA_price,
+                  changeprice : newprice,
+                  changepercent : percntsold
+              }])
+                }
+                // token price update
+
                 var order_id =Date.now().toString(16).toUpperCase();
                 await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id)
                 // referral commission
