@@ -33,8 +33,7 @@ app.listen(port, '0.0.0.0' , () => {
 
 
 
-async function requireSignin(req, res, next) {
-    console.log(req.headers.authorization);
+async function requireSignin(req, res, next) { 
     if (req.headers.authorization) {
       const token = req.headers.authorization.split(" ")[1];
       const user = jwt.verify(token, process.env.JWT_SECRET);
