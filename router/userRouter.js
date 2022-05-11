@@ -43,7 +43,7 @@ router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
-router.post("/getwalletdata", requireSignin, walletData);
+router.post("/getwalletdata", walletData);
 router.post("/transaction_update", userDeposit);
 router.post('/loginhistory', requireSignin, loginhistory);
 router.post('/levels', requireSignin, levels);
