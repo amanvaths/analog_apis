@@ -1699,7 +1699,7 @@ exports.configSettings = async (req, res) => {
     const orders    = await preSaleModel.findOne({ status: 1 });
     if(_user && s){
       return res.status(200).json({
-        username            : _user.username,
+        username            : _user.user_id,
         currency_preference : _user.currency ,
         unusual_activity    : s.unusual_activity,
         new_browser         : s.new_browser,
