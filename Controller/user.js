@@ -211,6 +211,10 @@ exports.signup = async (req, res) => {
           });
 
           _user.save((error, data) => {
+            
+          const settings = require('../models/settings');
+          settings.create({ email : email });
+
             if (error) {
               console.log("Error in Sign Up", error.message);
               return res.status(400).json({

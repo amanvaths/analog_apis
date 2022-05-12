@@ -158,7 +158,8 @@ async function auth(req, res, next){
   const login_history = require("../models/login_history");
   const { email } = req.body;
   const settingsModel = require('../models/settings');
-  const settings = await settingsModel.findOne({ email : email });  
+  const settings = await settingsModel.findOne({ email : email },{ upsert: true });  
+  console.log(settings);
   const _user = await User.findOne({ email: email }); 
   const username =   _user.username;       
   const login_activity = settings.login_activity;   
