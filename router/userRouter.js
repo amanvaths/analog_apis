@@ -163,9 +163,9 @@ async function auth(req, res, next){
   const login_history = require("../models/login_history");
   const { email } = req.body;
   const settingsModel = require('../models/settings');
-  const settings = await settingsModel.findOne({ email : email },{ upsert: true });  
-  console.log(settings);
-  const _user = await User.findOne({ email: email }); 
+  const settings = await settingsModel.findOne({ email : email });  
+  const _user = await User.findOne({ email: email });
+  if(_user){ 
   const username =   _user.username;       
   const login_activity = settings.login_activity;   
             ua = req.headers["user-agent"];
@@ -175,9 +175,9 @@ async function auth(req, res, next){
             let ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;       
             let br = req.headers["sec-ch-ua"];
             let brr = br ? br.split(",") : "";           
-            const browser_name = device.client.name;          
-            let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
-            browser_version = browser_version ? browser_version.substr(1, browser_version.length - 2) : "";
+            const browser_name = device.client.name;  
+            const browser_version = device.device.version ? device.device.version : "";
+      // console.log( email + " email, ip= " +ip, " device = " + device.device.type + "  browser_name = " + browser_name + "  browser_version " +browser_version);
         
           if(login_activity == 1){
             try {
@@ -186,34 +186,41 @@ async function auth(req, res, next){
                 request_address: ip,
                 request_device: device.device.type,
                 browser_name: browser_name,
-                browser_version: device.device.version,
+                browser_version: browser_version,
+              }).then((data) =>{
+               // console.log("history inserted" + data);
+              }).catch((error) =>{
+                console.log(" Error in login history " + error);
               });                       
             } catch (error) {
               console.log("error = " + error);
             }
           }        
 
-    const notificationModel = require('../models/settings');
-    const notification = await notificationModel.findOne({ email : email });             
-    const login_ip = await login_history.count({ email : email, request_address : ip });
-    if(notification.unusual_activity == 1 && login_ip ==0 ){
+    const login_ip = await login_history.count({ email : email, request_address : { $in : [ ip ] } }); 
+    //console.log(login_ip + " ip");
+    if(settings.unusual_activity == 1 && login_ip ==1 ){
         var subject = "Unusual login in Analog Account";
         var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
         Browser Name : ${browser_name} <br>
         IP : ${ip} <br>
         If it's not you please change your password.</h5>`;
         sendMail(email, subject, msg);
+       // console.log("Unusual Activity");
     }
 
-    const login_browser = await login_history.count({ email : email, new_browser : browser_name });
-    if(notification.new_browser == 1 && login_browser == 0){
+    const login_browser = await login_history.count({ email : email, browser_name : { $in : [ browser_name ]} });
+    //console.log(login_browser);
+    if(settings.new_browser == 1 && login_browser == 1 && login_ip == 1){
       var subject = "Login with New browser in Analog Account";
       var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
       Browser Name : ${browser_name} <br>
       IP : ${ip} <br>
       If it's not you please change your password.</h5>`;
-      sendMail(email, subject, msg);            
+      sendMail(email, subject, msg); 
+     // console.log("New browser Activity");           
     }  
+  }
     next();
 }
 
@@ -312,3 +319,4 @@ function emailTemplate(user, msg) {
   `;
   return template;
 }
+
