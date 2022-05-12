@@ -1120,19 +1120,17 @@ exports.cryptoSetting = async (req, res) => {
   try {
     const { symbol, is_buy, is_sell, is_withdrawal, is_deposite } = req.body;
     const crypto = await Crypto.findOne({ symbol: symbol });
+    console.log(crypto)
     if (crypto) {
       await Crypto.updateOne(
         { _id: crypto._id },
         {
-          $set: {
-            is_buy: is_buy ? is_buy : crypto.is_buy,
-            is_sell: is_sell ? is_sell : crypto.is_sell,
-            is_withdrawal: is_withdrawal ? is_withdrawal : crypto.is_withdrawal,
-            is_deposite: is_deposite ? is_deposite : crypto.is_deposite,
-          },
+          $set: 
+            req.body
+          
         }
       ).then((resp)=>{
-        return res.status(200).json({ message: "Success" });
+          return res.status(200).json({ message: "Success" });
       })
     
     }
