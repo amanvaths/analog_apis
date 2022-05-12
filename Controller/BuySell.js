@@ -1131,8 +1131,10 @@ exports.cryptoSetting = async (req, res) => {
             is_deposite: is_deposite ? is_deposite : crypto.is_deposite,
           },
         }
-      );
-      return res.status(200).json({ message: "Success" });
+      ).then((resp)=>{
+        return res.status(200).json({ message: "Success" });
+      })
+    
     }
   } catch (error) {
     console.log("Error From: BuySell.js >> cryptoSetting ", error.message);
