@@ -162,6 +162,8 @@ async function auth(req, res, next){
   const login_history = require("../models/login_history");
   const { email } = req.body;
   const settingsModel = require('../models/settings');
+
+  try{
   const settings = await settingsModel.findOne({ email : email });  
   const _user = await User.findOne({ email: email });
   if(_user){ 
@@ -220,5 +222,8 @@ async function auth(req, res, next){
      // console.log("New browser Activity");           
     }    
   }
+}catch(err){
+  console.log("Error in auth api " + err);
+}
     next();
 }
