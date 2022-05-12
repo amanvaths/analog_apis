@@ -5,6 +5,7 @@ const env = require('dotenv');
 const cors = require('cors');
 const port = 3001
 env.config();
+const { sendMail } = require("./utils/function");  
 
 const mongoose = require('mongoose');
 const db = `mongodb+srv://dbUser:dbUser@cluster0.lrk8k.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
@@ -22,15 +23,7 @@ const userRouter = require('./router/userRouter')
 app.use('/api',userRouter);
 
 app.get('/get', async (req, res) => {  
-  const userWallet = require('./models/userWallet');
-  try {
-      const limitValue = req.query.limit || 2;
-      const skipValue = req.query.skip || 0;
-      const walletData = await userWallet.find().limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
-      res.status(200).send(walletData);
-    } catch (e) {
-        console.log(e);
-    }  
+ sendMail("rginnadcab@gmail.com","hello Rg", " Yahoo!! you have done it");
 });
 
 app.listen(port, '0.0.0.0' , () => {

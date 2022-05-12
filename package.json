@@ -1,5 +1,5 @@
 {
-  "name": "Analog",
+  "name": "analog",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -19,7 +19,7 @@
     "device-detector-js": "^3.0.3",
     "dotenv": "^10.0.0",
     "ethereumjs-wallet": "^1.0.2",
-    "express": "^4.17.1",
+    "express": "^4.18.1",
     "express-session": "^1.17.2",
     "express-validator": "^6.14.0",
     "express-ws": "^5.0.2",

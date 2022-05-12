@@ -4,11 +4,9 @@ const bodyParser = require("body-parser");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
-const preSaleModel = require("../models/presale");
 const session = require("express-session");
-const nodemailer = require("nodemailer");
+const { sendMail } = require('../utils/function');
 const url = 'http://localhost:3000';
 app.use(
   session({
@@ -36,101 +34,6 @@ function randomString(length, chars) {
   for (var i = length; i > 0; --i)
     result += mask[Math.floor(Math.random() * mask.length)];
   return result;
-}
-
-function sendMail(email, subject, message) {
-  var transporter = nodemailer.createTransport({
-    host: "mail.tronexa.com",
-    port: 465,
-    auth: {
-      user: "analog@tronexa.com",
-      pass: "Analog@123",
-    },
-  });
-
-  var mailOptions = {
-    from: "analog@tronexa.com",
-    to: email,
-    subject: subject,
-    html: emailTemplate(email, message),
-  };
-
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
-}
-
-function emailTemplate(user, msg) {
-  const template = `
-  <html>
- <head>    
-     <link rel="stylesheet" href="${url}/assets/css/dashlite.css?ver=3.0.2" />
-     <link rel="stylesheet" href="${url}/assets/css/theme.css?ver=3.0.2">
-     <link rel="stylesheet" href="${url}/assets/css/style-email.css" />
- </head>
- <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
-    
-                 <table class="email-wraper">
-                     <tbody>
-                         <tr>
-                          <td class="py-5">
-                              <table class="email-header">
-                                  <tbody>
-                                      <tr>
-                                          <td class="text-center pb-4">
-                                              <a href="#">
-                                                  <img class="email-logo" src="${url}/images/logo-dark.png" alt="logo">
-                                                 </a>
-                                                 <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                                 <table class="email-body">
-                                     <tbody>
-                                         <tr>
-                                             <td class="p-3 p-sm-5">                                                
-                                                 <p>
-                                                    ${msg}                                                
-                                                 </p>                                                  
-                                                 <p class="mt-4">---- 
-                                                     <br> Regards
-                                                     <br>
-                                                     Analog
-                                                 </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                                 <table class="email-footer">
-                                     <tbody>
-                                         <tr>
-                                             <td class="text-center pt-4">
-                                                 <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
-                                                 <ul class="email-social">
-                                                     <li><a href="#"><img src="${url}/images/socials/facebook.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="${url}/images/socials/twitter.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="${url}/images/socials/youtube.png" alt=""></a></li>
-                                                     <li><a href="#"><img src="${url}/images/socials/medium.png" alt=""></a></li>
-                                                 </ul>
-                                                 <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${url}">analog.com</a>. 
-                                                 </p>
-                                             </td>
-                                         </tr>
-                                     </tbody>
-                                 </table>
-                             </td>
-                         </tr>
-                     </tbody>
-                 </table>         
-</body>
-</html>
-  `;
-  return template;
 }
 
 exports.sendotp = async (req, res) => {
@@ -379,6 +282,7 @@ exports.forgetPassword = async (req, res) => {
       await User.findOne({ email: email }).exec(
         async (error, user) => {
           if (user) {
+            const forgetPassword = require("../models/forgetPassword");
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
             var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
@@ -454,6 +358,7 @@ exports.resetPassword = async (req, res) => {
           }
           if (fdata) {
             const { _id, email } = fdata;
+            const forgetPassword = require("../models/forgetPassword");
             await forgetPassword.updateOne(
               { _id: _id },
               { $set: { status: 1 } }
@@ -1538,11 +1443,10 @@ exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
     const userId = await findUserId(email); 
-    const page = req.body.page ? req.body.page : 1;
-    const limit = req.body.limit ? req.body.limit : 10;
-    const skip = page * limit;
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;   
     if (userId) {   
-      const affiliates = await User.find({ refferal: userId });
+      const affiliates = await User.find({ refferal: userId }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
       console.log(affiliates);
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
@@ -1620,6 +1524,7 @@ exports.removeWhiteListedIp = async (req, res) => {
 exports.configSettings = async (req, res) => { 
   try{
     const settingsModel = require('../models/settings');
+    const preSaleModel = require("../models/presale");
     const {email}  = req.body;
     const _user    = await User.findOne({ email: email });
     const s        = await settingsModel.findOne({ email: email });
