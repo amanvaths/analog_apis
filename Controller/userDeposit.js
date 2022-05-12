@@ -249,7 +249,7 @@ exports.userDeposit = async (req, res) => {
             console.log(matic_balance / decimal + " Matic balance");
             const balance            = matic_balance / decimal;
             const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-            const ac_balance         =  new_w_balance + v_balance;
+            const ac_balance         =  matic_balance + v_balance;
   
             if (balance > 0) {
               /**
@@ -454,7 +454,7 @@ exports.userDeposit = async (req, res) => {
           amount: amount,
           balance: balance,
           to_address: address,
-          type: "deposit",
+          type: "Deposit",
         })
         .then((data) => {
           // console.log("history created", user_id);
