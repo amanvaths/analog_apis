@@ -677,7 +677,9 @@ exports.login_history = async (req, res) => {
   const login_history = require("../models/login_history");
   try {
     const { email, symbol } = req.body;
-    const loginData = await login_history.find({ email, symbol });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const loginData = await login_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});;
     if (loginData) {
       return res.status(200).json(loginData);
     } else {
