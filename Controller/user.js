@@ -177,9 +177,7 @@ function checkEmail(email) {
 exports.signup = async (req, res) => {
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
-  const confirmPassword = req.body.confirm_password
-    ? req.body.confirm_password
-    : "";
+  const confirmPassword = req.body.confirm_password ? req.body.confirm_password : "";
   const referral_code = req.body.referral_code;
   if (confirmPassword !== password) {
     return res.json({
@@ -210,10 +208,14 @@ exports.signup = async (req, res) => {
             otp: otp,
           });
 
-          _user.save((error, data) => {
+          _user.save( async (error, data) => {
             
           const settings = require('../models/settings');
-          settings.create({ email : email },{ upsert: true });
+          await settings.create({ email : email }).then((data) => { 
+            //console.log("setting updated "+data); 
+          }).catch((err) => { 
+           // console.log(" Error in create setting "+ err) 
+          });
 
             if (error) {
               console.log("Error in Sign Up", error.message);
@@ -222,7 +224,7 @@ exports.signup = async (req, res) => {
                 message: "Somthing went wrong",
               });
             } else if (data) {
-              createWallet(email);
+              await createWallet(email);
               var subject = "Registration completed successully";
               var message =
                 "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" +
@@ -536,9 +538,9 @@ async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol){
       walleType       : walleType,
       symbol          : symbol
     }).then((data) => {
-     // console.log("currency stored" + symbol);
+      console.log("currency stored" + symbol);
     }).catch((err) => {
-      //console.log("Err in currency stored");
+      console.log("Err in currency stored");
     })
   }catch(err){
     console.log("Error in storing user Wallet " + err);
@@ -637,7 +639,9 @@ async function createSolanaAddress() {
 exports.walletData = async (req, res) => {
   try {
     const { email } = req.body;
-    const walletData = await userWallet.find({ email });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});   
     if (walletData) {
       return res.status(200).json(walletData);
     } else {
@@ -654,7 +658,9 @@ exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
     const { email, symbol } = req.body;
-    const transactionData = await transaction_history.find({ email, symbol });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
     if (transactionData) {
       return res.status(200).json(transactionData);
     } else {
@@ -671,7 +677,9 @@ exports.login_history = async (req, res) => {
   const login_history = require("../models/login_history");
   try {
     const { email, symbol } = req.body;
-    const loginData = await login_history.find({ email, symbol });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const loginData = await login_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});;
     if (loginData) {
       return res.status(200).json(loginData);
     } else {
