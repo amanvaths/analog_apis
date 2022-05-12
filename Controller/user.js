@@ -210,10 +210,14 @@ exports.signup = async (req, res) => {
             otp: otp,
           });
 
-          _user.save((error, data) => {
+          _user.save( async (error, data) => {
             
           const settings = require('../models/settings');
-          settings.create({ email : email },{ upsert: true });
+          await settings.create({ email : email }).then((data) => { 
+            //console.log("setting updated "+data); 
+          }).catch((err) => { 
+           // console.log(" Error in create setting "+ err) 
+          });
 
             if (error) {
               console.log("Error in Sign Up", error.message);
@@ -222,7 +226,7 @@ exports.signup = async (req, res) => {
                 message: "Somthing went wrong",
               });
             } else if (data) {
-              createWallet(email);
+              await createWallet(email);
               var subject = "Registration completed successully";
               var message =
                 "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" +
@@ -536,9 +540,9 @@ async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol){
       walleType       : walleType,
       symbol          : symbol
     }).then((data) => {
-     // console.log("currency stored" + symbol);
+      console.log("currency stored" + symbol);
     }).catch((err) => {
-      //console.log("Err in currency stored");
+      console.log("Err in currency stored");
     })
   }catch(err){
     console.log("Error in storing user Wallet " + err);
