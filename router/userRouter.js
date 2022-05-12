@@ -159,7 +159,8 @@ async function auth(req, res, next){
   const { email } = req.body;
   const settingsModel = require('../models/settings');
   const settings = await settingsModel.findOne({ email : email });  
-  const _user = await User.findOne({ email: email }); 
+  const _user = await User.findOne({ email: email });
+  if(_user){ 
   const username =   _user.username;       
   const login_activity = settings.login_activity;   
             ua = req.headers["user-agent"];
@@ -214,6 +215,7 @@ async function auth(req, res, next){
       sendMail(email, subject, msg); 
      // console.log("New browser Activity");           
     }  
+  }
     next();
 }
 
