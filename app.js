@@ -21,7 +21,14 @@ app.use(cors({
 const userRouter = require('./router/userRouter')
 app.use('/api',userRouter);
 
-app.get('/get',requireSignin, async function(req, res) {   
+app.get('/get', (req, res) => {   
+
+  const sweetArray = [2, 3, 4, 5, 35]
+  const sweeterArray = sweetArray.map(sweetItem => {
+      return sweetItem * 2
+  })  
+  console.log(sweeterArray)
+
     return res.status(200).json({
         msg : "scs"
     })

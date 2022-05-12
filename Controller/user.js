@@ -1443,8 +1443,7 @@ exports.verifyauthtoken = async (req, res) =>{
       if (email) {
           const token = req.body.token?req.body.token:false; 
           if (token) {            
-             const s = await settings.find({ email : email  });           
-                  
+             const s = await settings.find({ email : email  });  
               if (s && s[0].google_authenticator) {               
                   const verified = await speakeasy.totp.verify({
                       secret: s[0].google_authenticator_ascii,
@@ -1465,19 +1464,19 @@ exports.verifyauthtoken = async (req, res) =>{
                   }
               } else {
                   return res.json({
-                      status: 0,
+                      status: 2,
                       message: 'Google 2FA is not activated'
                   })
               }   
           } else  {
               return res.json({
-                  status: 0,
+                  status: 3,
                   message: "Invalid API call"
               })
           }
       } else {
           return res.json({
-              status: -4,
+              status: 3,
               message: "Invalid API call**"
           })
       }
