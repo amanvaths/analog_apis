@@ -1,19 +1,14 @@
 const express = require("express");
 const app = express();
-const DeviceDetector = require("device-detector-js");
 const bodyParser = require("body-parser");
 const User = require("../models/user");
-const Buy = require("../models/buy");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const mongoose = require("mongoose");
 const forgetPassword = require("../models/forgetPassword");
 const userWallet = require("../models/userWallet");
-const login_history = require("../models/login_history");
 const preSaleModel = require("../models/presale");
 const session = require("express-session");
-const { findOne } = require("../models/user");
+const nodemailer = require("nodemailer");
 const url = 'http://localhost:3000';
 app.use(
   session({
@@ -43,7 +38,7 @@ function randomString(length, chars) {
   return result;
 }
 
-async function sendMail(email, subject, message) {
+function sendMail(email, subject, message) {
   var transporter = nodemailer.createTransport({
     host: "mail.tronexa.com",
     port: 465,
@@ -179,16 +174,6 @@ function checkEmail(email) {
   return res;
 }
 
-function checkPassword(password) {
-  console.log("Password: ", password);
-  const passwordToValidate = password ? password : "";
-  const passwordRegexp =
-    /(?=^.{8,15}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[0-9])(?=.*[@_*&.])(?=.*[a-z]).*$/;
-  const res = passwordRegexp.test(passwordToValidate);
-  console.log("Check Password: ", res);
-  return res;
-}
-
 exports.signup = async (req, res) => {
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
@@ -226,6 +211,10 @@ exports.signup = async (req, res) => {
           });
 
           _user.save((error, data) => {
+            
+          const settings = require('../models/settings');
+          settings.create({ email : email });
+
             if (error) {
               console.log("Error in Sign Up", error.message);
               return res.status(400).json({
@@ -261,7 +250,6 @@ exports.signup = async (req, res) => {
 
 
 exports.signin = async (req, res) => {
-  //console.log(req.body);
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
   if (email && checkEmail(email) && password) {
@@ -273,11 +261,8 @@ exports.signin = async (req, res) => {
             message: "Email not registered",
           });
         }
-        if (user) {        
-          const settingsModel = require('../models/settings');
-          const { _id, email, password, isVarify, username } = user;
-          const settings = await settingsModel.find({ email : email });            
-          const login_activity = settings[0].login_activity;        
+        if (user) { 
+          const { _id, email, password, isVarify } = user;
           if (bcrypt.compareSync(req.body.password, password)) {
             if (isVarify == 0) {
               return res.status(400).json({
@@ -287,64 +272,8 @@ exports.signin = async (req, res) => {
             }
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
               expiresIn: "1h",
-            });    
-
-                      // browser name
-                      ua = req.headers["user-agent"];
-                      const deviceDetector = new DeviceDetector();
-                      const userAgent = ua;
-                      const device = deviceDetector.parse(userAgent);
-                      console.log(device.client.name);
-                      // browser name
-
-                      // **  login history
-                      let ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;       
-                      let br = req.headers["sec-ch-ua"];
-                      let brr = br ? br.split(",") : "";           
-                      const browser_name = device.client.name;          
-                      let browser_version = brr ? brr[0].split(";")[1].split("=")[1] : "";
-                      browser_version = browser_version ? browser_version.substr(1, browser_version.length - 2) : "";
-                  
-                    if(login_activity == 1){
-                      try {
-                        await login_history.create({
-                          email: email,
-                          request_address: ip,
-                          request_device: device.device.type,
-                          browser_name: browser_name,
-                          browser_version: device.device.version,
-                        });                       
-                      } catch (error) {
-                        console.log("error = " + error);
-                      }
-                    }
-    // **  login history  end -----------------  */ 
-
-           session.userid=_id;
-           session.email = email;  
-
-           const notificationModel = require('../models/settings');
-           const notification = await notificationModel.findOne({ email : email });             
-           const login_ip = await login_history.count({ email : email, request_address : ip });
-          // console.log(login_ip);
-           if(notification.unusual_activity == 1 && login_ip ==0 ){
-              var subject = "Unusual login in Analog Account";
-              var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
-              Browser Name : ${browser_name} <br>
-              IP : ${ip} <br>
-              If it's not you please change your password.</h5>`;
-              sendMail(email, subject, msg);
-           }
-
-           const login_browser = await login_history.count({ email : email, new_browser : browser_name });
-           if(notification.new_browser == 1 && login_browser == 0){
-            var subject = "Login with New browser in Analog Account";
-            var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
-            Browser Name : ${browser_name} <br>
-            IP : ${ip} <br>
-            If it's not you please change your password.</h5>`;
-            sendMail(email, subject, msg);            
-         }        
+            });   
+                
            return res.status(200).json({
              status              : 1,
              token               : token,
@@ -1429,7 +1358,6 @@ exports.updateSetting = async (req, res) => {
 
 
 exports.generateauthtoken = async (req, res)=>{
- // if (req.session.session_id) {
   const speakeasy = require("speakeasy");
   var QRCode = require('qrcode');
       const { email, google_auth, token } = req.body;
@@ -1508,36 +1436,18 @@ exports.generateauthtoken = async (req, res)=>{
               status: -5,
               msg: "Invalid API call*"
           })
-      }
-  // } else {
-  //     return res.json({
-  //         status: -4,
-  //         msg: "Invalid API call!"
-  //     })
-  // }
+      } 
 }
 
 exports.verifyauthtoken = async (req, res) =>{
   const speakeasy = require("speakeasy");
-  const bcrypt = require('bcryptjs');
   const settings = require('../models/settings');
   try {
       const {email} = req.body; 
       if (email) {
           const token = req.body.token?req.body.token:false; 
           if (token) {            
-             const s = await settings.find({ email : email  });           
-             /**
-              *  To generate token 
-             */
-            //  var token1 = speakeasy.totp({
-            //   secret: s[0].google_authenticator_ascii,
-            //   encoding: 'ascii'
-            // });
-            //   console.log(token1);
-
-            /** end generate token  */
-       
+             const s = await settings.find({ email : email  });  
               if (s && s[0].google_authenticator) {               
                   const verified = await speakeasy.totp.verify({
                       secret: s[0].google_authenticator_ascii,
@@ -1558,19 +1468,19 @@ exports.verifyauthtoken = async (req, res) =>{
                   }
               } else {
                   return res.json({
-                      status: 0,
+                      status: 2,
                       message: 'Google 2FA is not activated'
                   })
               }   
           } else  {
               return res.json({
-                  status: 0,
+                  status: 3,
                   message: "Invalid API call"
               })
           }
       } else {
           return res.json({
-              status: -4,
+              status: 3,
               message: "Invalid API call**"
           })
       }
