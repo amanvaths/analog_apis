@@ -366,14 +366,15 @@ exports.varify = async (req, res) => {
 };
 
 exports.forgetPassword = async (req, res) => {
-  if (req.body.email == "") {
+  const {email}  = req.body;
+  if (email == "") {
     return res.status(400).json({
       status: 0,
       message: "Email field Cannot be Blank",
     });
   } else {
     try {
-      await User.findOne({ email: req.body.email }).exec(
+      await User.findOne({ email: email }).exec(
         async (error, user) => {
           if (user) {
             var randCode = randomString(20, "aA");
@@ -381,7 +382,7 @@ exports.forgetPassword = async (req, res) => {
             var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
-              email: req.body.email,
+              email: email,
               forgetString: randCode,
             });
             _forgetPass.save((err, data) => {
@@ -535,7 +536,7 @@ async function storeWallet(email, walletAddr, PrivateKey, walleType, symbol){
       walleType       : walleType,
       symbol          : symbol
     }).then((data) => {
-      //console.log("currency stored");
+     // console.log("currency stored" + symbol);
     }).catch((err) => {
       //console.log("Err in currency stored");
     })
@@ -1399,7 +1400,14 @@ exports.generateauthtoken = async (req, res)=>{
                         $set: {                     
                           google_authenticator: 1,
                         },
-                      });                                          
+                      }); 
+                      const username = user.username;
+                      var subject = "Google Authentication Activated";
+                      var msg = `<h5>Hello ${username}, <br> Google 2fa Authentication activated successfully  <br>
+                     </h5>`;
+                      sendMail(email, subject, msg);  
+
+
                       return res.json({
                           status : 1, 
                           email  : email,
