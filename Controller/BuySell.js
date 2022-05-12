@@ -59,21 +59,39 @@ exports.createOrder = async (req, res)=> {
           message: "ANA Buy Quantity exceeds presale limit"
       }); 
       }
-      req.body.currency="inr";
+      req.body.currency=compairCurrency;
       req.body.base_currency=req.body.currencyType.toLowerCase();
-      const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-      const price_in_inr = cmcdata[req.body.currencyType].quote.INR.price;
-      const ANA_price = presale.price;
-      const one_ANA_in=ANA_price/price_in_inr;
-      console.log("hello",quantity)
+      let ANA_price = presale.price;
+      var ANApricevar=ANA_price
+      if(compairCurrency=="usd"){
+        const cmcdatanew = await getCMCData('usdt','inr');
+        const usdtininr = cmcdatanew.USDT.quote.INR.price;
+        ANA_price = ANA_price/usdtininr;
+        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+        const price_in_inr = cmcdata[req.body.currencyType].quote[compairCurrency.toUpperCase()].price;
+        console.log(cmcdata)
+      var one_ANA_in=ANA_price/price_in_inr;
+      console.log("Quantity",quantity)
+      console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
-      let compairVal = mul(one_ANA_in,quantity);
-       
+      var compairVal = mul(one_ANA_in,quantity);
+      console.log("total_purchase_price",compairVal)
+      } else {
+        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+        const price_in_inr = cmcdata[req.body.currencyType].quote[compairCurrency.toUpperCase()].price;
+      const one_ANA_in=ANA_price/price_in_inr;
+      console.log("Quantity",quantity)
+      console.log("price_in_currency",price_in_inr)
+      console.log("one",one_ANA_in)
+      var compairVal = mul(one_ANA_in,quantity);
+      console.log("total_purchase_price",compairVal)
+      }
+      
       if(currencyT.balance >= compairVal ) {
         
               //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
               let CTbalance = currencyT.v_balance + compairVal; 
-              let CCbalance = add(compairC.balance, compairVal);
+              //let CCbalance = add(compairC.balance, compairVal);
               console.log("use balance",compairVal)
               await wallet.updateOne({_id:currencyT._id},{
                   $set:{
@@ -270,7 +288,7 @@ exports.createOrder = async (req, res)=> {
                      */
                   
                       await userWallet.updateOne(
-                        { email: email, symbol: "ETH" },
+                        { email: email, symbol: "BNB" },
                         {
                           $set: {
                             balance: currentBal
@@ -343,7 +361,7 @@ exports.createOrder = async (req, res)=> {
                      */
                     console.log(new_w_balance + " USDT balance");
                     await userWallet.updateOne(
-                      { email: email, symbol: "MATIC" },
+                      { email: email, symbol: "USDT" },
                       {
                         $set: {
                           balance: currentBal
@@ -438,7 +456,7 @@ exports.createOrder = async (req, res)=> {
                     coinremaining: remains_coin
                   }
               })
-              
+             
               // token price update
               const presaleag = await Presale.findOne({status: 1})
               const remcoin = presaleag.coinremaining
@@ -446,8 +464,8 @@ exports.createOrder = async (req, res)=> {
               const nowquant = coinsquant - remcoin
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
-               const raise = (percntsold/ 100) * ANA_price
-               const newprice = (ANA_price + raise).toFixed(2)
+               const raise = (percntsold/ 100) * ANApricevar
+               const newprice = (ANApricevar + raise).toFixed(2)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice
@@ -459,7 +477,7 @@ exports.createOrder = async (req, res)=> {
                 levelname : presaleag.levelname, 
                 coinquantity : coinsquant,
                 coinsold : nowquant,
-                oldprice : ANA_price,
+                oldprice : ANApricevar,
                 changeprice : newprice,
                 changepercent : percntsold
             }])
@@ -660,6 +678,7 @@ exports.createOrder = async (req, res)=> {
                   message: "Order Executed Successfully"
                 });
       } else {
+        console.log( "Insufficient "+req.body.currencyType+" Balance")
           return res.json({
               status: 400,
               error: true,
