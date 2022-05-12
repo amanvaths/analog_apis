@@ -454,7 +454,7 @@ exports.userDeposit = async (req, res) => {
           amount: amount,
           balance: balance,
           to_address: address,
-          type: "deposit",
+          type: "Deposit",
         })
         .then((data) => {
           // console.log("history created", user_id);

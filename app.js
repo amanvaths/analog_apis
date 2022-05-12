@@ -21,17 +21,16 @@ app.use(cors({
 const userRouter = require('./router/userRouter')
 app.use('/api',userRouter);
 
-app.get('/get', (req, res) => {   
-
-  const sweetArray = [2, 3, 4, 5, 35]
-  const sweeterArray = sweetArray.map(sweetItem => {
-      return sweetItem * 2
-  })  
-  console.log(sweeterArray)
-
-    return res.status(200).json({
-        msg : "scs"
-    })
+app.get('/get', async (req, res) => {  
+  const userWallet = require('./models/userWallet');
+  try {
+      const limitValue = req.query.limit || 2;
+      const skipValue = req.query.skip || 0;
+      const walletData = await userWallet.find().limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
+      res.status(200).send(walletData);
+    } catch (e) {
+        console.log(e);
+    }  
 });
 
 app.listen(port, '0.0.0.0' , () => {

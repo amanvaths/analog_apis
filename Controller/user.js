@@ -177,9 +177,7 @@ function checkEmail(email) {
 exports.signup = async (req, res) => {
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
-  const confirmPassword = req.body.confirm_password
-    ? req.body.confirm_password
-    : "";
+  const confirmPassword = req.body.confirm_password ? req.body.confirm_password : "";
   const referral_code = req.body.referral_code;
   if (confirmPassword !== password) {
     return res.json({
@@ -641,7 +639,9 @@ async function createSolanaAddress() {
 exports.walletData = async (req, res) => {
   try {
     const { email } = req.body;
-    const walletData = await userWallet.find({ email });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});   
     if (walletData) {
       return res.status(200).json(walletData);
     } else {
@@ -658,7 +658,9 @@ exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
     const { email, symbol } = req.body;
-    const transactionData = await transaction_history.find({ email, symbol });
+    const limitValue = req.body.limit || 10;
+    const skipValue = req.body.skip || 0;
+    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
     if (transactionData) {
       return res.status(200).json(transactionData);
     } else {
