@@ -187,7 +187,6 @@ exports.signin = async (req, res) => {
              token               : token,
              user                : _id,
              email               : email,
-             googleAuth           : s.google_authenticator,
              message             : "Login Successful",                  
            });           
           } else {
@@ -1451,7 +1450,7 @@ exports.getAffiliates = async (req, res) => {
     const skipValue = req.body.skip || 0;   
     if (userId) {   
       const affiliates = await User.find({ refferal: userId }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
-      //console.log(affiliates);
+      console.log(affiliates);
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
@@ -1559,7 +1558,7 @@ exports.userWalletData = async (req, res) => {
   try{
       const {email} = req.body;     
       const _user            = await User.findOne({ email: email });  
-      const _orders          = await orders.findOne({ email : email }).sort('-date');    
+      const _orders          = await  orders.findOne({ email : email }).sort('-date');    
       const totalWallet      = await orders.count({ email : email }).distinct('currency_type');      
       const totalTransaction = await orders.count({ email : email });
           return res.status(200).json({

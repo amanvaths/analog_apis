@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const Bonus = require('../models/referral_percent');
 const Login = require('../models/login_history');
 const User = require('../models/user');
+const Buy = require('../models/buy');
 const mongoose = require("mongoose");
 app.use(bodyParser.json());
 app.use(express.json());
