@@ -104,6 +104,7 @@ exports.userDeposit = async (req, res) => {
   
 
         if (walletTRX && walletTRX.symbol == "TRX") {
+         // console.log(email);
           console.log("TRX");
           try {
             let wallet = walletTRX;
@@ -116,15 +117,14 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;  
-              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
-              const new_w_balance = balance;    
+              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;             
+              const new_w_balance = balance;  
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
               /**
                * update user's wallet
                */ 
                if (new_w_balance != w_balance) {
-                await userWallet.updateOne(
-                  { email: email, symbol: "TRX" },
+                await userWallet.updateOne({ email: email, symbol: "TRX" },
                   {
                     $set: {
                       w_balance     : new_w_balance,
@@ -134,6 +134,17 @@ exports.userDeposit = async (req, res) => {
                 ).then((data) => {
                   console.log("updated trx")
                 });
+
+                await userWallet.updateOne(
+                  { email: email, symbol: "TRX" },
+                  {
+                    $set: {
+                      w_balance     : new_w_balance,
+                      balance       : updated_balance
+                    },
+                  }
+                )
+
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
                   createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
@@ -164,9 +175,9 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
+              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;              
               const new_w_balance = balance;
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
               /**
                * update user's wallet
                */
@@ -210,9 +221,9 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance       = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
-              const new_w_balance   = balance;             
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
+              const new_w_balance   = balance;  
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);            
               /**
                * update user's wallet
                */
@@ -256,9 +267,9 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;          
               const new_w_balance = balance;
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
               /**
                * update user's wallet
                */
@@ -306,9 +317,9 @@ exports.userDeposit = async (req, res) => {
   
               let balance = usdt_balance ? usdt_balance / decimal : 0;
               const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;           
               const new_w_balance      = balance;
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
               /**
                * update user's wallet
                */
@@ -354,9 +365,9 @@ exports.userDeposit = async (req, res) => {
                */
               let balance = busd_balance ? busd_balance / decimal : 0;
               const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
-              const new_w_balance      = balance;           
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
+              const new_w_balance      = balance;   
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);         
               /**
                * update user's wallet
                */
@@ -403,9 +414,9 @@ exports.userDeposit = async (req, res) => {
                */
               let balance               = shib_balance ? shib_balance / decimal : 0;
               const w_balance           = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
-              const updated_balance = w_balance - v_balance;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
               const new_w_balance       = balance;
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
               /**
                * update user's wallet
                */
