@@ -181,6 +181,7 @@ exports.signin = async (req, res) => {
             
            const settings = require('../models/settings');
            const s =  await settings.findOne({ email : email });
+            
            return res.status(200).json({
              status              : 1,
              token               : token,
