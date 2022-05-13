@@ -88,7 +88,7 @@ router.get('/getpresalebyid', getpresalebyid);
  */
 
  router.post('/order', createOrder);
- router.post('/getAllOrder', getAllOrder);
+ router.get('/getAllOrder', getAllOrder);
  router.get('/deleteOrders', deleteOrders);
  router.get('/depositHestory', depositHestory);
  router.get('/getIncome', getIncome);
@@ -224,3 +224,4 @@ async function auth(req, res, next){
 }
     next();
 }
+

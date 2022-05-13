@@ -769,7 +769,6 @@ exports.getAllOrder = async (req, res) => {
       order: order,
     });
   
-  
   } catch (error) {
     console.log("Error from: getAllOrder ", error);
     return res.json({
