@@ -1568,6 +1568,7 @@ exports.userWalletData = async (req, res) => {
             inceptive_wallet   : _user.inceptive_wallet,
             last_activity      : _orders.createdAt,
             total_wallet       : totalWallet.length,
+            token_balance      : _user.token_balance,
             total_transaction  : totalTransaction
           });     
   }catch(error){

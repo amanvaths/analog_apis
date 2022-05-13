@@ -9,7 +9,7 @@ const userWalletSchema = new mongoose.Schema(
     symbol          : { type: String },
     balance         : { type: Number, default: 0 },
     v_balance      : { type: Number, default: 0 },
-    ac_balance      : { type: Number, default: 0 },
+    w_balance      : { type: Number, default: 0 },
     admin_transfer  : { type: Number, default: 0 },
     isBuy           : { type: Number, default: 1 }, 
   },
