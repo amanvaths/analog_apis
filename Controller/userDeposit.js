@@ -115,7 +115,9 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;  
+              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;  
+              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance = balance;    
               /**
                * update user's wallet
@@ -125,7 +127,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "TRX" },
                   {
                     $set: {
-                      w_balance     : new_w_balance
+                      w_balance     : new_w_balance,
+                      balance       : updated_balance
                     },
                   }
                 ).then((data) => {
@@ -160,7 +163,9 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance = balance;
               /**
                * update user's wallet
@@ -170,7 +175,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "ETH" },
                   {
                     $set: {
-                      w_balance     : new_w_balance                     
+                      w_balance     : new_w_balance,
+                      balance       : updated_balance                     
                     },
                   }
                 ).then((data) => {
@@ -203,7 +209,9 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance       = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance       = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance   = balance;             
               /**
                * update user's wallet
@@ -213,7 +221,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BNB" },
                   {
                     $set: {
-                      w_balance       : new_w_balance                    
+                      w_balance       : new_w_balance,
+                      balance         : updated_balance                    
                     },
                   }
                 ).then((data) => {
@@ -246,7 +255,9 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance = balance;
               /**
                * update user's wallet
@@ -256,7 +267,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "MATIC" },
                   {
                     $set: {
-                      w_balance       : new_w_balance,                     
+                      w_balance       : new_w_balance,  
+                      balance         : updated_balance                   
                     },
                   }
                 ).then((data) => {
@@ -293,7 +305,9 @@ exports.userDeposit = async (req, res) => {
                */
   
               let balance = usdt_balance ? usdt_balance / decimal : 0;
-              const w_balance          = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance      = balance;
               /**
                * update user's wallet
@@ -304,7 +318,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "USDT" },
                   {
                     $set: {
-                      w_balance           : new_w_balance,                    
+                      w_balance           : new_w_balance,     
+                      balance             : updated_balance               
                     },
                   }
                 );
@@ -338,7 +353,9 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               let balance = busd_balance ? busd_balance / decimal : 0;
-              const w_balance          = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance      = balance;           
               /**
                * update user's wallet
@@ -349,7 +366,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BUSD" },
                   {
                     $set: {
-                      w_balance       : new_w_balance                 
+                      w_balance       : new_w_balance,
+                      balance         : updated_balance                 
                     },
                   }
                 );
@@ -384,7 +402,9 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               let balance               = shib_balance ? shib_balance / decimal : 0;
-              const w_balance           = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const w_balance           = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;
+              const updated_balance = w_balance - v_balance;
               const new_w_balance       = balance;
               /**
                * update user's wallet
@@ -395,7 +415,8 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "SHIBA" },
                   {
                     $set: {
-                      w_balance           : new_w_balance
+                      w_balance           : new_w_balance,
+                      balance             : updated_balance
                     },
                   }
                 );
