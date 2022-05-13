@@ -1615,4 +1615,20 @@ exports.update_refferal = async (req, res) => {
   }
 }
 
-
+exports.recentActivities = async (req, res) => {
+  const { email } = req.body;
+  try{
+    const ordersModel = require('../models/order');
+    const recentActivities = await ordersModel.find({ email : email }).limit(4).sort({ createdAt: 'desc'});
+    if(recentActivities){
+      return res.status(200).json(recentActivities);
+    }else{
+      return res.status(400).json({
+        status : 0,
+        message : "Something went wrong "
+      });
+    }   
+  }catch(error){
+    console.log("Error in recent Activity api " + error);
+  }
+}
