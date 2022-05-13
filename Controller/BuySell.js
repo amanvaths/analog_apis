@@ -541,7 +541,7 @@ exports.createOrder = async (req, res)=> {
                     
                   },
                   $inc: {
-                      buying_bonus: buying_bonus,
+                      bounty_wallet: buying_bonus,
                       token_balance:  token_balance
                   }
               }
@@ -580,7 +580,7 @@ exports.createOrder = async (req, res)=> {
                                     
                                   },
                                   $inc: {
-                                      referral_bonus: ref1
+                                    affilites_wallet: ref1
                                   }
                               }
                   
@@ -610,7 +610,7 @@ exports.createOrder = async (req, res)=> {
                                         
                                       },
                                       $inc: {
-                                          referral_bonus: ref2
+                                        affilites_wallet: ref2
                                       }
                                   }
                       
@@ -640,7 +640,7 @@ exports.createOrder = async (req, res)=> {
                                             
                                           },
                                           $inc: {
-                                              referral_bonus: ref3
+                                            affilites_wallet: ref3
                                           }
                                       }
                           
@@ -754,7 +754,8 @@ exports.getAllOrder = async (req, res) => {
     } else {
       params = query;
     }
-    const order = await Order.find(params);
+    const order = await Order.find(
+      {email:req.body.email},params);
 
     return res.json({
       status: 200,
