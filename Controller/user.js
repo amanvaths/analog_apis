@@ -107,7 +107,7 @@ exports.signup = async (req, res) => {
             user_id: user_id,
             password: req.body.password,
             refferal: req.body.referral_code,
-            signup_bonus: signup_bonus,
+            inceptive_wallet: signup_bonus,
             otp: otp,
           });
 

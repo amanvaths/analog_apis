@@ -483,7 +483,7 @@ exports.createOrder = async (req, res)=> {
               // token price update
 
               var order_id =Date.now().toString(16).toUpperCase();
-              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id)
+              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname)
               // referral commission
               console.log("yaha",order_id)
               await  User.findOne({ email :email })
@@ -541,7 +541,7 @@ exports.createOrder = async (req, res)=> {
                     
                   },
                   $inc: {
-                      buying_bonus: buying_bonus,
+                      bounty_wallet: buying_bonus,
                       token_balance:  token_balance
                   }
               }
@@ -557,7 +557,8 @@ exports.createOrder = async (req, res)=> {
                       bonus_percent : bonus_perc,
                       currency : currencyType,
                       bonus_type : "Buying",
-                      order_id : order_id
+                      order_id : order_id,
+                      presalelevel:presaleag.levelname
                   }]).then((result)=>{
                       if(referral1 && refuser1){
                           const _userref1 = Buy.insertMany([{
@@ -571,7 +572,8 @@ exports.createOrder = async (req, res)=> {
                               bonus_percent : lev1,
                               from_level:1,
                               currency : currencyType,
-                              order_id : order_id
+                              order_id : order_id,
+                              presalelevel:presaleag.levelname
                           }]).then(async (de) => {
                               user_purchase = await User.updateOne({
                                   email: refuser1
@@ -580,7 +582,7 @@ exports.createOrder = async (req, res)=> {
                                     
                                   },
                                   $inc: {
-                                      referral_bonus: ref1
+                                    affilites_wallet: ref1
                                   }
                               }
                   
@@ -601,7 +603,8 @@ exports.createOrder = async (req, res)=> {
                                   bonus_percent : lev2,
                                   from_level:2,
                                   currency : currencyType,
-                                  order_id : order_id
+                                  order_id : order_id,
+                                  presalelevel:presaleag.levelname
                               }]).then(async (te) => {
                                   user_purchase = await User.updateOne({
                                       email: refuser2
@@ -610,7 +613,7 @@ exports.createOrder = async (req, res)=> {
                                         
                                       },
                                       $inc: {
-                                          referral_bonus: ref2
+                                        affilites_wallet: ref2
                                       }
                                   }
                       
@@ -631,7 +634,8 @@ exports.createOrder = async (req, res)=> {
                                       bonus_percent : lev3,
                                       from_level:3,
                                       currency : currencyType,
-                                      order_id : order_id
+                                      order_id : order_id,
+                                      presalelevel:presaleag.levelname
                                   }]).then(async (ke) => {
                                       user_purchase = await User.updateOne({
                                           email: refuser3
@@ -640,7 +644,7 @@ exports.createOrder = async (req, res)=> {
                                             
                                           },
                                           $inc: {
-                                              referral_bonus: ref3
+                                            affilites_wallet: ref3
                                           }
                                       }
                           
@@ -702,7 +706,8 @@ async function OrderHistory(
   currencyType,
   compairCurrency,
   email,
-  orderid
+  orderid,
+  presale
 ) {
   const Order = require("../models/order");
   const order = await new Order({
@@ -714,6 +719,7 @@ async function OrderHistory(
     cVolume: quantity,
     currency_type: currencyType,
     compair_currency: compairCurrency,
+    presalelevel:presale
   });
 
   order.save((error, data) => {
@@ -754,13 +760,24 @@ exports.getAllOrder = async (req, res) => {
     } else {
       params = query;
     }
-    const order = await Order.find(params);
-
+    if(req.body.email!=""){
+    const order = await Order.find(
+      {email:req.body.email},params);
+      return res.json({
+        status: 200,
+        error: false,
+        order: order,
+      });
+    } else {
+    const order = await Order.find(params); 
     return res.json({
       status: 200,
       error: false,
       order: order,
     });
+    }
+
+  
   } catch (error) {
     console.log("Error from: getAllOrder ", error);
     return res.json({

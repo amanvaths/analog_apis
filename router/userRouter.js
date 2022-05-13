@@ -88,7 +88,7 @@ router.get('/getpresalebyid', getpresalebyid);
  */
 
  router.post('/order', createOrder);
- router.get('/getAllOrder', getAllOrder);
+ router.post('/getAllOrder', getAllOrder);
  router.get('/deleteOrders', deleteOrders);
  router.get('/depositHestory', depositHestory);
  router.get('/getIncome', getIncome);

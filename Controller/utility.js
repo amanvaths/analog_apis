@@ -66,3 +66,17 @@ if(rid){
     console.log(refids)
     res.status(200).json({level_list:refids});
 }
+
+exports.incomeFromLevels = async (req, res) => { 
+    const refids = [];
+    let ref_id=req.body.referral;
+    for(let i=0;i<10;i++){
+let rid = await User.findOne({  user_id : ref_id});
+if(rid){
+    refids[i]={userID: rid.user_id,email:rid.email,isverify:rid.isVarify,level:i+1};
+    ref_id=rid.refferal;
+}
+    }
+    console.log(refids)
+    res.status(200).json({level_list:refids});
+}
