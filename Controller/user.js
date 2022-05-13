@@ -108,6 +108,7 @@ exports.signup = async (req, res) => {
             password: req.body.password,
             refferal: req.body.referral_code,
             inceptive_wallet: signup_bonus,
+            airdrop_wallet : signup_bonus,
             otp: otp,
           });
 
