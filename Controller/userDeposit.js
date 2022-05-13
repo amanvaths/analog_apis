@@ -115,10 +115,8 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-              const v_balance  = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;  
-              const new_w_balance = balance;                
-              const ac_balance =  new_w_balance - v_balance;         
+              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;  
+              const new_w_balance = balance;    
               /**
                * update user's wallet
                */ 
@@ -127,12 +125,12 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "TRX" },
                   {
                     $set: {
-                      balance     : new_w_balance,
-                      v_balance   : v_balance,
-                      ac_balance  : ac_balance
+                      w_balance     : new_w_balance
                     },
                   }
-                );
+                ).then((data) => {
+                  console.log("updated trx")
+                });
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
                   createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
@@ -155,16 +153,14 @@ exports.userDeposit = async (req, res) => {
             const decimal = 1e18;
             let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
             console.log(eth_balance / decimal + " ETH balance");
-            const balance = eth_balance / decimal;
-            const v_balance  = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;  
-            const new_w_balance = balance;                
-            const ac_balance =  new_w_balance + v_balance;
-
+            const balance = eth_balance / decimal;          
+            const new_w_balance = balance;               
+           
             if (balance > 0) {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;
               const new_w_balance = balance;
               /**
                * update user's wallet
@@ -174,12 +170,12 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "ETH" },
                   {
                     $set: {
-                      balance     : new_w_balance,
-                      v_balance   : v_balance,
-                      ac_balance  : ac_balance
+                      w_balance     : new_w_balance                     
                     },
                   }
-                );
+                ).then((data) => {
+                  console.log("updated ETH")
+                });
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
                   createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, new_w_balance);
@@ -207,10 +203,8 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance       = wallet.balance ? parseFloat(wallet.balance) : 0;
-              const new_w_balance   = balance;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-              const ac_balance      = new_w_balance + v_balance;
+              const w_balance       = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const new_w_balance   = balance;             
               /**
                * update user's wallet
                */
@@ -219,12 +213,12 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BNB" },
                   {
                     $set: {
-                      balance       : new_w_balance,
-                      v_balance     : v_balance,
-                      ac_balance    : ac_balance
+                      w_balance       : new_w_balance                    
                     },
                   }
-                );
+                ).then((data) => {
+                  console.log("updated BNB")
+                });
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
                   createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, new_w_balance);
@@ -247,15 +241,12 @@ exports.userDeposit = async (req, res) => {
             const decimal = 1e18;          
             const matic_balance      = await web3Matic.eth.getBalance(wallet.walletAddr);
             console.log(matic_balance / decimal + " Matic balance");
-            const balance            = matic_balance / decimal;
-            const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-            const ac_balance         =  matic_balance + v_balance;
-  
+            const balance            = matic_balance / decimal; 
             if (balance > 0) {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const w_balance = wallet.balance ? parseFloat(wallet.w_balance) : 0;
               const new_w_balance = balance;
               /**
                * update user's wallet
@@ -265,12 +256,12 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "MATIC" },
                   {
                     $set: {
-                      balance       : new_w_balance,
-                      v_balance     : v_balance,
-                      ac_balance    : ac_balance
+                      w_balance       : new_w_balance,                     
                     },
                   }
-                );
+                ).then((data) => {
+                  console.log("updated Matic")
+                });
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
                   createDepositHistory( email, "MATIC", wallet.walletAddr, new_transaction, new_w_balance);
@@ -302,11 +293,8 @@ exports.userDeposit = async (req, res) => {
                */
   
               let balance = usdt_balance ? usdt_balance / decimal : 0;
-              const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const w_balance          = wallet.balance ? parseFloat(wallet.w_balance) : 0;
               const new_w_balance      = balance;
-              const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-              const ac_balance         = new_w_balance + v_balance;
-
               /**
                * update user's wallet
                */
@@ -316,9 +304,7 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "USDT" },
                   {
                     $set: {
-                      balance           : new_w_balance,
-                      v_balance         : v_balance,
-                      ac_balance        : ac_balance
+                      w_balance           : new_w_balance,                    
                     },
                   }
                 );
@@ -352,10 +338,8 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               let balance = busd_balance ? busd_balance / decimal : 0;
-              const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0;
-              const new_w_balance      = balance;
-              const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-              const ac_balance         = new_w_balance + v_balance;
+              const w_balance          = wallet.balance ? parseFloat(wallet.w_balance) : 0;
+              const new_w_balance      = balance;           
               /**
                * update user's wallet
                */
@@ -365,9 +349,7 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "BUSD" },
                   {
                     $set: {
-                      balance       : new_w_balance,
-                      v_balance    : v_balance,
-                      ac_balance    : ac_balance
+                      w_balance       : new_w_balance                 
                     },
                   }
                 );
@@ -402,11 +384,8 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               let balance               = shib_balance ? shib_balance / decimal : 0;
-              const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;
+              const w_balance           = wallet.balance ? parseFloat(wallet.w_balance) : 0;
               const new_w_balance       = balance;
-              const v_balance           = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;                         
-              const ac_balance          = new_w_balance + v_balance;
-
               /**
                * update user's wallet
                */
@@ -416,9 +395,7 @@ exports.userDeposit = async (req, res) => {
                   { email: email, symbol: "SHIBA" },
                   {
                     $set: {
-                      balance           : new_w_balance,
-                      v_balance        : v_balance,
-                      ac_balance        : ac_balance
+                      w_balance           : new_w_balance
                     },
                   }
                 );

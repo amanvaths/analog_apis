@@ -52,9 +52,9 @@ router.post('/levels',  levels);
 router.post('/settings', settings);
 router.post('/change_password', change_password);
 router.post('/login_activity', login_activity);
- router.post('/getAffiliates', getAffiliates);
+router.post('/getAffiliates', getAffiliates);
 router.post('/generateauthtoken', generateauthtoken);
- router.post('/verifyauthtoken', verifyauthtoken);
+router.post('/verifyauthtoken', verifyauthtoken);
 router.post('/settings1', updateSetting);
 router.post('/notificationSettings', notificationSettings);
 router.post('/add_whitelisted_ip', add_whitelisted_ip);
@@ -173,11 +173,9 @@ async function auth(req, res, next){
             const deviceDetector = new DeviceDetector();
             const userAgent = ua;
             const device = deviceDetector.parse(userAgent);           
-            let ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;       
-            let br = req.headers["sec-ch-ua"];
-            let brr = br ? br.split(",") : "";           
+            const ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
             const browser_name = device.client.name;  
-            const browser_version = device.device.version ? device.device.version : "";
+           // const browser_version = device.device.version ? device.device.version : "";
       // console.log( email + " email, ip= " +ip, " device = " + device.device.type + "  browser_name = " + browser_name + "  browser_version " +browser_version);
         
           if(login_activity == 1){
@@ -186,8 +184,7 @@ async function auth(req, res, next){
                 email: email,
                 request_address: ip,
                 request_device: device.device.type,
-                browser_name: browser_name,
-                browser_version: browser_version,
+                browser_name: browser_name             
               }).then((data) =>{
                // console.log("history inserted" + data);
               }).catch((error) =>{
@@ -201,7 +198,7 @@ async function auth(req, res, next){
     const login_ip = await login_history.count({ email : email, request_address : { $in : [ ip ] } }); 
     //console.log(login_ip + " ip");
     if(settings.unusual_activity == 1 && login_ip ==1 ){
-        var subject = "Unusual login in Analog Account";
+        var subject = "Unusual Activity in Analog Account";
         var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
         Browser Name : ${browser_name} <br>
         IP : ${ip} <br>
