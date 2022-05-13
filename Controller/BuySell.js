@@ -763,15 +763,21 @@ exports.getAllOrder = async (req, res) => {
     if(req.body.email!=""){
     const order = await Order.find(
       {email:req.body.email},params);
+      return res.json({
+        status: 200,
+        error: false,
+        order: order,
+      });
     } else {
     const order = await Order.find(params); 
-    }
-
     return res.json({
       status: 200,
       error: false,
       order: order,
     });
+    }
+
+  
   } catch (error) {
     console.log("Error from: getAllOrder ", error);
     return res.json({
