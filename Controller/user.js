@@ -188,7 +188,7 @@ exports.signin = async (req, res) => {
              token               : token,
              user                : _id,
              email               : email,
-             google_auth         : s.google_authenticator,
+             googleAuth         : s.google_authenticator,
              message             : "Login Successful",                  
            });           
           } else {
@@ -1545,7 +1545,7 @@ exports.configSettings = async (req, res) => {
         sales_latest_news   : s.sales_latest_news,                
         new_features_updates: s.new_features_updates,                  
         tips                : s.tips,
-        google_authenticator: s.google_authenticator,
+        googleAuth          : s.google_authenticator,
         login_activity      : s.login_activity,
         anaPrice            : orders.price       
       })
@@ -1558,11 +1558,12 @@ exports.configSettings = async (req, res) => {
 exports.userWalletData = async (req, res) => {
   const orders = require('../models/order');
   try{
-      const {email} = req.body;     
+      const {email} = req.body;    
+      //console.log("user wallet data " + email); 
       const _user            = await User.findOne({ email: email });  
-      const _orders          = await  orders.findOne({ email : email }).sort('-date');    
-      const totalWallet      = await orders.count({ email : email }).distinct('currency_type');      
-      const totalTransaction = await orders.count({ email : email });
+      const _orders          = await  orders.findOne({ email : email }).sort('-date') || "";    
+      const totalWallet      = await orders.count({ email : email }).distinct('currency_type') || 0;      
+      const totalTransaction = await orders.count({ email : email }) || 0;
           return res.status(200).json({
             user_id            : _user.user_id,
             affilites_wallet   : _user.affilites_wallet,
@@ -1616,12 +1617,14 @@ exports.update_refferal = async (req, res) => {
   }
 }
 
-exports.recentActivities = async (req, res) => {
-  const { email } = req.body;
-  const limit = req.body.limit || 100 ;
+exports.recentActivities = async (req, res) => { 
   try{
+    const { email } = req.body;
+    const limit = req.body.limit || 100 ;
     const ordersModel = require('../models/order');
-    const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'});
+    console.log(" This is recent Activity " + email);
+    const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'}) || 0;
+    
     if(recentActivities){
       return res.status(200).json(recentActivities);
     }else{
