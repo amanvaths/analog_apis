@@ -760,14 +760,14 @@ exports.getAllOrder = async (req, res) => {
     } else {
       params = query;
     }
-    console.log(params)
-    
     const order = await Order.find(params); 
     return res.json({
       status: 200,
       error: false,
       order: order,
     });
+  
+
   
   } catch (error) {
     console.log("Error from: getAllOrder ", error);
@@ -998,10 +998,10 @@ exports.userAllRecords = async (req, res) => {
     const Income = require("../models/buy");
     const User = require("../models/user");
     const Trans = require("../models/user");
-    const { email } = req.query;
+    const { email, type } = req.query;
     let income = await Income.aggregate([
       {
-        $match: { email: email },
+        $match: { email: email, type: type },
       },
       {
         $group: {
@@ -1080,3 +1080,5 @@ exports.cryptoSetting = async (req, res) => {
     return res.status(400).json({ message: "Somthing went wrong" });
   }
 };
+
+
