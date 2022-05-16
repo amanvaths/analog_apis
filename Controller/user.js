@@ -188,6 +188,7 @@ exports.signin = async (req, res) => {
              token               : token,
              user                : _id,
              email               : email,
+             google_auth         : s.google_authenticator,
              message             : "Login Successful",                  
            });           
           } else {
