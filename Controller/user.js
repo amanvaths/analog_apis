@@ -1618,9 +1618,10 @@ exports.update_refferal = async (req, res) => {
 
 exports.recentActivities = async (req, res) => {
   const { email } = req.body;
+  const limit = req.body.limit || 100 ;
   try{
     const ordersModel = require('../models/order');
-    const recentActivities = await ordersModel.find({ email : email }).limit(4).sort({ createdAt: 'desc'});
+    const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'});
     if(recentActivities){
       return res.status(200).json(recentActivities);
     }else{
