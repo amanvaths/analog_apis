@@ -1004,12 +1004,31 @@ exports.userAllRecords = async (req, res) => {
         $match: { email: email, type: type },
       },
       {
+        $lookup: {
+          from: "users",
+          localField: "email",
+          foreignField: "email",
+          as: "userInfo",
+        },
+      },
+      {
+        $unwind: "$userInfo"
+      },
+      {
         $group: {
           _id: "bonus_type",
           total_token_quantity: { $sum: "$token_quantity" },
           total_token_buying: { $sum: "$token_buying" },
           total_bonus: { $sum: "$bonus" },
           bonus: { $first: "$bonus" },
+          email:{$first: "$userInfo.email"},
+          signup_bonus:{$first: "$userInfo.signup_bonus"},
+          bounty_wallet:{$first: "$userInfo.bounty_wallet"},
+          airdrop_wallet:{$first: "$userInfo.airdrop_wallet"},
+          handout_wallet:{$first: "$userInfo.handout_wallet"},
+          inceptive_wallet:{$first: "$userInfo.inceptive_wallet"},
+          inherited_wallet:{$first: "$userInfo.inherited_wallet"},
+
         },
       },
     ]);
@@ -1116,3 +1135,26 @@ exports.usersWalletConut = async (req, res) => {
   }
 };
 
+exports.blockuser = async (req, res) => {
+  async function blockuser(req, res) {
+    const User = require("../models/user");
+    // const { UpdateAllParent } = require("../functions/function");
+    try {
+      const { email, status } = req.body;
+      await User.updateOne(
+        { email: email },
+        {
+          $set: {
+            status: status,
+          },
+        }
+      );
+      let block = status==2 ? "block" : "Unblock"
+      return res.status(200).json({ message: `${block} successfully` });
+     
+    } catch (error) {
+      console.log("Error from userController >> blockuser: ", error.message);
+      return res.status(400).json({ error: error.message });
+    }
+  }
+}
