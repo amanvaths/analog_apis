@@ -1136,7 +1136,6 @@ exports.usersWalletConut = async (req, res) => {
 };
 
 exports.blockuser = async (req, res) => {
-  async function blockuser(req, res) {
     const User = require("../models/user");
     // const { UpdateAllParent } = require("../functions/function");
     try {
@@ -1156,5 +1155,5 @@ exports.blockuser = async (req, res) => {
       console.log("Error from userController >> blockuser: ", error.message);
       return res.status(400).json({ error: error.message });
     }
-  }
+ 
 }
