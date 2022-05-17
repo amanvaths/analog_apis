@@ -1082,3 +1082,37 @@ exports.cryptoSetting = async (req, res) => {
 };
 
 
+exports.usersWalletConut = async (req, res) => {
+  try {
+    const Wallet = require("../models/userWallet");
+    const User = require("../models/user");
+    const Trans = require("../models/user");
+    const Buy = require("../models/buy");
+    const { symbol } = req.query;
+    let income = await Wallet.aggregate([
+      {
+        $group: {
+          _id: {symbol: "$symbol"},
+          balance: { $sum: "$balance" },
+        },
+      },
+    ]);
+
+    let userLevel = await Buy.aggregate([
+      {
+        $group: {
+          _id: {from_level: "$from_level"},
+          bonus: { $sum: "$bonus" },
+          token_buying: { $sum: "$token_buying" },
+          token_quantity: { $sum: "$token_quantity" },
+        },
+      },
+    ]);
+
+    const totalUser = await User.find().count();
+    return res.status(200).json({ income: income, totalUser: totalUser, userLevel: userLevel });
+  } catch (error) {
+    return res.status(400).json({ Error: "Somthing went wrong" });
+  }
+};
+
