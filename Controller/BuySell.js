@@ -1016,7 +1016,7 @@ exports.userAllRecords = async (req, res) => {
       },
       {
         $group: {
-          _id: "bonus_type",
+          _id: {bonus_type: "$bonus_type"},
           total_token_quantity: { $sum: "$token_quantity" },
           total_token_buying: { $sum: "$token_buying" },
           total_bonus: { $sum: "$bonus" },
