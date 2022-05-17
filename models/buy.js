@@ -12,7 +12,7 @@ const buySchema = new mongoose.Schema({
     token_buying : { type : Number , default : 0},
     bonus_percent : { type : Number , default : 0 },
     from_user : {type: String},
-    from_level : {type: String},
+    from_level : {type: String, default: 0 },
     currency:{type: String},
     bonus_type : {type: String, required : true},
     order_id : {type: String, required : true},
