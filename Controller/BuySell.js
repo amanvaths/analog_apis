@@ -80,6 +80,7 @@ exports.createOrder = async (req, res)=> {
       console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
+      compairVal = Math.floor(parseInt(compairVal))
       console.log("total_purchase_price",compairVal)
       }
       
@@ -94,358 +95,17 @@ exports.createOrder = async (req, res)=> {
                     v_balance: CTbalance
                   }
               })
-              // updating wallet balance
 
-              const Web3 = require("web3");
-  
-              const dex = [
-                {
-                  anonymous: false,
-                  inputs: [
-                    {
-                      indexed: true,
-                      internalType: "address",
-                      name: "from",
-                      type: "address",
-                    },
-                    { indexed: true, internalType: "address", name: "to", type: "address" },
-                    {
-                      indexed: false,
-                      internalType: "uint256",
-                      name: "value",
-                      type: "uint256",
-                    },
-                  ],
-                  name: "Transfer",
-                  type: "event",
-                },
-                {
-                  constant: true,
-                  inputs: [{ name: "_owner", type: "address" }],
-                  name: "balanceOf",
-                  outputs: [{ name: "balance", type: "uint256" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: true,
-                  inputs: [],
-                  name: "decimals",
-                  outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: false,
-                  inputs: [
-                    { name: "_to", type: "address" },
-                    { name: "_value", type: "uint256" },
-                  ],
-                  name: "transfer",
-                  outputs: [{ name: "success", type: "bool" }],
-                  payable: false,
-                  stateMutability: "nonpayable",
-                  type: "function",
-                },
-              ];
-            
-              /** trx
-               *
-               */
-              const TronWeb = require("tronweb");
-              const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io" });
-              /**
-               * bnb
-               */
-              const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
-              //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
-              //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
-              const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
-              const web3Bnb = new Web3(web3ProviderBnb);
-            
-              /**
-               * eth
-               */
-              // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-              const eth_testnet =
-                "https://kovan.infura.io/v3/235ebabc8cf1441c8ead19deb49bba49";
-              const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
-              const web3Eth = new Web3(web3Provider);
-            
-              /**
-               * polygon / Matic
-               */
-              const MATICTESTNET_WSS = "https://rpc-mumbai.maticvigil.com";
-              //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
-              //const web3ProviderMatic = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
-              const web3ProviderMatic = new Web3.providers.HttpProvider(MATICTESTNET_WSS);
-              const web3Matic = new Web3(web3ProviderMatic);
-              const userWallet = require("../models/userWallet");
-
-              var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
-              var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
-              var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
-              var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC"});
-              var walletUSDT    = await userWallet.findOne({ email: email, symbol: "USDT" });
-              var walletBUSD    = await userWallet.findOne({ email: email, symbol: "BUSD" });
-              var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
-            
-              if (req.body.currencyType == "TRX") {
-                try {
-                  let wallet = walletTRX;
-                  const decimal = 1e6;
-                  let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
-                  console.log(trx_balance / decimal + " TRX balance");
-                  const balance = trx_balance / decimal;
-                  if (balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                    const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-                    const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                    const new_w_balance = balance;
-                    const updated_balance = new_w_balance ;
-                    const currentBal = balance - walletTRX.v_balance;
-                    /**
-                     * update user's wallet
-                     */ 
-                    
-                      await userWallet.updateOne(
-                        { email: email, symbol: "TRX" },
-                        {
-                          $set: {
-                            balance: currentBal
-                          },
-                        }
-                      );
-                   
+              const wallrecord = walletData.find((wall => wall.symbol == currencyType ))
+              const w_balance = wallrecord.w_balance
+              let nowbal = w_balance - compairVal
+              console.log("now balance",nowbal)
+              await wallet.updateOne({_id:wallrecord._id},{
+                $set:{
+                  balance: nowbal
                 }
-                } catch (err) {
-                  console.log("Error in getting TRX balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "ETH") {
-                console.log("ETH");
-                try {
-                  let wallet = walletETH;
-                  const decimal = 1e18;
-                  let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
-                  console.log(eth_balance / decimal + " ETH balance");
-                  const balance = eth_balance / decimal;
-                  if (balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-                     const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                     const new_w_balance = balance;
-                     const updated_balance = new_w_balance ;
-                     const currentBal = balance - walletETH.v_balance;
-                     /**
-                      * update user's wallet
-                      */ 
-                     
-                       await userWallet.updateOne(
-                         { email: email, symbol: "ETH" },
-                         {
-                           $set: {
-                             balance: currentBal
-                           },
-                         }
-                       );
-                        }
-                } catch (err) {
-                  console.log("Error in getting ETH balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "BNB") {
-                console.log("BNB");
-                try {
-                  let wallet = walletBNB;
-                  const decimal = 1e18;
-                  const bnb_balance = await web3Bnb.eth.getBalance(walletBNB.walletAddr);
-                  console.log(bnb_balance / decimal + " BNB balance");
-                  const balance = bnb_balance / decimal;
-                  if (balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-                     const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                     const new_w_balance = balance;
-                     const updated_balance = new_w_balance ;
-                     const currentBal = balance - walletBNB.v_balance;
-                    /**
-                     * update user's wallet
-                     */
-                  
-                      await userWallet.updateOne(
-                        { email: email, symbol: "BNB" },
-                        {
-                          $set: {
-                            balance: currentBal
-                          },
-                        }
-                      );
-                      }
-                } catch (err) {
-                  console.log("Error in getting BNB balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "MATIC") {
-                console.log("MATIC");
-                try {
-                  let wallet = walletMATIC;
-                  const decimal = 1e18;          
-                  const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
-                  console.log(matic_balance / decimal + " Matic balance");
-                  const balance = matic_balance / decimal;
-        
-                  if (balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-                     const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                     const new_w_balance = balance;
-                     const updated_balance = new_w_balance ;
-                     const currentBal = balance - walletMATIC.v_balance;
-                    /**
-                     * update user's wallet
-                     */
-                     await userWallet.updateOne(
-                      { email: email, symbol: "MATIC" },
-                      {
-                        $set: {
-                          balance: currentBal
-                        },
-                      }
-                    );
-                  }
-                } catch (err) {
-                  console.log("Error in getting Matic Balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "USDT") {
-                console.log("USDT");
-                try {
-                  let wallet = walletUSDT;
-                  const decimal = 1e6;
-                  tronWeb.setAddress(wallet.walletAddr);
-                  const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-                  const hex_balance = await instance.balanceOf(wallet.walletAddr).call();
-                  const usdt_balance = Number(hex_balance._hex);
-        
-                  if (usdt_balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-        
-                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-                     const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                     const new_w_balance = usdt_balance;
-                     const updated_balance = new_w_balance ;
-                     const currentBal = usdt_balance - walletUSDT.v_balance;
-                    /**
-                     * update user's wallet
-                     */
-                    console.log(new_w_balance + " USDT balance");
-                    await userWallet.updateOne(
-                      { email: email, symbol: "USDT" },
-                      {
-                        $set: {
-                          balance: currentBal
-                        },
-                      }
-                    );
-                  }
-                } catch (err) {
-                  console.log("Error in getting USDT balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "BUSD") {
-                console.log("BUSD");
-                try {
-                  let wallet = walletBUSD;
-                  var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d");
-                  const decimal = 18; //await contract.methods.decimals().call();
-                  const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
-                  console.log("Bal: ", bal);
-                  let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
-        
-                  if (busd_balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                     const w_balance = wallet.busd_balance ? parseFloat(wallet.balance) : 0;    
-                     const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-                     const new_w_balance = busd_balance;
-                     const updated_balance = new_w_balance ;
-                     const currentBal = busd_balance - walletBUSD.v_balance;
-                    /**
-                     * update user's wallet
-                     */
-                    console.log(new_w_balance + " BUSD balance");
-                  
-                      await userWallet.updateOne(
-                        { email: email, symbol: "BUSD" },
-                        {
-                          $set: {
-                            balance: currentBal
-                          },
-                        }
-                      );
-                  }
-                } catch (err) {
-                  console.log("Error in getting BUSD balance " + err);
-                }
-              }
-        
-              if (req.body.currencyType == "SHIB") {
-                console.log("SHIB");
-                try {
-                  let wallet = walletSHIB;
-                  var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d"
-                  );
-                  const decimal = 18; //await contract.methods.decimals().call();
-                  const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
-                  console.log("Bal: ", bal);
-                  let shib_balance = bal ? bal / Number(`1e${decimal}`) : 0;
-        
-                  if (shib_balance > 0) {
-                    /**
-                     * check for w balance
-                     */
-                    let balance = shib_balance ? shib_balance / decimal : 0;
-                    const w_balance = wallet[0].balance ? parseFloat(wallet.balance) : 0;
-                    const new_w_balance = balance;
-                    const currentBal = shib_balance - walletBUSD.v_balance;
-                    /**
-                     * update user's wallet
-                     */
-                    console.log(new_w_balance + " SHIB balance");
-                    
-                    await userWallet.updateOne(
-                      { email: email, symbol: "SHIBA" },
-                      {
-                        $set: {
-                          balance: currentBal
-                        },
-                      }
-                    );
-                  }
-                } catch (err) {
-                  console.log("Error in getting SHIB balance " + err);
-                }
-              }
-              // updating wallet balance
+            })
+              
               const remains_coin=presale.coinremaining - quantity
               await Presale.updateOne({_id: presale._id },{
                   $set:{
@@ -547,6 +207,7 @@ exports.createOrder = async (req, res)=> {
               ).then(async (d) => {
                   const _userbuy = Buy.insertMany([{
                       email : req.body.email, 
+                      bonus : buying_bonus,
                       token_price : req.body.token_price,
                       token_buying : req.body.token_quantity,
                       token_quantity : token_quantity,
@@ -1001,12 +662,31 @@ exports.userAllRecords = async (req, res) => {
         $match: { email: email, type: type },
       },
       {
+        $lookup: {
+          from: "users",
+          localField: "email",
+          foreignField: "email",
+          as: "userInfo",
+        },
+      },
+      {
+        $unwind: "$userInfo"
+      },
+      {
         $group: {
-          _id: "bonus_type",
+          _id: {bonus_type: "$bonus_type"},
           total_token_quantity: { $sum: "$token_quantity" },
           total_token_buying: { $sum: "$token_buying" },
           total_bonus: { $sum: "$bonus" },
           bonus: { $first: "$bonus" },
+          email:{$first: "$userInfo.email"},
+          signup_bonus:{$first: "$userInfo.signup_bonus"},
+          bounty_wallet:{$first: "$userInfo.bounty_wallet"},
+          airdrop_wallet:{$first: "$userInfo.airdrop_wallet"},
+          handout_wallet:{$first: "$userInfo.handout_wallet"},
+          inceptive_wallet:{$first: "$userInfo.inceptive_wallet"},
+          inherited_wallet:{$first: "$userInfo.inherited_wallet"},
+
         },
       },
     ]);
@@ -1079,3 +759,59 @@ exports.cryptoSetting = async (req, res) => {
 };
 
 
+exports.usersWalletConut = async (req, res) => {
+  try {
+    const Wallet = require("../models/userWallet");
+    const User = require("../models/user");
+    const Trans = require("../models/user");
+    const Buy = require("../models/buy");
+    const { symbol } = req.query;
+    let income = await Wallet.aggregate([
+      {
+        $group: {
+          _id: {symbol: "$symbol"},
+          balance: { $sum: "$balance" },
+        },
+      },
+    ]);
+
+    let userLevel = await Buy.aggregate([
+      {
+        $group: {
+          _id: {from_level: "$from_level"},
+          bonus: { $sum: "$bonus" },
+          token_buying: { $sum: "$token_buying" },
+          token_quantity: { $sum: "$token_quantity" },
+        },
+      },
+    ]);
+
+    const totalUser = await User.find().count();
+    return res.status(200).json({ income: income, totalUser: totalUser, userLevel: userLevel });
+  } catch (error) {
+    return res.status(400).json({ Error: "Somthing went wrong" });
+  }
+};
+
+exports.blockuser = async (req, res) => {
+    const User = require("../models/user");
+    // const { UpdateAllParent } = require("../functions/function");
+    try {
+      const { email, status } = req.body;
+      await User.updateOne(
+        { email: email },
+        {
+          $set: {
+            status: status,
+          },
+        }
+      );
+      let block = status==2 ? "block" : "Unblock"
+      return res.status(200).json({ message: `${block} successfully` });
+     
+    } catch (error) {
+      console.log("Error from userController >> blockuser: ", error.message);
+      return res.status(400).json({ error: error.message });
+    }
+ 
+}

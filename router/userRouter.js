@@ -31,7 +31,7 @@ const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
-const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting } = require('../Controller/BuySell');
+const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
 
 /**
@@ -100,6 +100,10 @@ router.get('/getpresalebyid', getpresalebyid);
  router.post('/addCryptoCoin', addCryptoCoin);
  router.post('/cryptoSetting', cryptoSetting);
  router.get('/getCryptoSetting', getCryptoSetting);
+ router.get('/usersWalletConut', usersWalletConut);
+ router.post('/blockuser', blockuser);
+
+
 
 
 
