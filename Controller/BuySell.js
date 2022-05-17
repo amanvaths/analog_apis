@@ -107,9 +107,12 @@ exports.createOrder = async (req, res)=> {
             })
               
               const remains_coin=presale.coinremaining - quantity
+              const soldcoins = presale.coinquantity - remains_coin
+              const persentsold = ((soldcoins/ presale.coinquantity) * 100).toFixed(2)
               await Presale.updateOne({_id: presale._id },{
                   $set:{
-                    coinremaining: remains_coin
+                    coinremaining: remains_coin,
+                    persentsold : persentsold
                   }
               })
              
