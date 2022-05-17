@@ -6,6 +6,7 @@ const presaleSchema = new mongoose.Schema({
     coinremaining : { type : Number , default: 0,required : true},    
     price : { type : Number , default: 0,required : true}, 
     status : { type : Number , default: 0}, 
+    persentsold : { type : Number , default: 0},
     duration : { type : Number , default: 0,required : true},
 }, { timestamps: true});
 
