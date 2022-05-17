@@ -19,9 +19,7 @@ async function getCMCData(base_currency = false, currency = false) {
       "matic",
       "sol",
     ];
-    var coin_symbols = base_currency
-      ? base_currency
-      : query_coin_symbol_array.join(",");
+    var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
     var conver_currency = currency ? currency : "usd";
     const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
     const axios = require("axios");
@@ -996,8 +994,7 @@ exports.getColdWallet = async (req, res) => {
 exports.userAllRecords = async (req, res) => {
   try {
     const Income = require("../models/buy");
-    const User = require("../models/user");
-    const Trans = require("../models/user");
+    const User = require("../models/user");   
     const { email, type } = req.query;
     let income = await Income.aggregate([
       {

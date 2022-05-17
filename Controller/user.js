@@ -1621,10 +1621,8 @@ exports.recentActivities = async (req, res) => {
   try{
     const { email } = req.body;
     const limit = req.body.limit || 100 ;
-    const ordersModel = require('../models/order');
-    console.log(" This is recent Activity " + email);
-    const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'}) || 0;
-    
+    const ordersModel = require('../models/order');  
+    const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'}) || 0;    
     if(recentActivities){
       return res.status(200).json(recentActivities);
     }else{

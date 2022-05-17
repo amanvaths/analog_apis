@@ -1,5 +1,6 @@
 const userWallet = require('../models/userWallet');
 const nodemailer = require("nodemailer");
+const user = require('../models/user');
 const url = 'http://localhost:3000';
 
 exports.userDeposit = async (req, res) => {
@@ -111,7 +112,7 @@ exports.userDeposit = async (req, res) => {
             const decimal = 1e6;
             let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
             console.log(trx_balance / decimal + " TRX balance");
-            const balance = trx_balance / decimal;
+            const balance = trx_balance / decimal;                   
             if (balance > 0) {
               /**
                * check for w balance
@@ -119,7 +120,10 @@ exports.userDeposit = async (req, res) => {
               const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;  
               const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;             
               const new_w_balance = balance;  
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+
+              const cmcdata = await getCMCData('TRX','USDT');
+              const trxInUSDT = cmcdata.TRX.quote.USDT.price || 0;                    
               /**
                * update user's wallet
                */ 
@@ -133,20 +137,14 @@ exports.userDeposit = async (req, res) => {
                   }
                 ).then((data) => {
                   console.log("updated trx")
-                });
-
-                await userWallet.updateOne(
-                  { email: email, symbol: "TRX" },
-                  {
-                    $set: {
-                      w_balance     : new_w_balance,
-                      balance       : updated_balance
-                    },
-                  }
-                )
-
+                });                
+               
                 if (balance > 0) {
-                  const new_transaction = new_w_balance - w_balance;
+                  const new_transaction = new_w_balance - w_balance;  
+                  const balanceInUSDT = trxInUSDT* new_transaction; 
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                    console.log("TRX updated in USDT " +balanceInUSDT);
+                  });
                   createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
   
                      var subject = "New TRX Transaction";
@@ -167,8 +165,7 @@ exports.userDeposit = async (req, res) => {
             const decimal = 1e18;
             let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
             console.log(eth_balance / decimal + " ETH balance");
-            const balance = eth_balance / decimal;          
-            const new_w_balance = balance;               
+            const balance = eth_balance / decimal;   
            
             if (balance > 0) {
               /**
@@ -178,6 +175,9 @@ exports.userDeposit = async (req, res) => {
               const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;              
               const new_w_balance = balance;
               const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+
+              const cmcdata = await getCMCData('ETH','USDT');
+              const ethInUSDT = cmcdata.ETH.quote.USDT.price || 0; 
               /**
                * update user's wallet
                */
@@ -192,9 +192,14 @@ exports.userDeposit = async (req, res) => {
                   }
                 ).then((data) => {
                   console.log("updated ETH")
-                });
+                });  
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  const balanceInUSDT = ethInUSDT* new_transaction;
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                    console.log("ETH updated in USDT " +balanceInUSDT);
+                  });;
+
                   createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, new_w_balance);
   
                   var subject = "New ETH Transaction";
@@ -223,7 +228,10 @@ exports.userDeposit = async (req, res) => {
               const w_balance       = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
               const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
               const new_w_balance   = balance;  
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);            
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
+              
+              const cmcdata = await getCMCData('BNB','USDT');
+              const bnbInUSDT = cmcdata.BNB.quote.USDT.price || 0;             
               /**
                * update user's wallet
                */
@@ -238,9 +246,15 @@ exports.userDeposit = async (req, res) => {
                   }
                 ).then((data) => {
                   console.log("updated BNB")
-                });
+                });              
+
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  const balanceInUSDT = bnbInUSDT* new_transaction;
+
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                    console.log("BNB updated in USDT" + balanceInUSDT );
+                  });
                   createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, new_w_balance);
   
                   var subject = "New BNB Transaction";
@@ -261,7 +275,7 @@ exports.userDeposit = async (req, res) => {
             const decimal = 1e18;          
             const matic_balance      = await web3Matic.eth.getBalance(wallet.walletAddr);
             console.log(matic_balance / decimal + " Matic balance");
-            const balance            = matic_balance / decimal; 
+            const balance            = matic_balance / decimal;  
             if (balance > 0) {
               /**
                * check for w balance
@@ -270,6 +284,9 @@ exports.userDeposit = async (req, res) => {
               const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;          
               const new_w_balance = balance;
               const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+
+              const cmcdata = await getCMCData('MATIC','USDT');
+              const maticInUSDT = cmcdata.MATIC.quote.USDT.price || 0;  
               /**
                * update user's wallet
                */
@@ -285,8 +302,14 @@ exports.userDeposit = async (req, res) => {
                 ).then((data) => {
                   console.log("updated Matic")
                 });
+
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  /** update balance in USDT */
+                  const balanceInUSDT = maticInUSDT* new_transaction;
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                    console.log("Matic updated in USDT " +balanceInUSDT);
+                  });
                   createDepositHistory( email, "MATIC", wallet.walletAddr, new_transaction, new_w_balance);
   
                   var subject = "New MATIC Transaction";
@@ -319,7 +342,7 @@ exports.userDeposit = async (req, res) => {
               const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
               const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;           
               const new_w_balance      = balance;
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);                      
               /**
                * update user's wallet
                */
@@ -334,8 +357,14 @@ exports.userDeposit = async (req, res) => {
                     },
                   }
                 );
+              
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  const balanceInUSDT = new_transaction;
+                  /** balance in usdt */
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) =>{
+                    console.log(" USDT balance Updated" + balanceInUSDT);
+                  });
                   createDepositHistory( email, "USDT", wallet.walletAddr, new_transaction, new_w_balance );
   
                   var subject = "New USDT Transaction";
@@ -367,7 +396,9 @@ exports.userDeposit = async (req, res) => {
               const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
               const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
               const new_w_balance      = balance;   
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);         
+              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
+              const cmcdata = await getCMCData('BUSD','USDT');
+              const busdInUSDT = cmcdata.BUSD.quote.USDT.price || 0; 
               /**
                * update user's wallet
                */
@@ -381,9 +412,15 @@ exports.userDeposit = async (req, res) => {
                       balance         : updated_balance                 
                     },
                   }
-                );
+                );            
+
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  const balanceInUSDT = busdInUSDT* new_transaction; 
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) =>{
+                    console.log("BUSD in USDT " +balanceInUSDT);
+                  });
+
                   createDepositHistory( email, "BUSD", wallet.walletAddr, new_transaction, new_w_balance);
   
                   var subject = "New BUSD Transaction";
@@ -417,6 +454,8 @@ exports.userDeposit = async (req, res) => {
               const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
               const new_w_balance       = balance;
               const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+              const cmcdata = await getCMCData('SHIB','USDT');
+              const shibInUSDT = cmcdata.SHIB.quote.USDT.price || 0;                    
               /**
                * update user's wallet
                */
@@ -431,8 +470,13 @@ exports.userDeposit = async (req, res) => {
                     },
                   }
                 );
+              
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
+                  const balanceInUSDT = shibInUSDT* new_transaction;  
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) =>{
+                    console.log(" Shib balance in USDT " + balanceInUSDT);
+                  });
                   createDepositHistory( email, "SHIB", wallet.walletAddr, new_transaction, new_w_balance);
   
                   var subject = "New SHIB Transaction";
@@ -605,3 +649,37 @@ exports.userDeposit = async (req, res) => {
     `;
     return template;
   }
+
+
+  async function getCMCData(base_currency = false, currency = false) {
+    try {
+      const query_coin_symbol_array = [
+        "btc",
+        "eth",
+        "trx",
+        "usdt",
+        "busd",
+        "shib",
+        "bnb",
+        "matic",
+        "sol",
+      ];
+      var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
+      var conver_currency = currency ? currency : "usd";
+      const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
+      const axios = require("axios");
+      const ress = await axios.get(final_third_party_api_url, {
+        headers: {
+          "Content-Type": "Application/json",
+          // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
+          "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+     // console.log(ress.data.data);
+      return ress.data.data;
+    } catch (error) {
+      return false;
+    }
+  }
+  

@@ -11,7 +11,8 @@ const userWalletSchema = new mongoose.Schema(
     v_balance       : { type: Number, default: 0 },
     w_balance       : { type: Number, default: 0 },
     admin_transfer  : { type: Number, default: 0 },
-    isBuy           : { type: Number, default: 1 }, 
+    isBuy           : { type: Number, default: 1 },
+    usdt_balance    : { type: Number, default: 0 }
   },
   { timestamps: true }
 );

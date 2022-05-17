@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const env = require('dotenv');
 const cors = require('cors');
+const axios = require('axios');
 const port = 3001
 env.config();
 const { sendMail } = require("./utils/function");  
@@ -23,7 +24,23 @@ const userRouter = require('./router/userRouter')
 app.use('/api',userRouter);
 
 app.get('/get', async (req, res) => {  
- sendMail("rginnadcab@gmail.com","hello Rg", " Yahoo!! you have done it");
+  try{
+  const coin_symbols = "BUSD";
+  const conver_currency = "USDT";
+  const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
+  const ress = await axios.get(final_third_party_api_url, {
+    headers: {
+      "Content-Type": "Application/json",
+      // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
+      "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+  console.log(ress.data.data.BUSD.quote.USDT.price);
+  return res.status(200).json(ress.data.data);
+}catch(error){
+  console.log("Error in getting cmc price" + error);
+}
 });
 
 app.listen(port, '0.0.0.0' , () => {
