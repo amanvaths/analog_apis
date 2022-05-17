@@ -140,7 +140,8 @@ exports.userDeposit = async (req, res) => {
                 });                
                
                 if (balance > 0) {
-                  const new_transaction = new_w_balance - w_balance;  
+                  const new_transaction = new_w_balance - w_balance; 
+                  if(new_transaction > 0){                     
                   const balanceInUSDT = trxInUSDT* new_transaction; 
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                     console.log("TRX updated in USDT " +balanceInUSDT);
@@ -149,8 +150,9 @@ exports.userDeposit = async (req, res) => {
   
                      var subject = "New TRX Transaction";
                      var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
-                     sendMail(email, subject, msg);                 
-                }         
+                     sendMail(email, subject, msg);  
+                }               
+               }         
             }
           }
           } catch (err) {

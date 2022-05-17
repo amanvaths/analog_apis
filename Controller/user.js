@@ -1279,7 +1279,7 @@ exports.updateSetting = async (req, res) => {
 exports.generateauthtoken = async (req, res)=>{
   const speakeasy = require("speakeasy");
   var QRCode = require('qrcode');
-      const { email, google_auth, token } = req.body;
+      const { email, google_auth, token, token2 } = req.body;
       const user = await User.findOne({ email : email });
       if (user) {
           try {   
@@ -1345,12 +1345,48 @@ exports.generateauthtoken = async (req, res)=>{
               }  
                    
               } else {
-                await settings.updateOne( {email: email}, { $set: { google_authenticator: 0 } });
-              }
-              return res.json({
-                  status: 1,
-                  msg: "Disabled!"
-              })
+                
+                /** To desable 2fa  */
+                const s = await settings.findOne({ email: email });
+                if (s && s.google_authenticator == 1) {               
+                  const verified = await speakeasy.totp.verify({
+                      secret: s.google_authenticator_ascii,
+                      encoding:  'ascii',
+                      token: token2
+                  });                 
+                  if (verified) { 
+                    await settings.updateOne(
+                      {email: email},
+                      {
+                        $set: {                     
+                          google_authenticator: 0,
+                        },
+                      }); 
+                      const username = user.username;
+                      var subject = "Google Authentication Desabled";
+                      var msg = `<h5>Hello ${username}, <br> Google 2fa Authentication desabled successfully  <br>
+                     </h5>`;
+                      sendMail(email, subject, msg); 
+
+                      return res.json({
+                          status : 1, 
+                          email  : email,
+                          message: "2FA Authentication Desabled"
+                      })
+                  } else {
+                      return res.json({
+                          status: 0,
+                          message: 'Invalid Token'
+                      })
+                  }
+              } else {
+                  return res.json({
+                      status: 0,
+                      message: 'Google 2FA is already Disabled'
+                  })
+              }              
+             }
+             
           } catch (error) {
               return res.json({
                   status: 0,
