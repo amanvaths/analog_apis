@@ -42,8 +42,9 @@ exports.createOrder = async (req, res)=> {
   const wallet = require("../models/userWallet");
   const Presale = require("../models/presale");
   try {
-    const { amount, currencyType, compairCurrency, email } = req.body;
+    const { amount, compairCurrency, email } = req.body;
     let quantity=req.body.amount;
+    const currencyType="USDT"
      console.log(currencyType)
     const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
       const currencyT = walletData.find((wall => wall.symbol == currencyType ))
@@ -59,16 +60,17 @@ exports.createOrder = async (req, res)=> {
       req.body.base_currency=req.body.currencyType.toLowerCase();
       let ANA_price = presale.price;
       var ANApricevar=ANA_price
+      var ANApricebase=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
-        ANA_price = ANA_price/usdtininr;
-        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-        const price_in_inr = cmcdata[req.body.currencyType].quote[compairCurrency.toUpperCase()].price;
-        console.log(cmcdata)
-      var one_ANA_in=ANA_price/price_in_inr;
+        // ANA_price = ANA_price/usdtininr;
+      //  const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
+      //  const price_in_inr = cmcdata.USDT.quote.US.price;
+        //console.log(cmcdata)
+      var one_ANA_in=ANA_price/usdtininr;
       console.log("Quantity",quantity)
-      console.log("price_in_currency",price_in_inr)
+      //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
       console.log("total_purchase_price",compairVal)
@@ -83,8 +85,8 @@ exports.createOrder = async (req, res)=> {
       compairVal = Math.floor(parseInt(compairVal))
       console.log("total_purchase_price",compairVal)
       }
-      
-      if(currencyT.balance >= compairVal ) {
+      console.log('wallet balance',currencyT.usdt_balance)
+      if(currencyT.usdt_balance >= compairVal ) {
         
               //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
               let CTbalance = currencyT.v_balance + compairVal; 
@@ -97,12 +99,12 @@ exports.createOrder = async (req, res)=> {
               })
 
               const wallrecord = walletData.find((wall => wall.symbol == currencyType ))
-              const w_balance = wallrecord.w_balance
-              let nowbal = w_balance - compairVal
+              const balance = wallrecord.usdt_balance
+              let nowbal = balance - compairVal
               console.log("now balance",nowbal)
               await wallet.updateOne({_id:wallrecord._id},{
                 $set:{
-                  balance: nowbal
+                  usdt_balance: nowbal
                 }
             })
               
@@ -123,8 +125,8 @@ exports.createOrder = async (req, res)=> {
               const nowquant = coinsquant - remcoin
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
-               const raise = (percntsold/ 100) * ANApricevar
-               const newprice = (ANApricevar + raise).toFixed(2)
+               const raise = (percntsold/ 100) * ANApricebase
+               const newprice = (ANApricebase + raise).toFixed(2)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice
@@ -146,7 +148,7 @@ exports.createOrder = async (req, res)=> {
               var order_id =Date.now().toString(16).toUpperCase();
               await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname)
               // referral commission
-              console.log("yaha",order_id)
+              console.log("Order Id",order_id)
               await  User.findOne({ email :email })
         .exec(async (error, user) => {
             if (user){ 
