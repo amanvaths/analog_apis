@@ -1488,7 +1488,7 @@ exports.getAffiliates = async (req, res) => {
     const skipValue = req.body.skip || 0;   
     if (userId) {   
       const affiliates = await User.find({ refferal: userId }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
-      console.log(affiliates);
+      //console.log(affiliates);
       if (affiliates && affiliates.length > 0) {
         return res.status(200).json(affiliates);
       }
@@ -1670,4 +1670,49 @@ exports.recentActivities = async (req, res) => {
   }catch(error){
     console.log("Error in recent Activity api " + error);
   }
+}
+
+exports.geRefferalData = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userId = await findUserId(email);      
+    if (userId) {   
+      const refferal = await User.count({ refferal: userId });     
+      if (refferal >0) {        
+        const refferals = await User.find({ refferal: userId });      
+        const buyModel = require('../models/buy');  
+        let totIncome = 0 ;
+        refferals.map( async(data) => {
+           const reffEmail = data.email;  
+           await buyModel.aggregate([
+             {
+               $match : { email : reffEmail }
+             },
+            {
+              $group: {
+                _id: { from_user: "$from_user"},
+                balance: { $sum: "$bonus" },
+              },
+            },
+          ]).then( async(data) => {            
+            totIncome = totIncome + data[0].balance
+          });          
+        }) 
+        await sleep(5000);       
+       
+         return res.status(200).json({
+            totalRefferal : refferal,          
+            totalIncome : totIncome
+         });
+      }    
+    }   
+  } catch (error) {
+    console.log(" Error in getting refferal data api " + error)
+  }
+};
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
