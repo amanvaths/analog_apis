@@ -95,6 +95,31 @@ async function getNews(req, res) {
   }
 }
 
+async function editNews(req, res) {
+    try {
+        News
+        .updateOne(
+          { _id: req.body.id },
+          {
+            $set: {
+              description: req.body.description,
+              title: req.body.title,
+            },
+          }
+        )
+        .then((news, error) => {
+          if (error) console.log("Error :", error);
+          res.status(200).json({
+            message: "Notification updated successfully.",
+            news,
+          });
+        });
+    } catch (error) {
+      console.log("error from: editNews", error.message);
+      res.status(400).json({ message: "Somthing went wrong" });
+    }
+}
+
 async function deleteNews(req, res) {
   try {
     News.findOneAndDelete({ _id: req.body.id }).then((News, error) => {
@@ -140,4 +165,5 @@ module.exports = {
   addNews,
   getNews,
   deleteNews,
+  editNews
 };
