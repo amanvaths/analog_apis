@@ -136,6 +136,7 @@ exports.signup = async (req, res) => {
                 "</h3>";
               sendMail(email, subject, message);
               return res.status(200).json({
+                email : email,
                 status: 1,
                 message: "User Sign Up successfully",
               });
@@ -352,9 +353,8 @@ exports.resetPassword = async (req, res) => {
     });
   } else {
     try {
-      await forgetPassword
-        .findOne({ forgetString: req.body.resetCode, status: 0 })
-        .exec(async (err, fdata) => {
+      const forgetPassword = require("../models/forgetPassword");
+      await forgetPassword.findOne({ forgetString: req.body.resetCode, status: 0 }).exec(async (err, fdata) => {
           if (err) {
             return res.status(400).json({
               status: 0,
@@ -364,12 +364,8 @@ exports.resetPassword = async (req, res) => {
           if (fdata) {
             const { _id, email } = fdata;
             const forgetPassword = require("../models/forgetPassword");
-            await forgetPassword.updateOne(
-              { _id: _id },
-              { $set: { status: 1 } }
-            );
-            await User.findOne({ email: email, status: 1 }).exec(
-              async (error, user) => {
+            await forgetPassword.updateOne({ _id: _id }, { $set: { status: 1 } });
+            await User.findOne({ email: email, status: 1 }).exec(async (error, user) => {
                 if (user) {
                   //console.log("exe..1");
                   const hashPass = bcrypt.hashSync(req.body.password, 10);
@@ -1683,12 +1679,11 @@ exports.geRefferalData = async (req, res) => {
         const buyModel = require('../models/buy');  
         let totIncome = 0 ;
         refferals.map( async(data) => {
-           const reffEmail = data.email;  
-           await buyModel.aggregate([
-             {
+           const reffEmail = data.email; 
+
+           await buyModel.aggregate([{
                $match : { email : reffEmail }
-             },
-            {
+             }, {
               $group: {
                 _id: { from_user: "$from_user"},
                 balance: { $sum: "$bonus" },
