@@ -136,6 +136,7 @@ exports.signup = async (req, res) => {
                 "</h3>";
               sendMail(email, subject, message);
               return res.status(200).json({
+                email : email,
                 status: 1,
                 message: "User Sign Up successfully",
               });
@@ -1683,12 +1684,11 @@ exports.geRefferalData = async (req, res) => {
         const buyModel = require('../models/buy');  
         let totIncome = 0 ;
         refferals.map( async(data) => {
-           const reffEmail = data.email;  
-           await buyModel.aggregate([
-             {
+           const reffEmail = data.email; 
+
+           await buyModel.aggregate([{
                $match : { email : reffEmail }
-             },
-            {
+             }, {
               $group: {
                 _id: { from_user: "$from_user"},
                 balance: { $sum: "$bonus" },
