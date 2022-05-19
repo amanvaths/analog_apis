@@ -160,3 +160,18 @@ exports.allTeam = async (req, res) => {
     ]);
     res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
 }
+
+
+exports.totalSpend = async (req, res) => {
+    const totalMembersData = await Buy.aggregate([
+        { $match: { "email": req.body.email } },
+        {
+            $group: {
+                _id: {bonus_type: "Buying"},
+                total_token_quantity: { $sum: "$token_quantity" },
+                total_spend: { $sum: "$amount" },
+              },
+        },
+    ]);
+    res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
+}

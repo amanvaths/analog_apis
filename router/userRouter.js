@@ -28,7 +28,7 @@ const {
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
-const { updatePrecent,loginhistory,levels,randomPriceChange,priceChangeChartData,allTeam } = require('../Controller/utility');
+const { updatePrecent,loginhistory,levels,randomPriceChange,priceChangeChartData,allTeam,totalSpend } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
@@ -66,6 +66,7 @@ router.post('/anaPrice', anaPrice);
 router.post('/update_refferal', update_refferal);
 router.post('/recentActivities', recentActivities);
 router.post('/geRefferalData', geRefferalData);
+router.post('/totalSpend', totalSpend);
 /**
  * Admin Routes
  */

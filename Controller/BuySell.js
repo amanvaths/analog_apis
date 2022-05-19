@@ -220,6 +220,7 @@ exports.createOrder = async (req, res)=> {
                       currenty_prefer: req.body.base_currency,
                       bonus_percent : bonus_perc,
                       currency : currencyType,
+                      amount : compairVal,
                       bonus_type : "Buying",
                       order_id : order_id,
                       presalelevel:presaleag.levelname
