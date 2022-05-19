@@ -75,14 +75,14 @@ exports.createOrder = async (req, res)=> {
       var compairVal = mul(one_ANA_in,quantity);
       console.log("total_purchase_price",compairVal)
       } else {
-        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-        const price_in_inr = cmcdata[req.body.currencyType].quote[compairCurrency.toUpperCase()].price;
-      const one_ANA_in=ANA_price/price_in_inr;
+      const cmcdatanew = await getCMCData('usdt','inr');
+      const usdtininr = cmcdatanew.USDT.quote.INR.price;
+      var one_ANA_in=ANA_price;
       console.log("Quantity",quantity)
-      console.log("price_in_currency",price_in_inr)
+      //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
-      compairVal = Math.floor(parseInt(compairVal))
+      compairVal=compairVal/usdtininr
       console.log("total_purchase_price",compairVal)
       }
       console.log('wallet balance',currencyT.usdt_balance)
@@ -126,7 +126,7 @@ exports.createOrder = async (req, res)=> {
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
                const raise = (percntsold/ 100) * ANApricebase
-               const newprice = (ANApricebase + raise).toFixed(6)
+               const newprice = (ANApricebase + raise).toFixed(18)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice

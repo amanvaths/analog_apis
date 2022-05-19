@@ -139,3 +139,24 @@ exports.priceChangeChartData = async (req, res) => {
     
       res.status(200).json({prices_:chartdata,totalRecord:chartdata.length});
 }
+
+
+exports.allTeam = async (req, res) => {
+    const user_id = "ANA7280193";
+    const totalMembersData = await User.aggregate([
+        { $match: { "refferal": user_id } },
+        {
+            $graphLookup: {
+                from: "users",
+                startWith: "$refferal",
+                connectFromField: "user_id",
+                connectToField: "refferal",
+                maxDepth: 20,
+                depthField: "numConnections",
+                as: "children",
+               
+            },
+        },
+    ]);
+    res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
+}
