@@ -397,11 +397,16 @@ exports.resetPassword = async (req, res) => {
                 }
               }
             );
+          }else{
+            return res.status(400).json({
+              status: 0,
+              msg: "Something Went Wrong",
+            });
           }
         });
     } catch (error) {
       console.log("Error in Reset Password in ", error.message);
-      return res.status(200).json({
+      return res.status(400).json({
         status: 0,
         msg: "Something Went Wrong",
       });
@@ -1565,7 +1570,7 @@ exports.configSettings = async (req, res) => {
     const {email}  = req.body;
     const _user    = await User.findOne({ email: email });
     const s        = await settingsModel.findOne({ email: email });
-    const orders    = await preSaleModel.findOne({ status: 1 });
+    const orders    = await preSaleModel.findOne({ status: 1 }) || 0;
     if(_user && s){
       return res.status(200).json({
         username            : _user.username,
