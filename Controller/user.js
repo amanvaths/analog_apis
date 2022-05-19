@@ -353,9 +353,8 @@ exports.resetPassword = async (req, res) => {
     });
   } else {
     try {
-      await forgetPassword
-        .findOne({ forgetString: req.body.resetCode, status: 0 })
-        .exec(async (err, fdata) => {
+      const forgetPassword = require("../models/forgetPassword");
+      await forgetPassword.findOne({ forgetString: req.body.resetCode, status: 0 }).exec(async (err, fdata) => {
           if (err) {
             return res.status(400).json({
               status: 0,
@@ -365,12 +364,8 @@ exports.resetPassword = async (req, res) => {
           if (fdata) {
             const { _id, email } = fdata;
             const forgetPassword = require("../models/forgetPassword");
-            await forgetPassword.updateOne(
-              { _id: _id },
-              { $set: { status: 1 } }
-            );
-            await User.findOne({ email: email, status: 1 }).exec(
-              async (error, user) => {
+            await forgetPassword.updateOne({ _id: _id }, { $set: { status: 1 } });
+            await User.findOne({ email: email, status: 1 }).exec(async (error, user) => {
                 if (user) {
                   //console.log("exe..1");
                   const hashPass = bcrypt.hashSync(req.body.password, 10);
