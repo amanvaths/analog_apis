@@ -397,11 +397,16 @@ exports.resetPassword = async (req, res) => {
                 }
               }
             );
+          }else{
+            return res.status(400).json({
+              status: 0,
+              msg: "Something Went Wrong",
+            });
           }
         });
     } catch (error) {
       console.log("Error in Reset Password in ", error.message);
-      return res.status(200).json({
+      return res.status(400).json({
         status: 0,
         msg: "Something Went Wrong",
       });
