@@ -126,7 +126,7 @@ exports.createOrder = async (req, res)=> {
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
                const raise = (percntsold/ 100) * ANApricebase
-               const newprice = (ANApricebase + raise).toFixed(2)
+               const newprice = (ANApricebase + raise).toFixed(6)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice

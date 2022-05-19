@@ -10,4 +10,4 @@ const priceChangeSchema = new mongoose.Schema({
 }, { timestamps: true});
 
 
-module.exports = mongoose.model("PrcieChange", priceChangeSchema);
+module.exports = mongoose.model("PriceChange", priceChangeSchema);
