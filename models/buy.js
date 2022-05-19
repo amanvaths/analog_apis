@@ -8,6 +8,7 @@ const buySchema = new mongoose.Schema({
     currency_type : { type : String , default : 0},
     compair_currency : { type : String , default : 0},
     token_price : { type : Number , default: 0,  required : true },
+    pref_token_price : { type : Number , default: 0,  required : true },
     token_quantity : { type : Number , default : 0 },
     token_buying : { type : Number , default : 0},
     amount : { type : Number , default : 0},

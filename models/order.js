@@ -7,6 +7,7 @@ const orderSchema = new mongoose.Schema({
     amount : { type : Number , default: 0 }, 
     preferred_currency_amount : { type : Number , default : 0},
     raw_price : { type : Number , default: 0 }, 
+    pref_raw_price : { type : Number , default: 0 }, 
     currency_type : { type : String , default : 0},
     compair_currency : { type : String , default : 0},
     presalelevel : { type : String , default : 0},

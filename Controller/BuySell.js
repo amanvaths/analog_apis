@@ -60,6 +60,7 @@ exports.createOrder = async (req, res)=> {
       req.body.base_currency=req.body.currencyType.toLowerCase();
       let ANA_price = presale.price;
       var ANApricevar=ANA_price
+      var pref_raw_price=ANA_price;
       var ANApricebase=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
@@ -69,6 +70,7 @@ exports.createOrder = async (req, res)=> {
       //  const price_in_inr = cmcdata.USDT.quote.US.price;
         //console.log(cmcdata)
       var one_ANA_in=ANA_price/usdtininr;
+      pref_raw_price=pref_raw_price/usdtininr
       console.log("Quantity",quantity)
       //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
@@ -148,7 +150,7 @@ exports.createOrder = async (req, res)=> {
               // token price update
 
               var order_id =Date.now().toString(16).toUpperCase();
-              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname,pref_curr_amount)
+              await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
               // referral commission
               console.log("Order Id",order_id)
               await  User.findOne({ email :email })
@@ -217,6 +219,7 @@ exports.createOrder = async (req, res)=> {
                       bonus : buying_bonus,
                       token_price : req.body.token_price,
                       token_buying : req.body.token_quantity,
+                      pref_token_price : pref_raw_price,
                       token_quantity : token_quantity,
                       currency_price : one_ANA_in,
                       currenty_prefer: req.body.base_currency,
@@ -370,6 +373,7 @@ exports.createOrder = async (req, res)=> {
 async function OrderHistory(
   amount,
   raw_price,
+  pref_raw_price,
   quantity,
   currencyType,
   compairCurrency,
@@ -385,6 +389,7 @@ async function OrderHistory(
     date: Date.now(),
     amount: amount,
     raw_price: raw_price,
+    pref_raw_price : pref_raw_price,
     cVolume: quantity,
     currency_type: currencyType,
     compair_currency: compairCurrency,
