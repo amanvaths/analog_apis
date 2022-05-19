@@ -73,6 +73,7 @@ exports.createOrder = async (req, res)=> {
       //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
+      var pref_curr_amount = compairVal
       console.log("total_purchase_price",compairVal)
       } else {
       const cmcdatanew = await getCMCData('usdt','inr');
@@ -82,6 +83,7 @@ exports.createOrder = async (req, res)=> {
       //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
+      var pref_curr_amount = compairVal
       compairVal=compairVal/usdtininr
       console.log("total_purchase_price",compairVal)
       }
@@ -146,7 +148,7 @@ exports.createOrder = async (req, res)=> {
               // token price update
 
               var order_id =Date.now().toString(16).toUpperCase();
-              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname)
+              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname,pref_curr_amount)
               // referral commission
               console.log("Order Id",order_id)
               await  User.findOne({ email :email })
@@ -221,6 +223,7 @@ exports.createOrder = async (req, res)=> {
                       bonus_percent : bonus_perc,
                       currency : currencyType,
                       amount : compairVal,
+                      preferred_currency_amount:pref_curr_amount,
                       bonus_type : "Buying",
                       order_id : order_id,
                       presalelevel:presaleag.levelname
@@ -372,7 +375,8 @@ async function OrderHistory(
   compairCurrency,
   email,
   orderid,
-  presale
+  presale,
+  pref_curr_amount
 ) {
   const Order = require("../models/order");
   const order = await new Order({
@@ -384,7 +388,8 @@ async function OrderHistory(
     cVolume: quantity,
     currency_type: currencyType,
     compair_currency: compairCurrency,
-    presalelevel:presale
+    presalelevel:presale,
+    preferred_currency_amount:pref_curr_amount
   });
 
   order.save((error, data) => {

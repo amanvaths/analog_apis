@@ -11,6 +11,7 @@ const buySchema = new mongoose.Schema({
     token_quantity : { type : Number , default : 0 },
     token_buying : { type : Number , default : 0},
     amount : { type : Number , default : 0},
+    preferred_currency_amount : { type : Number , default : 0},
     bonus_percent : { type : Number , default : 0 },
     from_user : {type: String},
     from_level : {type: String, default: 0 },
