@@ -1570,7 +1570,7 @@ exports.configSettings = async (req, res) => {
     const {email}  = req.body;
     const _user    = await User.findOne({ email: email });
     const s        = await settingsModel.findOne({ email: email });
-    const orders    = await preSaleModel.findOne({ status: 1 });
+    const orders    = await preSaleModel.findOne({ status: 1 }) || 0;
     if(_user && s){
       return res.status(200).json({
         username            : _user.username,
