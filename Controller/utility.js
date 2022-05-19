@@ -81,3 +81,61 @@ if(rid){
     console.log(refids)
     res.status(200).json({level_list:refids});
 }
+exports.randomPriceChange = async (req, res) => {
+    const Presale = require("../models/presale"); 
+    const PriceChange = require("../models/priceChange");
+    let ANApricevar=0;
+    for(let i=0;i<10000;i++){
+        const presale = await Presale.findOne({status: 1})
+      quantity = Math.floor((Math.random() * 10000) + 1);
+      if(presale.coinremaining>quantity){
+      console.log("Quantity",quantity)
+      const ANApricebase=presale.baseprice
+      const remains_coin=presale.coinremaining - quantity
+      const soldcoins = presale.coinquantity - remains_coin
+      const persentsold = ((soldcoins/ presale.coinquantity) * 100).toFixed(2)
+      await Presale.updateOne({_id: presale._id },{
+          $set:{
+            coinremaining: remains_coin,
+            persentsold : persentsold
+          }
+      })
+      const presaleag = await Presale.findOne({status: 1})
+      const remcoin = presaleag.coinremaining
+      const coinsquant = presaleag.coinquantity
+      const nowquant = coinsquant - remcoin
+      const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
+      if(percntsold>0){
+       const raise = (percntsold/ 100) * ANApricebase
+       const newprice = (ANApricebase + raise).toFixed(18)
+       await Presale.updateOne({status:1},{
+        $set:{
+          price:newprice
+        }
+       })
+      console.log(percntsold)
+      console.log(newprice)
+      const priceupdt = PriceChange.insertMany([{
+        levelname : presaleag.levelname, 
+        coinquantity : coinsquant,
+        coinsold : nowquant,
+        oldprice : ANApricevar,
+        changeprice : newprice,
+        changepercent : percntsold
+    }])
+    ANApricevar = newprice
+      }
+    } else {
+        console.log("Token Quantity Exhauted")
+    }
+    }
+    return
+}
+
+exports.priceChangeChartData = async (req, res) => {
+    const PriceChange = require("../models/priceChange"); 
+    const chartdata = await PriceChange.find({});
+    // console.log(user,"user")
+    
+      res.status(200).json({prices_:chartdata,totalRecord:chartdata.length});
+}
