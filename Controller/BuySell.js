@@ -76,8 +76,8 @@ exports.createOrder = async (req, res)=> {
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
       var pref_curr_amount = compairVal
-      const usdt_amount=compairVal
-      const inrx_amount=mul(compairVal,usdtininr)
+      var usdt_amount=compairVal
+      var inrx_amount=mul(compairVal,usdtininr)
       console.log("total_purchase_price",compairVal)
       } else {
       const cmcdatanew = await getCMCData('usdt','inr');
@@ -89,8 +89,8 @@ exports.createOrder = async (req, res)=> {
       var compairVal = mul(one_ANA_in,quantity);
       var pref_curr_amount = compairVal
       compairVal=compairVal/usdtininr
-      const usdt_amount=compairVal
-      const inrx_amount=mul(compairVal,usdtininr)
+      var usdt_amount=compairVal
+      var inrx_amount=mul(compairVal,usdtininr)
       console.log("total_purchase_price",compairVal)
       }
       console.log('wallet balance',currencyT.usdt_balance)
