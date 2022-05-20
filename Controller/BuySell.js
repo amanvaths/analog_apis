@@ -43,7 +43,7 @@ exports.createOrder = async (req, res)=> {
   const Presale = require("../models/presale");
   try {
     const { amount, compairCurrency, email } = req.body;
-    let quantity=req.body.amount;
+    let quantity=req.body.amount.toFixed(2);
     const currencyType="USDT"
      console.log(currencyType)
     const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
