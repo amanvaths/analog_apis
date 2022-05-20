@@ -7,7 +7,8 @@ const jwt = require("jsonwebtoken");
 const userWallet = require("../models/userWallet");
 const session = require("express-session");
 const { sendMail } = require('../utils/function');
-const url = 'http://localhost:3000';
+require('dotenv').config();
+
 app.use(
   session({
     secret: "thisissecratekey",
@@ -43,16 +44,10 @@ exports.sendotp = async (req, res) => {
       message: "Email field Cannot be Blank",
     });
   } else {
-    var otp = Math.floor(Math.random() * 1000000 + 1);
-    var subject = "Varify your Email";
-    var message =
-      "<h3>Wecome to Analog, <br> To Varify your email on Analog. Your OTP is : <br>" +
-      otp +
-      "</h3>";
-    let varify = await User.updateOne(
-      { email: req.body.email },
-      { $set: { otp: otp } }
-    );
+    var otp               = Math.floor(Math.random() * 1000000 + 1);
+    var subject           = "Varify your Email";
+    var message           = "<h3>Wecome to Analog, <br> To Varify your email on Analog. Your OTP is : <br>" + otp + "</h3>";
+    let varify = await User.updateOne({ email: req.body.email },{ $set: { otp: otp } });
     if (varify) {
       sendMail(req.body.email, subject, message);
       return res.status(200).json({
@@ -130,10 +125,7 @@ exports.signup = async (req, res) => {
             } else if (data) {
               await createWallet(email);
               var subject = "Registration completed successully";
-              var message =
-                "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" +
-                otp +
-                "</h3>";
+              var message = "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" + otp + "</h3>";
               sendMail(email, subject, message);
               return res.status(200).json({
                 email : email,
@@ -291,7 +283,7 @@ exports.forgetPassword = async (req, res) => {
             const forgetPassword = require("../models/forgetPassword");
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
-            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
+            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${process.env.front_url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
               email: email,
@@ -1121,13 +1113,13 @@ exports.settings = async (req, res) => {
                     return res.status(200).json({
                           status  :  1,
                           message : "Contact no. updated successfully"   
-                      }).catch((err) => {
-                        return res.status(400).json({
-                          status  :  0,
-                          message : "something went wrong"                      
-                        });
-                      }) 
-                })
+                      })
+                }).catch((err) => {
+                  return res.status(400).json({
+                    status  :  0,
+                    message : "something went wrong"                      
+                  });
+                }) 
               }
             })
           }catch(err){
@@ -1155,18 +1147,22 @@ exports.settings = async (req, res) => {
           break;     
     case "personal_information" :
             try{            
-              const _user = await User.findOne({ email : email }); 
+             await User.findOne({ email : email }).then((data) => {
               return res.status(200).json({
                 status : 1,
-                username : _user.username,
-                contact_no : _user.contact_no,
+                username : _user.username || "",
+                contact_no : _user.contact_no || "",
                 currency : _user.currency,
                 email : email
               })
+             }).catch((err) => {
+               console.log(" Error " + err);
+             }); 
+             
             }catch(err){
                 console.log("Error in Personal Information " + err);
             }
-            break; 
+            break;      
   }
 }
 

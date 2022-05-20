@@ -108,22 +108,22 @@ exports.userDeposit = async (req, res) => {
          // console.log(email);
           console.log("TRX");
           try {
-            let wallet = walletTRX;
-            const decimal = 1e6;
-            let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
+            let wallet                    = walletTRX;
+            const decimal                 = 1e6;
+            let trx_balance               = await tronWeb.trx.getBalance(walletTRX.walletAddr);
             console.log(trx_balance / decimal + " TRX balance");
-            const balance = trx_balance / decimal;                   
+            const balance                 = trx_balance / decimal;                   
             if (balance > 0) {
               /**
                * check for w balance
                */
-              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;  
-              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;             
-              const new_w_balance = balance;  
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+              const w_balance             = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;  
+              const v_balance             = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;             
+              const new_w_balance         = balance;  
+              const updated_balance       = parseFloat(new_w_balance) - parseFloat(v_balance); 
 
-              const cmcdata = await getCMCData('TRX','USDT');
-              const trxInUSDT = cmcdata.TRX.quote.USDT.price || 0;                    
+              const cmcdata               = await getCMCData('TRX','USDT');
+              const trxInUSDT             = cmcdata.TRX.quote.USDT.price || 0;                    
               /**
                * update user's wallet
                */ 
@@ -132,7 +132,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance     : new_w_balance,
-                      balance       : updated_balance
+                      balance       : new_w_balance
                     },
                   }
                 ).then((data) => {
@@ -173,13 +173,13 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;              
-              const new_w_balance = balance;
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+              const w_balance             = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance             = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;              
+              const new_w_balance         = balance;
+              const updated_balance       = parseFloat(new_w_balance) - parseFloat(v_balance); 
 
-              const cmcdata = await getCMCData('ETH','USDT');
-              const ethInUSDT = cmcdata.ETH.quote.USDT.price || 0; 
+              const cmcdata               = await getCMCData('ETH','USDT');
+              const ethInUSDT             = cmcdata.ETH.quote.USDT.price || 0; 
               /**
                * update user's wallet
                */
@@ -189,7 +189,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance     : new_w_balance,
-                      balance       : updated_balance                     
+                      balance       : new_w_balance                     
                     },
                   }
                 ).then((data) => {
@@ -197,7 +197,7 @@ exports.userDeposit = async (req, res) => {
                 });  
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
-                  const balanceInUSDT = ethInUSDT* new_transaction;
+                  const balanceInUSDT   = ethInUSDT* new_transaction;
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                     console.log("ETH updated in USDT " +balanceInUSDT);
                   });;
@@ -232,8 +232,8 @@ exports.userDeposit = async (req, res) => {
               const new_w_balance   = balance;  
               const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
               
-              const cmcdata = await getCMCData('BNB','USDT');
-              const bnbInUSDT = cmcdata.BNB.quote.USDT.price || 0;             
+              const cmcdata         = await getCMCData('BNB','USDT');
+              const bnbInUSDT       = cmcdata.BNB.quote.USDT.price || 0;             
               /**
                * update user's wallet
                */
@@ -243,7 +243,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance       : new_w_balance,
-                      balance         : updated_balance                    
+                      balance         : new_w_balance                    
                     },
                   }
                 ).then((data) => {
@@ -252,7 +252,7 @@ exports.userDeposit = async (req, res) => {
 
                 if (balance > 0) {
                   const new_transaction = new_w_balance - w_balance;
-                  const balanceInUSDT = bnbInUSDT* new_transaction;
+                  const balanceInUSDT   = bnbInUSDT* new_transaction;
 
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                     console.log("BNB updated in USDT" + balanceInUSDT );
@@ -282,13 +282,13 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;          
-              const new_w_balance = balance;
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance); 
+              const w_balance         = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance         = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;          
+              const new_w_balance     = balance;
+              const updated_balance   = parseFloat(new_w_balance) - parseFloat(v_balance); 
 
-              const cmcdata = await getCMCData('MATIC','USDT');
-              const maticInUSDT = cmcdata.MATIC.quote.USDT.price || 0;  
+              const cmcdata           = await getCMCData('MATIC','USDT');
+              const maticInUSDT       = cmcdata.MATIC.quote.USDT.price || 0;  
               /**
                * update user's wallet
                */
@@ -298,7 +298,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance       : new_w_balance,  
-                      balance         : updated_balance                   
+                      balance         : new_w_balance                   
                     },
                   }
                 ).then((data) => {
@@ -328,12 +328,12 @@ exports.userDeposit = async (req, res) => {
         if (walletUSDT && walletUSDT.symbol == "USDT") {
           console.log("USDT");
           try {
-            let wallet = walletUSDT;
-            const decimal = 1e6;
+            let wallet                = walletUSDT;
+            const decimal             = 1e6;
             tronWeb.setAddress(wallet.walletAddr);
-            const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-            const hex_balance = await instance.balanceOf(wallet.walletAddr).call();
-            const usdt_balance = Number(hex_balance._hex);
+            const instance            = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+            const hex_balance         = await instance.balanceOf(wallet.walletAddr).call();
+            const usdt_balance        = Number(hex_balance._hex);
   
             if (usdt_balance > 0) {
               /**
@@ -342,9 +342,9 @@ exports.userDeposit = async (req, res) => {
   
               let balance = usdt_balance ? usdt_balance / decimal : 0;
               const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;           
+              const v_balance          = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;           
               const new_w_balance      = balance;
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);                      
+              const updated_balance    = parseFloat(new_w_balance) - parseFloat(v_balance);                      
               /**
                * update user's wallet
                */
@@ -355,7 +355,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance           : new_w_balance,     
-                      balance             : updated_balance               
+                      balance             : new_w_balance               
                     },
                   }
                 );
@@ -394,13 +394,13 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              let balance = busd_balance ? busd_balance / decimal : 0;
-              const w_balance          = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
-              const v_balance       = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
-              const new_w_balance      = balance;   
-              const updated_balance = parseFloat(new_w_balance) - parseFloat(v_balance);  
-              const cmcdata = await getCMCData('BUSD','USDT');
-              const busdInUSDT = cmcdata.BUSD.quote.USDT.price || 0; 
+              let balance             = busd_balance ? busd_balance / decimal : 0;
+              const w_balance         = wallet.w_balance ? parseFloat(wallet.w_balance) : 0;
+              const v_balance         = wallet.v_balance ? parseFloat(wallet.v_balance) : 0;            
+              const new_w_balance     = balance;   
+              const updated_balancen  = parseFloat(new_w_balance) - parseFloat(v_balance);  
+              const cmcdata           = await getCMCData('BUSD','USDT');
+              const busdInUSDT        = cmcdata.BUSD.quote.USDT.price || 0; 
               /**
                * update user's wallet
                */
@@ -411,7 +411,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance       : new_w_balance,
-                      balance         : updated_balance                 
+                      balance         : new_w_balance                 
                     },
                   }
                 );            
@@ -468,7 +468,7 @@ exports.userDeposit = async (req, res) => {
                   {
                     $set: {
                       w_balance           : new_w_balance,
-                      balance             : updated_balance
+                      balance             : new_w_balance
                     },
                   }
                 );

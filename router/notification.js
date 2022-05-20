@@ -12,9 +12,4 @@ router.get("/getNews", getNews);
 router.post("/editNews", editNews);
 router.post("/deleteNews", deleteNews);
 
-
-
-
-
-
 module.exports = router;
