@@ -175,10 +175,10 @@ exports.createOrder = async (req, res)=> {
               const lev1 = parseInt(percnt.level1)
               const lev2 = parseInt(percnt.level2)
               const lev3 = parseInt(percnt.level3)
-              const buying_bonus = (bonus_perc/100) * token_quantity;
+              const buying_bonus = (bonus_perc/100) * usdt_amount;
               const token_balance = token_quantity
               let referral1 = user.refferal;
-              let ref1 = (lev1/100) * token_quantity;
+              let ref1 = (lev1/100) * usdt_amount;
               let ref2 = "";
               let ref3 = "";
               let referral2="";
@@ -192,12 +192,12 @@ exports.createOrder = async (req, res)=> {
                   if(rid){
                       refuser1= rid.email
                       referral2=rid.refferal
-                      ref2 = (lev2/100) * token_quantity;
+                      ref2 = (lev2/100) * usdt_amount;
                       let ridi = await User.findOne({  user_id : referral2 });
                          if(ridi){
                         refuser2= ridi.email
                              referral3=ridi.refferal
-                             ref3 = (lev3/100) * token_quantity;
+                             ref3 = (lev3/100) * usdt_amount;
                            let ridim = await User.findOne({  user_id : referral3 });
                            if(ridim){
                               refuser3= ridim.email
@@ -224,7 +224,6 @@ exports.createOrder = async (req, res)=> {
                       email : req.body.email, 
                       bonus : buying_bonus,
                       token_price : req.body.token_price,
-                      token_buying : req.body.token_quantity,
                       pref_token_price : pref_raw_price,
                       token_quantity : token_quantity,
                       currency_price : one_ANA_in,
@@ -241,7 +240,6 @@ exports.createOrder = async (req, res)=> {
                           const _userref1 = Buy.insertMany([{
                               email : refuser1, 
                               token_price : req.body.token_price,
-                              token_buying : req.body.token_quantity,
                               token_quantity : token_quantity,
                               bonus_type : "Level",
                               from_user : req.body.email,
@@ -272,7 +270,6 @@ exports.createOrder = async (req, res)=> {
                               const _userref2 =  Buy.insertMany([{
                                   email : refuser2, 
                                   token_price : req.body.token_price,
-                                  token_buying : req.body.token_quantity,
                                   token_quantity : token_quantity,
                                   bonus_type : "Level",
                                   from_user : req.body.email,
@@ -303,7 +300,6 @@ exports.createOrder = async (req, res)=> {
                                   const _userref3 = Buy.insertMany([{
                                       email : refuser3, 
                                       token_price : req.body.token_price,
-                                      token_buying : req.body.token_quantity,
                                       token_quantity : token_quantity,
                                       bonus_type : "Level",
                                       from_user : req.body.email,
