@@ -1147,11 +1147,11 @@ exports.settings = async (req, res) => {
             try{            
              await User.findOne({ email : email }).then((data) => {
               return res.status(200).json({
-                status : 1,
-                username : data.username || "",
-                contact_no : data.contact_no || "",
-                currency : data.currency,
-                email : email
+                status            : 1,
+                username          : data.username || "",
+                contact_no        : data.contact_no || "",
+                currency          : data.currency,
+                email             : email
               })
              }).catch((err) => {
                console.log(" Error " + err);
@@ -1164,9 +1164,11 @@ exports.settings = async (req, res) => {
   }
 }
 
+
+
 exports.change_password = async(req, res) => { 
     try{
-      const { email } = req.body;
+      const { email }    = req.body;
       const old_password = req.body.old_password?req.body.old_password:"";
       const new_password = req.body.new_password?req.body.new_password:"";           
       const hashPassword = await bcrypt.hash(new_password, 10);
