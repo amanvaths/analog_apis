@@ -1129,12 +1129,10 @@ exports.settings = async (req, res) => {
     case "currency" :  
           try{  
                 await User.updateOne({ email: email }, { $set: { currency : req.body.currency, } }).then((data) => {
-                    if(data){
-                      return res.status(200).json({
+                    return res.status(200).json({
                         status  :  1,
                         message : "Currency updated successfully"                      
-                      });
-                    }                                       
+                      });                                                         
                   }).catch((error) => {                   
                       return res.status(400).json({
                         "status" : 0,
@@ -1150,9 +1148,9 @@ exports.settings = async (req, res) => {
              await User.findOne({ email : email }).then((data) => {
               return res.status(200).json({
                 status : 1,
-                username : _user.username || "",
-                contact_no : _user.contact_no || "",
-                currency : _user.currency,
+                username : data.username || "",
+                contact_no : data.contact_no || "",
+                currency : data.currency,
                 email : email
               })
              }).catch((err) => {
