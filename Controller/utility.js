@@ -169,7 +169,8 @@ exports.totalSpend = async (req, res) => {
             $group: {
                 _id: {bonus_type: "Buying"},
                 total_token_quantity: { $sum: "$token_quantity" },
-                total_spend: { $sum: "$amount" },
+                total_spend_usdt: { $sum: "$total_spend_usdt" },
+                total_spend_inr: { $sum: "$total_spend_inr" }
               },
         },
     ]);

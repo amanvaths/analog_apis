@@ -333,7 +333,7 @@ exports.createOrder = async (req, res)=> {
 
                               if(result){
                                   return res.status(200).json({
-                                      status : "true",
+                                      status : true,
                                       message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+token_price+" is Successfull"
                                   }); 
                               }
@@ -345,21 +345,17 @@ exports.createOrder = async (req, res)=> {
                 });
             }else{ 
               return res.status(400).json({
-                  status : "ok",
+                  status : false,
                   message: "User Not Found"
               });   
         }
         });
               // referral commission
-              return res.json({
-                  status: 200,
-                  error: false,
-                  message: "Order Executed Successfully"
-                });
+              
       } else {
         console.log( "Insufficient "+req.body.currencyType+" Balance")
-          return res.json({
-              status: 400,
+          return res.status(400).json({
+              status: false,
               error: true,
               message: "Insufficient "+req.body.currencyType+" Balance",
             });
@@ -367,9 +363,8 @@ exports.createOrder = async (req, res)=> {
       
   } catch (error) {
       console.log("Error from: createOrder ", error)
-    return res.json({
-      status: 400,
-      error: true,
+    return res.status(400).json({
+      status: false,
       message: "Somthing Went Wrong!!**********",
       err: error.message,
     });
