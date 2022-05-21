@@ -542,7 +542,7 @@ async function createSolanaAddress() {
 exports.walletData = async (req, res) => {
   try {
     const { email } = req.body;
-    const limitValue = req.body.limit || 10;
+    const limitValue = req.body.limit || 1000;
     const skipValue = req.body.skip || 0;
     const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});   
     if (walletData) {
@@ -560,9 +560,9 @@ exports.walletData = async (req, res) => {
 exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
-    const { email, symbol } = req.body;
-    const limitValue = req.body.limit || 10;
-    const skipValue = req.body.skip || 0;
+    const { email, symbol }   = req.body;
+    const limitValue          = req.body.limit || 1000;
+    const skipValue           = req.body.skip || 0;
     const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
     if (transactionData) {
       return res.status(200).json(transactionData);
@@ -580,7 +580,7 @@ exports.login_history = async (req, res) => {
   const login_history = require("../models/login_history");
   try {
     const { email, symbol } = req.body;
-    const limitValue = req.body.limit || 10;
+    const limitValue = req.body.limit || 1000;
     const skipValue = req.body.skip || 0;
     const loginData = await login_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});;
     if (loginData) {
@@ -1481,7 +1481,7 @@ exports.getAffiliates = async (req, res) => {
   try {
     const { email } = req.body;
     const userId = await findUserId(email); 
-    const limitValue = req.body.limit || 10;
+    const limitValue = req.body.limit || 1000;
     const skipValue = req.body.skip || 0;   
     if (userId) {   
       const affiliates = await User.find({ refferal: userId }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
@@ -1653,7 +1653,7 @@ exports.update_refferal = async (req, res) => {
 exports.recentActivities = async (req, res) => { 
   try{
     const { email } = req.body;
-    const limit = req.body.limit || 100 ;
+    const limit = req.body.limit || 1000 ;
     const ordersModel = require('../models/order');  
     const recentActivities = await ordersModel.find({ email : email }).limit(limit).sort({ createdAt: 'desc'}) || 0;    
     if(recentActivities){
@@ -1690,8 +1690,10 @@ exports.geRefferalData = async (req, res) => {
                 balance: { $sum: "$bonus" },
               },
             },
-          ]).then( async(data) => {            
+          ]).then( async(data) => {   
+           if(data.length > 0){        
             totIncome = totIncome + data[0].balance
+           }
           });          
         }) 
         await sleep(5000);       
