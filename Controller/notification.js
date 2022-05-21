@@ -74,8 +74,11 @@ async function deleteNotification(req, res) {
 async function addNews(req, res) {
   try {
     new News(req.body).save((error, news) => {
-      if (error) console.log("Error :", error);
+      if (error){
+      console.log("Error :", error);
+      }else{
       res.status(200).json({ message: "news added successfully.", news });
+      }
     });
   } catch (error) {
     console.log("error from: addNews", error.message);
@@ -86,8 +89,14 @@ async function addNews(req, res) {
 async function getNews(req, res) {
   try {
     News.find(req.query).exec((error, News) => {
-      if (error) return res.status(400).json({ message: error.message });
+      if (error){
+       return res.status(400).json({ 
+         status : 0,
+         message: error.message
+         });
+      }else{
       return res.status(200).json(News);
+      }
     });
   } catch (error) {
     console.log("error from: ", error.message);

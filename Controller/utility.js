@@ -142,15 +142,15 @@ exports.priceChangeChartData = async (req, res) => {
 
 
 exports.allTeam = async (req, res) => {
-    const user_id = "ANA7280193";
+    const refferal = "ANA504400";
     const totalMembersData = await User.aggregate([
-        { $match: { "refferal": user_id } },
+        { $match: { "user_id": refferal } },
         {
             $graphLookup: {
                 from: "users",
-                startWith: "$refferal",
-                connectFromField: "user_id",
-                connectToField: "refferal",
+                startWith: "$user_id",
+                connectFromField: "refferal",
+                connectToField: "user_id",
                 maxDepth: 20,
                 depthField: "numConnections",
                 as: "children",
@@ -158,7 +158,7 @@ exports.allTeam = async (req, res) => {
             },
         },
     ]);
-    res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
+    res.status(200).json({user:totalMembersData[0].children,totalRecord:totalMembersData.length});
 }
 
 
