@@ -166,6 +166,7 @@ exports.signin = async (req, res) => {
             if (isVarify == 0) {
               return res.status(400).json({
                 status: 3,
+                email: email,
                 message: "OTP is not varified",
               });
             }
@@ -241,13 +242,13 @@ exports.varify = async (req, res) => {
               }
             } else {
               return res.status(400).json({
-                status: "false",
+                status: 2,
                 message: "Incorrect OTP",
               });
             }
           } else {
             return res.status(400).json({
-              status: "false",
+              status: 3,
               message: "Invalide User",
             });
           }
@@ -563,7 +564,7 @@ exports.transaction_history = async (req, res) => {
     const { email, symbol } = req.body;
     const limitValue = req.body.limit || 10;
     const skipValue = req.body.skip || 0;
-    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
+    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue * limitValue).sort({ createdAt: 'desc'});
     if (transactionData) {
       return res.status(200).json(transactionData);
     } else {
@@ -1690,8 +1691,11 @@ exports.geRefferalData = async (req, res) => {
                 balance: { $sum: "$bonus" },
               },
             },
-          ]).then( async(data) => {            
-            totIncome = totIncome + data[0].balance
+          ]).then( async(data) => {  
+            if(data.length > 0){
+              totIncome = totIncome + data[0].balance
+            }          
+            
           });          
         }) 
         await sleep(5000);       
