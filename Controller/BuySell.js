@@ -65,14 +65,9 @@ exports.createOrder = async (req, res)=> {
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
-        // ANA_price = ANA_price/usdtininr;
-      //  const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-      //  const price_in_inr = cmcdata.USDT.quote.US.price;
-        //console.log(cmcdata)
       var one_ANA_in=ANA_price/usdtininr;
       pref_raw_price=pref_raw_price/usdtininr
       console.log("Quantity",quantity)
-      //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
       var pref_curr_amount = compairVal
@@ -84,7 +79,6 @@ exports.createOrder = async (req, res)=> {
       const usdtininr = cmcdatanew.USDT.quote.INR.price;
       var one_ANA_in=ANA_price;
       console.log("Quantity",quantity)
-      //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
       var pref_curr_amount = compairVal
@@ -95,10 +89,7 @@ exports.createOrder = async (req, res)=> {
       }
       console.log('wallet balance',currencyT.usdt_balance)
       if(currencyT.usdt_balance >= compairVal ) {
-        
-              //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
               let CTbalance = currencyT.v_balance + compairVal; 
-              //let CCbalance = add(compairC.balance, compairVal);
               console.log("use balance",compairVal)
               await wallet.updateOne({_id:currencyT._id},{
                   $set:{
@@ -164,7 +155,6 @@ exports.createOrder = async (req, res)=> {
               req.body.token_quantity=quantity;
               req.body.token_price=ANA_price;
               var db = mongoose.connection;
-              //var Percent = db.collection('referral_percents');
               const token_buying = req.body.token_quantity
               const token_price = req.body.token_price
               const token_quantity = req.body.token_quantity

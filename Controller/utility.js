@@ -158,7 +158,7 @@ exports.allTeam = async (req, res) => {
             },
         },
     ]);
-    res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
+    res.status(200).json({user:totalMembersData[0].children,totalRecord:totalMembersData.length});
 }
 
 
