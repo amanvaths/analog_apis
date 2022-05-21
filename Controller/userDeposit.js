@@ -1,7 +1,6 @@
 const userWallet = require('../models/userWallet');
-const nodemailer = require("nodemailer");
 const user = require('../models/user');
-const url = 'http://localhost:3000';
+const { sendMail } = require('../utils/function');
 
 exports.userDeposit = async (req, res) => {
     const Web3 = require("web3");
@@ -95,7 +94,7 @@ exports.userDeposit = async (req, res) => {
     if (email) {
       let go = await canUpdate(email);
       if (go) {
-        
+
          var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
          var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
          var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
@@ -105,7 +104,7 @@ exports.userDeposit = async (req, res) => {
          var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
      
         
-        if (walletTRX && walletTRX.symbol == "TRX" && walletTRX.balance) {
+        if (walletTRX && walletTRX.symbol == "TRX") {
          // console.log(email);
           console.log("TRX");
           try {
@@ -126,7 +125,7 @@ exports.userDeposit = async (req, res) => {
                */ 
                //console.log("exe....1 balance = " + balance + " w_balance =" + w_balance);
                 
-              if (balance>0 && w_balance>0 && balance != w_balance) {
+              if (balance>0 && w_balance && balance != w_balance) {
 
               await userWallet.updateOne({ email: email, symbol: "TRX" },{ $set: { balance : balance }}).then( async(data) => {
                 console.log("updated trx")
@@ -157,7 +156,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
 
-        if (walletETH && walletETH.symbol == "ETH"  && walletETH.balance) {
+        if (walletETH && walletETH.symbol == "ETH") {
           console.log("ETH");
           try {
             let wallet = walletETH;
@@ -207,7 +206,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
 
-        if (walletBNB && walletBNB.symbol == "BNB"  && walletBNB.balance) {
+        if (walletBNB && walletBNB.symbol == "BNB") {
           console.log("BNB");
           try {
             let wallet = walletBNB;
@@ -256,7 +255,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
 
-        if (walletMATIC && walletMATIC.symbol == "MATIC" && walletMATIC.balance) {
+        if (walletMATIC && walletMATIC.symbol == "MATIC") {
           console.log("MATIC");
           try {
             let wallet = walletMATIC;
@@ -305,7 +304,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
 
-        if (walletUSDT && walletUSDT.symbol == "USDT" && walletUSDT.balance) {
+        if (walletUSDT && walletUSDT.symbol == "USDT") {
           console.log("USDT");
           try {
             let wallet = walletUSDT;
@@ -353,7 +352,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
 
-        if (walletBUSD && walletBUSD.symbol == "BUSD" && walletBUSD.balance) {
+        if (walletBUSD && walletBUSD.symbol == "BUSD") {
           console.log("BUSD");
           try {
             let wallet = walletBUSD;
@@ -405,7 +404,7 @@ exports.userDeposit = async (req, res) => {
           }
         }
         
-        if (walletSHIB && walletSHIB.symbol == "SHIB" && walletSHIB.balance) {
+        if (walletSHIB && walletSHIB.symbol == "SHIB") {
           console.log("SHIB");
           try {
             let wallet = walletSHIB;
@@ -522,102 +521,6 @@ exports.userDeposit = async (req, res) => {
       console.log("error in canupdate: ", error.message)
       return false;
   }
-  }
-  
-
-  async function sendMail(email, subject, message) {
-    var transporter = nodemailer.createTransport({
-      host: "mail.tronexa.com",
-      port: 465,
-      auth: {
-        user: "analog@tronexa.com",
-        pass: "Analog@123",
-      },
-    });
-  
-    var mailOptions = {
-      from: "analog@tronexa.com",
-      to: email,
-      subject: subject,
-      html: emailTemplate(email, message),
-    };
-  
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
-  }
-  
-  function emailTemplate(user, msg) {
-    const template = `
-    <html>
-   <head>    
-       <link rel="stylesheet" href="${url}/assets/css/dashlite.css?ver=3.0.2" />
-       <link rel="stylesheet" href="${url}/assets/css/theme.css?ver=3.0.2">
-       <link rel="stylesheet" href="${url}/assets/css/style-email.css" />
-   </head>
-   <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
-      
-                   <table class="email-wraper">
-                       <tbody>
-                           <tr>
-                            <td class="py-5">
-                                <table class="email-header">
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-center pb-4">
-                                                <a href="#">
-                                                    <img class="email-logo" src="${url}/images/logo-dark.png" alt="logo">
-                                                   </a>
-                                                   <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
-                                               </td>
-                                           </tr>
-                                       </tbody>
-                                   </table>
-                                   <table class="email-body">
-                                       <tbody>
-                                           <tr>
-                                               <td class="p-3 p-sm-5">                                                
-                                                   <p>
-                                                      ${msg}                                                
-                                                   </p>                                                  
-                                                   <p class="mt-4">---- 
-                                                       <br> Regards
-                                                       <br>
-                                                       Analog
-                                                   </p>
-                                               </td>
-                                           </tr>
-                                       </tbody>
-                                   </table>
-                                   <table class="email-footer">
-                                       <tbody>
-                                           <tr>
-                                               <td class="text-center pt-4">
-                                                   <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
-                                                   <ul class="email-social">
-                                                       <li><a href="#"><img src="${url}/images/socials/facebook.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${url}/images/socials/twitter.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${url}/images/socials/youtube.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${url}/images/socials/medium.png" alt=""></a></li>
-                                                   </ul>
-                                                   <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${url}">analog.com</a>. 
-                                                   </p>
-                                               </td>
-                                           </tr>
-                                       </tbody>
-                                   </table>
-                               </td>
-                           </tr>
-                       </tbody>
-                   </table>         
-  </body>
-  </html>
-    `;
-    return template;
   }
 
 
