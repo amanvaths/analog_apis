@@ -561,17 +561,10 @@ exports.walletData = async (req, res) => {
 exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
-<<<<<<< HEAD
-    const { email, symbol } = req.body;
-    const limitValue = req.body.limit || 10;
-    const skipValue = req.body.skip || 0;
-    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue * limitValue).sort({ createdAt: 'desc'});
-=======
     const { email, symbol }   = req.body;
     const limitValue          = req.body.limit || 1000;
     const skipValue           = req.body.skip || 0;
     const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
->>>>>>> caae5edb5dfe9a5d4c9b29ff4591994b45adbdde
     if (transactionData) {
       return res.status(200).json(transactionData);
     } else {
