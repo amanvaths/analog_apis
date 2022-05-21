@@ -5,11 +5,12 @@ async function addNotification(req, res) {
   try {
     const banner = await uploadImage(req.files.banner, "banner_" + Date.now());
     new notifications({ ...req.body, banner }).save((error, notification) => {
-      if (error) console.log("Error :", error);
-      res
-        .status(200)
-        .json({ message: "Notification added successfully.", notification });
-    });
+      if (error){ 
+        console.log("Error :", error);
+      }else{
+      res.status(200).json({ message: "Notification added successfully.", notification });
+    }
+  })
   } catch (error) {
     console.log("error from: addNotification", error.message);
     res.status(400).json({ message: "Somthing went wrong" });
@@ -19,8 +20,11 @@ async function addNotification(req, res) {
 async function getNotification(req, res) {
   try {
     notifications.find(req.query).exec((error, notifications) => {
-      if (error) return res.status(400).json({ message: error.message });
+      if (error){
+       return res.status(400).json({ message: error.message });
+      }else{
       return res.status(200).json(notifications);
+      }
     });
   } catch (error) {
     console.log("error from: ", error.message);
@@ -30,26 +34,17 @@ async function getNotification(req, res) {
 
 async function editNotification(req, res) {
   try {
-    const banner =
-      req.files && req.files.banner
-        ? await uploadImage(req.files.banner, "banner_" + Date.now())
-        : "";
-    notifications
-      .updateOne(
-        { _id: req.body.id },
-        {
-          $set: {
-            description: req.body.description,
-            banner: banner,
-          },
-        }
-      )
-      .then((notification, error) => {
-        if (error) console.log("Error :", error);
+    const banner = req.files && req.files.banner ? await uploadImage(req.files.banner, "banner_" + Date.now()) : "";
+    notifications.updateOne({ _id: req.body.id }, { $set: { description: req.body.description, banner: banner, }, })
+      .then((error, notification) => {
+        if (error){
+           console.log("Error :", error);
+        }else{
         res.status(200).json({
           message: "Notification updated successfully.",
           notification,
         });
+      }
       });
   } catch (error) {
     console.log("error from: editNotification", error.message);
@@ -59,11 +54,12 @@ async function editNotification(req, res) {
 
 async function deleteNotification(req, res) {
   try {
-    notifications
-      .findOneAndDelete({ _id: req.body.id })
-      .then((notification, error) => {
-        if (error) res.status(400).json({ message: error.message });
+    notifications.findOneAndDelete({ _id: req.body.id }).then((notification, error) => {
+        if (error){
+           res.status(400).json({ message: error.message });
+        }else{
         res.status(200).json(notification);
+        }
       });
   } catch (error) {
     console.log("error from: deleteNotification", error.message);
@@ -106,22 +102,15 @@ async function getNews(req, res) {
 
 async function editNews(req, res) {
     try {
-        News
-        .updateOne(
-          { _id: req.body.id },
-          {
-            $set: {
-              description: req.body.description,
-              title: req.body.title,
-            },
-          }
-        )
-        .then((news, error) => {
-          if (error) console.log("Error :", error);
+        News.updateOne({ _id: req.body.id },{ $set: { description: req.body.description, title: req.body.title }}).then((error, news) =>{
+          if (error){
+             console.log("Error :", error);
+          }else{
           res.status(200).json({
             message: "Notification updated successfully.",
             news,
           });
+        }
         });
     } catch (error) {
       console.log("error from: editNews", error.message);
@@ -132,8 +121,11 @@ async function editNews(req, res) {
 async function deleteNews(req, res) {
   try {
     News.findOneAndDelete({ _id: req.body.id }).then((News, error) => {
-      if (error) res.status(400).json({ message: error.message });
+      if (error){
+         res.status(400).json({ message: error.message });
+      }else{
       res.status(200).json(News);
+      }
     });
   } catch (error) {
     console.log("error from: deleteNews", error.message);
