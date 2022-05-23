@@ -1237,6 +1237,22 @@ function sleep(ms) {
   });
 }
 
+exports.refferal = async (req,res) => {
+  try{
+      const buy = require("../models/buy");
+      const { email, level } = req.body;
+      buy.find({ email : email, from_level: level }).then((data) => {
+        
+      })
+  }catch(err){
+    console.log("Error in refferal" +err);
+    return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
+  }
+}
+
 
 // website data 
 
@@ -1257,5 +1273,9 @@ exports.bannerData = async (req, res) => {
   
   }catch(err){
     console.log("Error in websiteData api "+ err);
+    return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
   }
 }

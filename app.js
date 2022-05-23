@@ -28,20 +28,25 @@ app.use('/api',notification);
 
 app.get('/get', async (req, res) => {  
 
-  const arr = [];
-  const user_id = "ANA7280193";  
-  const d = await getDownline(user_id);  
-    d.map((data) => { 
-      console.log(data)
-      if(!arr.includes(user_id)){
-        arr.push(data.user_id);
-      }
-    })  
-  res.send(arr);
+  
 
 
+  
+  // const user_id = "ANA504400";   // ANA7280193
+  // const d = await getDownline(user_id);  
+  // const arr = convertToArray(d, user_id);  
+  // console.log(arr, 1);
+  // const arr2 = [];
+  // for(i=0; i<arr.length; i++){
+  //     let u_id = arr[i];
+  //     const d2 = await getDownline(u_id);  
+  //     const arr2 = convertToArray(d2, u_id);
+  //     arr2.push(arr2);
+  // }
+  // res.send(arr2);
 
 });
+
 
 
 
@@ -50,6 +55,18 @@ app.listen(port, '0.0.0.0' , () => {
 });
 
 
+function convertToArray(d, user_id){
+  const arr = []; 
+  let i=0;
+  d.map((data) => { 
+      arr.push(data.user_id);  
+  }) 
+  var idx = arr.indexOf(user_id);
+  if (idx != -1){
+    arr.splice(idx, 1);
+  } 
+  return arr; 
+}
 
 async function getDownline(ref_ids){
 
