@@ -1158,7 +1158,7 @@ exports.update_refferal = async (req, res) => {
        });
       }else{
         return res.status(400).json({
-          status : 0,
+          status : 2,
           message : "Invalid refferal Code or Already exits"
         })
       }    
