@@ -1240,8 +1240,11 @@ function sleep(ms) {
 exports.affiliateLevelData = async (req,res) => {
   try{
       const buyModel = require("../models/buy");
-      const { email, level } = req.body;      
-     const reffInc = await buyModel.aggregate([
+      const { email, level } = req.body;  
+      let reffInc =  0;  
+      let totalExpense = 0;
+      let totalAna = 0;
+      await buyModel.aggregate([
                       {
                         $match : { email : email, from_level : level }
                       }, {
@@ -1250,9 +1253,15 @@ exports.affiliateLevelData = async (req,res) => {
                         balance: { $sum: "$bonus" },
                       },
                     },
-                  ])   
+                  ]).then((data) => {
+                    if(data.length > 0){
+                      reffInc = reffInc + data[0].balance
+                    }
+                  })   
+
+          
     const totalReff = await buyModel.count({ email : email, from_level: level });
-    const totalExpense = await buyModel.aggregate([
+    await buyModel.aggregate([
                           {
                             $match : { email : email, bonus_type : "Buying" }
                           }, {
@@ -1261,8 +1270,12 @@ exports.affiliateLevelData = async (req,res) => {
                             balance: { $sum: "$amount" },
                           },
                         },
-                      ]) 
-   const totalAna = await buyModel.aggregate([
+                      ]).then((data) => {                       
+                        if(data.length > 0){
+                          totalExpense = totalExpense + data[0].balance
+                        }
+                      }) 
+   await buyModel.aggregate([
                         {
                           $match : { email : email,  bonus_type : "Buying" }
                         }, {
@@ -1271,7 +1284,11 @@ exports.affiliateLevelData = async (req,res) => {
                           balance: { $sum: "$token_buying" },
                         },
                       },
-                    ]) 
+                    ]).then((data) => {
+                      if(data.length > 0){
+                        totalAna = totalAna + data[0].balance
+                      }
+                    }) 
               
      res.status(200).json({
        status : 1,
