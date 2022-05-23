@@ -1240,28 +1240,30 @@ function sleep(ms) {
 exports.affiliateLevelData = async (req,res) => {
   try{
       const buyModel = require("../models/buy");
-      const { email, level } = req.body;  
-      let reffInc =  0;  
-      let totalExpense = 0;
-      let totalAna = 0;
-      await buyModel.aggregate([
+      const { email, level } = req.body;      
+     
+      const reffInc = await buyModel.aggregate([
                       {
-                        $match : { email : email, from_level : level }
+                        $match : { email : email } // , from_level : level
                       }, {
                       $group: {
                         _id: { from_level: "$from_level"},
                         balance: { $sum: "$bonus" },
                       },
                     },
-                  ]).then((data) => {
-                    if(data.length > 0){
-                      reffInc = reffInc + data[0].balance
-                    }
-                  })   
-
+                  ]) 
           
-    const totalReff = await buyModel.count({ email : email, from_level: level });
-    await buyModel.aggregate([
+    const totalReff = await buyModel.aggregate([
+                        {
+                          $match : { email : email }
+                        }, {
+                        $group: {
+                          _id: { from_level: "$from_level"},
+                          total : { $sum : 1 }                       
+                        },
+                      },
+                    ]) 
+    const totalExpense = await buyModel.aggregate([
                           {
                             $match : { email : email, bonus_type : "Buying" }
                           }, {
@@ -1270,12 +1272,8 @@ exports.affiliateLevelData = async (req,res) => {
                             balance: { $sum: "$amount" },
                           },
                         },
-                      ]).then((data) => {                       
-                        if(data.length > 0){
-                          totalExpense = totalExpense + data[0].balance
-                        }
-                      }) 
-   await buyModel.aggregate([
+                      ]) 
+   const totalAna = await buyModel.aggregate([
                         {
                           $match : { email : email,  bonus_type : "Buying" }
                         }, {
@@ -1284,11 +1282,7 @@ exports.affiliateLevelData = async (req,res) => {
                           balance: { $sum: "$token_buying" },
                         },
                       },
-                    ]).then((data) => {
-                      if(data.length > 0){
-                        totalAna = totalAna + data[0].balance
-                      }
-                    }) 
+                    ])
               
      res.status(200).json({
        status : 1,
@@ -1332,4 +1326,20 @@ exports.bannerData = async (req, res) => {
       message : "Something went wrong "
     });
   }
+}
+
+
+exports.refferalLevelWiseData = async (req, res) => {
+   try{
+    const { email, level } = req.body;
+
+    
+
+   }catch(err){
+     console.log("Error in refferalLevelWiseData api " + err);
+     return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
+   }
 }
