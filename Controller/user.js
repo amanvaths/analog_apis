@@ -1163,7 +1163,11 @@ exports.update_refferal = async (req, res) => {
         })
       }    
   }catch(error){
-    console.log("Error in update refferal " + error);
+        console.log("Error in update refferal " + error);
+        return res.status(400).json({
+          status : 0,
+          message : "Something went wrong"
+        })
   }
 }
 
