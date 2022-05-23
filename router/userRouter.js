@@ -25,7 +25,7 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData
+  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels,randomPriceChange,priceChangeChartData,allTeam,totalSpend,incomeFromLevels } = require('../Controller/utility');
@@ -70,6 +70,8 @@ router.post('/totalSpend', totalSpend);
 router.post('/incomeFromLevels', incomeFromLevels);
 router.post('/randomPriceChange', randomPriceChange);
 router.post('/bannerData', bannerData);
+router.post('/affiliateLevelData', affiliateLevelData)
+
 /**
  * Admin Routes
  */

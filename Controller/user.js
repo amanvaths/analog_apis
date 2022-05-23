@@ -1237,13 +1237,50 @@ function sleep(ms) {
   });
 }
 
-exports.refferal = async (req,res) => {
+exports.affiliateLevelData = async (req,res) => {
   try{
-      const buy = require("../models/buy");
-      const { email, level } = req.body;
-      buy.find({ email : email, from_level: level }).then((data) => {
-        
-      })
+      const buyModel = require("../models/buy");
+      const { email, level } = req.body;      
+     const reffInc = await buyModel.aggregate([
+                      {
+                        $match : { email : email, from_level : level }
+                      }, {
+                      $group: {
+                        _id: { from_level: "$from_level"},
+                        balance: { $sum: "$bonus" },
+                      },
+                    },
+                  ])   
+    const totalReff = await buyModel.count({ email : email, from_level: level });
+    const totalExpense = await buyModel.aggregate([
+                          {
+                            $match : { email : email, bonus_type : "Buying" }
+                          }, {
+                          $group: {
+                            _id: { from_level: "$from_level"},
+                            balance: { $sum: "$amount" },
+                          },
+                        },
+                      ]) 
+   const totalAna = await buyModel.aggregate([
+                        {
+                          $match : { email : email,  bonus_type : "Buying" }
+                        }, {
+                        $group: {
+                          _id: { from_level: "$from_level"},
+                          balance: { $sum: "$token_buying" },
+                        },
+                      },
+                    ]) 
+              
+     res.status(200).json({
+       status : 1,
+       refferalIncome : reffInc,
+       totalAffiliates : totalReff,
+       totalExpense : totalExpense,
+       totalAna : totalAna
+     })
+
   }catch(err){
     console.log("Error in refferal" +err);
     return res.status(400).json({
