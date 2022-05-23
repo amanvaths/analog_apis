@@ -10,11 +10,8 @@ router.post("/deleteNotification", deleteNotification);
 router.post("/addNews", addNews);
 router.get("/getNews", getNews);
 router.post("/editNews", editNews);
+
+
 router.post("/deleteNews", deleteNews);
-
-
-
-
-
 
 module.exports = router;

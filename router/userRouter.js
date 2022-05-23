@@ -25,10 +25,10 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  update_refferal , recentActivities
+  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
-const { updatePrecent,loginhistory,levels } = require('../Controller/utility');
+const { updatePrecent,loginhistory,levels,randomPriceChange,priceChangeChartData,allTeam,totalSpend,incomeFromLevels } = require('../Controller/utility');
 const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
@@ -65,7 +65,11 @@ router.post('/removeWhiteListedIp', removeWhiteListedIp);
 router.post('/anaPrice', anaPrice);
 router.post('/update_refferal', update_refferal);
 router.post('/recentActivities', recentActivities);
-
+router.post('/geRefferalData', geRefferalData);
+router.post('/totalSpend', totalSpend);
+router.post('/incomeFromLevels', incomeFromLevels);
+router.post('/randomPriceChange', randomPriceChange);
+router.post('/bannerData', bannerData);
 /**
  * Admin Routes
  */
@@ -81,7 +85,8 @@ router.get('/alluserbydate', alluserbydate);
 router.get('/allusertoday', allusertoday);
 router.get('/deletepresale', deletepresale);
 router.get('/getpresalebyid', getpresalebyid);
-
+router.post('/priceChangeChartData', priceChangeChartData);
+router.post('/allTeam', allTeam);
 
 
 /**

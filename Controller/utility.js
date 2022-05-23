@@ -69,15 +69,126 @@ if(rid){
 }
 
 exports.incomeFromLevels = async (req, res) => { 
-    const refids = [];
+    let refids = [];
     let ref_id=req.body.referral;
     for(let i=0;i<10;i++){
 let rid = await User.findOne({  user_id : ref_id});
-if(rid){
-    refids[i]={userID: rid.user_id,email:rid.email,isverify:rid.isVarify,level:i+1};
+if(rid.user_id){
+    refids.push(rid.user_id);
+    if(rid.refferal!=""){
     ref_id=rid.refferal;
+    }
 }
     }
-    console.log(refids)
+    //console.log(refids)
     res.status(200).json({level_list:refids});
+}
+exports.randomPriceChange = async (req, res) => {
+    const date =  new Date().getTime(); 
+    
+  console.log(date);
+    const Presale = require("../models/presale"); 
+    const PriceChange = require("../models/priceChange");
+    let ANApricevar=0;
+    let temdate =date;
+    for(let i=0;i<10000;i++){
+        if(i%10==0){
+        const date = new Date(temdate);
+        temdate = date.setDate(date.getDate() + 1);
+        }
+        const presale = await Presale.findOne({status: 1})
+      quantity = Math.floor((Math.random() * 10000) + 1);
+      if(presale.coinremaining>quantity){
+      console.log("Quantity",quantity)
+      const ANApricebase=presale.baseprice
+      const remains_coin=presale.coinremaining - quantity
+      const soldcoins = presale.coinquantity - remains_coin
+      const persentsold = ((soldcoins/ presale.coinquantity) * 100).toFixed(2)
+      await Presale.updateOne({_id: presale._id },{
+          $set:{
+            coinremaining: remains_coin,
+            persentsold : persentsold
+          }
+      })
+      const presaleag = await Presale.findOne({status: 1})
+      const remcoin = presaleag.coinremaining
+      const coinsquant = presaleag.coinquantity
+      const nowquant = coinsquant - remcoin
+      const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
+      if(percntsold>0){
+       const raise = (percntsold/ 100) * ANApricebase
+       const newprice = (ANApricebase + raise).toFixed(18)
+       await Presale.updateOne({status:1},{
+        $set:{
+          price:newprice
+        }
+       })
+      console.log(percntsold)
+      console.log(newprice)
+      const priceupdt = PriceChange.insertMany([{
+        levelname : presaleag.levelname, 
+        coinquantity : coinsquant,
+        coinsold : nowquant,
+        oldprice : ANApricevar,
+        changeprice : newprice,
+        changepercent : percntsold,
+        time : temdate
+    }])
+    ANApricevar = newprice
+      }
+    } else {
+        console.log("Token Quantity Exhauted")
+    }
+    }
+    return
+}
+
+exports.priceChangeChartData = async (req, res) => {
+    const PriceChange = require("../models/priceChange"); 
+    const chartdata = await PriceChange.find({});
+    // console.log(user,"user")
+    
+      res.status(200).json({prices_:chartdata,totalRecord:chartdata.length});
+}
+
+
+exports.allTeam = async (req, res) => {
+    const refferal = "ANA504400";
+    const totalMembersData = await User.aggregate([
+        { $match: { "user_id": refferal } },
+        {
+            $graphLookup: {
+                from: "users",
+                startWith: "$user_id",
+                connectFromField: "refferal",
+                connectToField: "user_id",
+                maxDepth: 20,
+                depthField: "numConnections",
+                as: "children",               
+            },            
+        },
+        {
+            $project: {           
+                'children._id': 1,
+                'children.user_id': 1
+            }
+          }
+    ]);
+    res.status(200).json({user:totalMembersData[0].children,totalRecord:totalMembersData.length});
+}
+
+
+exports.totalSpend = async (req, res) => {
+    const totalMembersData = await Buy.aggregate([
+        { $match: { "email": req.body.email } },
+        {
+            $group: {
+                _id: {bonus_type: "Buying"},
+                total_token_quantity: { $sum: "$token_quantity" },
+                total_spend_usdt: { $sum: "$total_spend_usdt" },
+                total_spend_inr: { $sum: "$total_spend_inr" }
+              },
+        },
+    ]);
+    res.status(200).json({user:totalMembersData,totalRecord:totalMembersData.length});
 }

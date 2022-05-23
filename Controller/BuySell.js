@@ -43,7 +43,7 @@ exports.createOrder = async (req, res)=> {
   const Presale = require("../models/presale");
   try {
     const { amount, compairCurrency, email } = req.body;
-    let quantity=req.body.amount;
+    let quantity=req.body.amount.toFixed(2);
     const currencyType="USDT"
      console.log(currencyType)
     const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
@@ -60,37 +60,36 @@ exports.createOrder = async (req, res)=> {
       req.body.base_currency=req.body.currencyType.toLowerCase();
       let ANA_price = presale.price;
       var ANApricevar=ANA_price
+      var pref_raw_price=ANA_price;
       var ANApricebase=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
-        // ANA_price = ANA_price/usdtininr;
-      //  const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-      //  const price_in_inr = cmcdata.USDT.quote.US.price;
-        //console.log(cmcdata)
       var one_ANA_in=ANA_price/usdtininr;
+      pref_raw_price=pref_raw_price/usdtininr
       console.log("Quantity",quantity)
-      //console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
+      var pref_curr_amount = compairVal
+      var usdt_amount=compairVal
+      var inrx_amount=mul(compairVal,usdtininr)
       console.log("total_purchase_price",compairVal)
       } else {
-        const cmcdata = await getCMCData(req.body.base_currency,req.body.currency);
-        const price_in_inr = cmcdata[req.body.currencyType].quote[compairCurrency.toUpperCase()].price;
-      const one_ANA_in=ANA_price/price_in_inr;
+      const cmcdatanew = await getCMCData('usdt','inr');
+      const usdtininr = cmcdatanew.USDT.quote.INR.price;
+      var one_ANA_in=ANA_price;
       console.log("Quantity",quantity)
-      console.log("price_in_currency",price_in_inr)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
-      compairVal = Math.floor(parseInt(compairVal))
+      var pref_curr_amount = compairVal
+      compairVal=compairVal/usdtininr
+      var usdt_amount=compairVal
+      var inrx_amount=mul(compairVal,usdtininr)
       console.log("total_purchase_price",compairVal)
       }
       console.log('wallet balance',currencyT.usdt_balance)
       if(currencyT.usdt_balance >= compairVal ) {
-        
-              //let CTbalance = sub(currencyT.balance, compairVal) > 0 ?sub(currencyT.balance, compairVal):0; 
               let CTbalance = currencyT.v_balance + compairVal; 
-              //let CCbalance = add(compairC.balance, compairVal);
               console.log("use balance",compairVal)
               await wallet.updateOne({_id:currencyT._id},{
                   $set:{
@@ -126,7 +125,7 @@ exports.createOrder = async (req, res)=> {
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
                const raise = (percntsold/ 100) * ANApricebase
-               const newprice = (ANApricebase + raise).toFixed(2)
+               const newprice = (ANApricebase + raise).toFixed(18)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice
@@ -146,7 +145,7 @@ exports.createOrder = async (req, res)=> {
               // token price update
 
               var order_id =Date.now().toString(16).toUpperCase();
-              await OrderHistory(compairVal,  one_ANA_in,quantity,  currencyType,  compairCurrency,  email,order_id,presaleag.levelname)
+              await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
               // referral commission
               console.log("Order Id",order_id)
               await  User.findOne({ email :email })
@@ -156,7 +155,6 @@ exports.createOrder = async (req, res)=> {
               req.body.token_quantity=quantity;
               req.body.token_price=ANA_price;
               var db = mongoose.connection;
-              //var Percent = db.collection('referral_percents');
               const token_buying = req.body.token_quantity
               const token_price = req.body.token_price
               const token_quantity = req.body.token_quantity
@@ -167,10 +165,10 @@ exports.createOrder = async (req, res)=> {
               const lev1 = parseInt(percnt.level1)
               const lev2 = parseInt(percnt.level2)
               const lev3 = parseInt(percnt.level3)
-              const buying_bonus = (bonus_perc/100) * token_quantity;
+              const buying_bonus = (bonus_perc/100) * usdt_amount;
               const token_balance = token_quantity
               let referral1 = user.refferal;
-              let ref1 = (lev1/100) * token_quantity;
+              let ref1 = (lev1/100) * usdt_amount;
               let ref2 = "";
               let ref3 = "";
               let referral2="";
@@ -184,12 +182,12 @@ exports.createOrder = async (req, res)=> {
                   if(rid){
                       refuser1= rid.email
                       referral2=rid.refferal
-                      ref2 = (lev2/100) * token_quantity;
+                      ref2 = (lev2/100) * usdt_amount;
                       let ridi = await User.findOne({  user_id : referral2 });
                          if(ridi){
                         refuser2= ridi.email
                              referral3=ridi.refferal
-                             ref3 = (lev3/100) * token_quantity;
+                             ref3 = (lev3/100) * usdt_amount;
                            let ridim = await User.findOne({  user_id : referral3 });
                            if(ridim){
                               refuser3= ridim.email
@@ -205,7 +203,9 @@ exports.createOrder = async (req, res)=> {
                   },
                   $inc: {
                       bounty_wallet: buying_bonus,
-                      token_balance:  token_balance
+                      token_balance:  token_balance,
+                      total_spend_usdt:usdt_amount,
+                      total_spend_inr:inrx_amount
                   }
               }
   
@@ -214,12 +214,14 @@ exports.createOrder = async (req, res)=> {
                       email : req.body.email, 
                       bonus : buying_bonus,
                       token_price : req.body.token_price,
-                      token_buying : req.body.token_quantity,
+                      pref_token_price : pref_raw_price,
                       token_quantity : token_quantity,
                       currency_price : one_ANA_in,
                       currenty_prefer: req.body.base_currency,
                       bonus_percent : bonus_perc,
                       currency : currencyType,
+                      amount : compairVal,
+                      preferred_currency_amount:pref_curr_amount,
                       bonus_type : "Buying",
                       order_id : order_id,
                       presalelevel:presaleag.levelname
@@ -228,7 +230,6 @@ exports.createOrder = async (req, res)=> {
                           const _userref1 = Buy.insertMany([{
                               email : refuser1, 
                               token_price : req.body.token_price,
-                              token_buying : req.body.token_quantity,
                               token_quantity : token_quantity,
                               bonus_type : "Level",
                               from_user : req.body.email,
@@ -259,7 +260,6 @@ exports.createOrder = async (req, res)=> {
                               const _userref2 =  Buy.insertMany([{
                                   email : refuser2, 
                                   token_price : req.body.token_price,
-                                  token_buying : req.body.token_quantity,
                                   token_quantity : token_quantity,
                                   bonus_type : "Level",
                                   from_user : req.body.email,
@@ -290,7 +290,6 @@ exports.createOrder = async (req, res)=> {
                                   const _userref3 = Buy.insertMany([{
                                       email : refuser3, 
                                       token_price : req.body.token_price,
-                                      token_buying : req.body.token_quantity,
                                       token_quantity : token_quantity,
                                       bonus_type : "Level",
                                       from_user : req.body.email,
@@ -320,7 +319,7 @@ exports.createOrder = async (req, res)=> {
 
                               if(result){
                                   return res.status(200).json({
-                                      status : "true",
+                                      status : true,
                                       message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+token_price+" is Successfull"
                                   }); 
                               }
@@ -332,21 +331,17 @@ exports.createOrder = async (req, res)=> {
                 });
             }else{ 
               return res.status(400).json({
-                  status : "ok",
+                  status : false,
                   message: "User Not Found"
               });   
         }
         });
               // referral commission
-              return res.json({
-                  status: 200,
-                  error: false,
-                  message: "Order Executed Successfully"
-                });
+              
       } else {
         console.log( "Insufficient "+req.body.currencyType+" Balance")
-          return res.json({
-              status: 400,
+          return res.status(400).json({
+              status: false,
               error: true,
               message: "Insufficient "+req.body.currencyType+" Balance",
             });
@@ -354,9 +349,8 @@ exports.createOrder = async (req, res)=> {
       
   } catch (error) {
       console.log("Error from: createOrder ", error)
-    return res.json({
-      status: 400,
-      error: true,
+    return res.status(400).json({
+      status: false,
       message: "Somthing Went Wrong!!**********",
       err: error.message,
     });
@@ -366,12 +360,14 @@ exports.createOrder = async (req, res)=> {
 async function OrderHistory(
   amount,
   raw_price,
+  pref_raw_price,
   quantity,
   currencyType,
   compairCurrency,
   email,
   orderid,
-  presale
+  presale,
+  pref_curr_amount
 ) {
   const Order = require("../models/order");
   const order = await new Order({
@@ -380,10 +376,12 @@ async function OrderHistory(
     date: Date.now(),
     amount: amount,
     raw_price: raw_price,
+    pref_raw_price : pref_raw_price,
     cVolume: quantity,
     currency_type: currencyType,
     compair_currency: compairCurrency,
-    presalelevel:presale
+    presalelevel:presale,
+    preferred_currency_amount:pref_curr_amount
   });
 
   order.save((error, data) => {
