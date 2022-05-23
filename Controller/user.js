@@ -146,6 +146,102 @@ exports.signup = async (req, res) => {
   }
 };
 
+exports.signInWithGoogle = async (req, res) => {
+  const email             = req.body.email ? req.body.email : "";
+  const password          = req.body.password ? req.body.password : "";
+
+  if (email && checkEmail(email) && password) {
+    try {
+      await User.findOne({ email: email }).exec(async (error, user) => {
+        if (user) {
+          const  _password = user.password;
+          if (bcrypt.compareSync(password, _password)) {
+            
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+              expiresIn: "1h",
+            });   
+            
+           const settings = require('../models/settings');
+           const s        =  await settings.findOne({ email : email });
+            
+           return res.status(200).json({
+             status              : 1,
+             token               : token,
+             user                : _id,
+             email               : email,
+             googleAuth          : s.google_authenticator,
+             message             : "Login Successful",                  
+           });       
+
+          }else{
+            return res.status(400).json({
+              status: 0,
+              message: "Somthing went wrong",
+            });
+          }
+
+        } else {         
+          const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
+          const signup_bonus  = 500;
+          const _user         = new User({
+                                email             : req.body.email,
+                                user_id           : user_id,
+                                password          : password,                              
+                                inceptive_wallet  : signup_bonus,
+                                airdrop_wallet    : signup_bonus                              
+                              });
+          _user.save( async (error, data) => {
+            
+          const settings = require('../models/settings');
+          await settings.create({ email : email }).then((data) => { 
+            //console.log("setting updated "+data); 
+          }).catch((err) => { 
+           // console.log(" Error in create setting "+ err) 
+          });
+
+            if (error) {
+              console.log("Error in Sign Up", error.message);
+              return res.status(400).json({
+                status: 0,
+                message: "Somthing went wrong",
+              });
+            } else if (data) {
+              await createWallet(email);
+              var subject = "Registration completed successully";
+              var message = "<h3>Hello , <br> Your have Registerd successully on Analog.</h3>";
+              sendMail(email, subject, message);
+
+              const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, {
+                expiresIn: "1h",
+              });   
+              
+             const settings = require('../models/settings');
+             const s        =  await settings.findOne({ email : email });
+              
+             return res.status(200).json({
+               status              : 1,
+               token               : token,
+               user                : _id,
+               email               : email,
+               googleAuth          : s.google_authenticator,
+               message             : "Login Successful",                  
+             });       
+                       
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.log("Error in Sign Up ", error.message);
+    }
+  } else {
+    return res.status(400).json({
+      status: 0,
+      message: "somthing went wrong",
+    });
+  }
+};
+
 
 exports.signin = async (req, res) => {
   const email               = req.body.email ? req.body.email : "";
@@ -1237,6 +1333,7 @@ function sleep(ms) {
   });
 }
 
+/*
 exports.affiliateLevelData = async (req,res) => {
   try{
       const buyModel = require("../models/buy");
@@ -1300,7 +1397,7 @@ exports.affiliateLevelData = async (req,res) => {
     });
   }
 }
-
+*/
 
 // website data 
 

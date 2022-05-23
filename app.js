@@ -28,23 +28,28 @@ app.use('/api',notification);
 
 app.get('/get', async (req, res) => {  
 
-  
+  const user_id = "ANA504400";   // ANA7280193
+  const d = await getDownline(user_id);  
+  const arr = convertToArray(d, user_id);  
 
+  /** level 2  */
+  const arr2 = [];
+  for(i=0; i<arr.length; i++){
+      let u_id = arr[i];      
+      const d2 = await getDownline(u_id);  
+      const arr23 = convertToArray(d2, u_id);
+      arr2.push(arr23);
+  }
 
-  
-  // const user_id = "ANA504400";   // ANA7280193
-  // const d = await getDownline(user_id);  
-  // const arr = convertToArray(d, user_id);  
-  // console.log(arr, 1);
-  // const arr2 = [];
-  // for(i=0; i<arr.length; i++){
-  //     let u_id = arr[i];
-  //     const d2 = await getDownline(u_id);  
-  //     const arr2 = convertToArray(d2, u_id);
-  //     arr2.push(arr2);
-  // }
-  // res.send(arr2);
-
+   /** level 3  */
+   const arr3 = [];
+   for(i=0; i<arr2.length; i++){
+       let u_id = arr2[i];   
+      //  const d2 = await getDownline(u_id);  
+      //  const arr233 = convertToArray(d2, u_id);
+      //  arr3.push(arr233);
+   }
+   res.send(arr2);
 });
 
 
@@ -79,7 +84,7 @@ async function getDownline(ref_ids){
               startWith: "$user_id",
               connectFromField: "user_id",
               connectToField: "refferal",
-              maxDepth: 1,
+              maxDepth: 0,
               depthField: "numConnections",
               as: "children",             
           },
