@@ -54,7 +54,7 @@ async function editNotification(req, res) {
 
 async function deleteNotification(req, res) {
   try {
-    notifications.findOneAndDelete({ _id: req.body.id }).then((notification, error) => {
+    notifications.findOneAndDelete({ _id: req.body.id }).then((error, notification) => {
         if (error){
            res.status(400).json({ message: error.message });
         }else{
