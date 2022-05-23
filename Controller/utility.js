@@ -69,23 +69,33 @@ if(rid){
 }
 
 exports.incomeFromLevels = async (req, res) => { 
-    const refids = [];
+    let refids = [];
     let ref_id=req.body.referral;
     for(let i=0;i<10;i++){
 let rid = await User.findOne({  user_id : ref_id});
-if(rid){
-    refids[i]={userID: rid.user_id,email:rid.email,isverify:rid.isVarify,level:i+1};
+if(rid.user_id){
+    refids.push(rid.user_id);
+    if(rid.refferal!=""){
     ref_id=rid.refferal;
+    }
 }
     }
-    console.log(refids)
+    //console.log(refids)
     res.status(200).json({level_list:refids});
 }
 exports.randomPriceChange = async (req, res) => {
+    const date =  new Date().getTime(); 
+    
+  console.log(date);
     const Presale = require("../models/presale"); 
     const PriceChange = require("../models/priceChange");
     let ANApricevar=0;
+    let temdate =date;
     for(let i=0;i<10000;i++){
+        if(i%10==0){
+        const date = new Date(temdate);
+        temdate = date.setDate(date.getDate() + 1);
+        }
         const presale = await Presale.findOne({status: 1})
       quantity = Math.floor((Math.random() * 10000) + 1);
       if(presale.coinremaining>quantity){
@@ -121,7 +131,8 @@ exports.randomPriceChange = async (req, res) => {
         coinsold : nowquant,
         oldprice : ANApricevar,
         changeprice : newprice,
-        changepercent : percntsold
+        changepercent : percntsold,
+        time : temdate
     }])
     ANApricevar = newprice
       }
@@ -154,9 +165,18 @@ exports.allTeam = async (req, res) => {
                 maxDepth: 20,
                 depthField: "numConnections",
                 as: "children",
-               
             },
+            
         },
+        { "$project": { 
+            "children": [
+                "$children", 
+                { 
+                    "user_id": 1
+                }
+            ]
+        }}, 
+    
     ]);
     res.status(200).json({user:totalMembersData[0].children,totalRecord:totalMembersData.length});
 }
