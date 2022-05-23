@@ -6,6 +6,7 @@ const priceChangeSchema = new mongoose.Schema({
     coinsold : { type : Number , default: 0,required : true},    
     changeprice : { type : Number , default: 0,required : true}, 
     oldprice : { type : Number , default: 0,required : true}, 
+    time : { type : Number , default: 0,required : true}, 
     changepercent : { type : Number , default: 0,required : true}
 }, { timestamps: true});
 
