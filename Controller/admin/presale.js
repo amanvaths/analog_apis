@@ -111,6 +111,7 @@ exports.deletepresale = async (req, res) => {
 }
 
 exports.updatepresale = async (req, res) => { 
+    console.log(req.body)
 
     const resp = await Presale.updateMany({}, {
         $set :{
