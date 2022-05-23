@@ -1236,3 +1236,26 @@ function sleep(ms) {
     setTimeout(resolve, ms);
   });
 }
+
+
+// website data 
+
+exports.bannerData = async (req, res) => {
+  try{
+   const banner = require("../models/notifications");
+   await banner.find({ status : true }).then((data) => {
+      res.status(200).json({
+        status : 1,
+        message : data
+      })
+  }).catch((err) => {
+    res.status(400).json({
+      status : 0,
+      message : "Something went worng"
+    })
+  });      
+  
+  }catch(err){
+    console.log("Error in websiteData api "+ err);
+  }
+}

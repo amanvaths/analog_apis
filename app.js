@@ -28,10 +28,19 @@ app.use('/api',notification);
 
 app.get('/get', async (req, res) => {  
 
-  const d = await getDownline("ANA504400");
-  console.log(d[0].user_id)
-  res.send(d);  
-  
+  const arr = [];
+  const user_id = "ANA7280193";  
+  const d = await getDownline(user_id);  
+    d.map((data) => { 
+      console.log(data)
+      if(!arr.includes(user_id)){
+        arr.push(data.user_id);
+      }
+    })  
+  res.send(arr);
+
+
+
 });
 
 
@@ -42,12 +51,11 @@ app.listen(port, '0.0.0.0' , () => {
 
 
 
-async function getDownline(ref_id){
+async function getDownline(ref_ids){
 
-  const refferal = ref_id;
-  console.log(refferal)
+  const refferals = ref_ids; 
   const totalMembersData = await User.aggregate([
-      { $match: { "user_id": ref_id } },
+      { $match: { "user_id": refferals  } },
       {
           $graphLookup: {
               from: "users",
@@ -65,7 +73,6 @@ async function getDownline(ref_id){
         }
       }
   ])
-  //console.log(totalMembersData[0].children);
   return totalMembersData[0].children
 }
 
