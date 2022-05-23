@@ -166,6 +166,7 @@ exports.signin = async (req, res) => {
             if (isVarify == 0) {
               return res.status(400).json({
                 status: 3,
+                email: email,
                 message: "OTP is not varified",
               });
             }
@@ -241,13 +242,13 @@ exports.varify = async (req, res) => {
               }
             } else {
               return res.status(400).json({
-                status: "false",
+                status: 2,
                 message: "Incorrect OTP",
               });
             }
           } else {
             return res.status(400).json({
-              status: "false",
+              status: 3,
               message: "Invalide User",
             });
           }
