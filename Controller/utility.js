@@ -378,19 +378,15 @@ exports.allTeam = async (req, res) => {
                 connectToField: "user_id",
                 maxDepth: 20,
                 depthField: "numConnections",
-                as: "children",
-            },
-            
+                as: "children",               
+            },            
         },
-        { "$project": { 
-            "children": [
-                "$children", 
-                { 
-                    "user_id": 1
-                }
-            ]
-        }}, 
-    
+        {
+            $project: {           
+                'children._id': 1,
+                'children.user_id': 1
+            }
+          }
     ]);
     res.status(200).json({user:totalMembersData[0].children,totalRecord:totalMembersData.length});
 }

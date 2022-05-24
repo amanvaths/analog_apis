@@ -2,6 +2,7 @@ const notifications = require("../models/notifications");
 const News = require("../models/news");
 
 async function addNotification(req, res) {
+  console.log(req.files)
   try {
     const banner = await uploadImage(req.files.banner, "banner_" + Date.now());
     new notifications({ ...req.body, banner }).save((error, notification) => {
@@ -54,7 +55,7 @@ async function editNotification(req, res) {
 
 async function deleteNotification(req, res) {
   try {
-    notifications.findOneAndDelete({ _id: req.body.id }).then((notification, error) => {
+    notifications.findOneAndDelete({ _id: req.body.id }).then((error, notification) => {
         if (error){
            res.status(400).json({ message: error.message });
         }else{
@@ -119,6 +120,7 @@ async function editNews(req, res) {
 }
 
 async function deleteNews(req, res) {
+  console.log(req.body,"hh")
   try {
     News.findOneAndDelete({ _id: req.body.id }).then((News, error) => {
       if (error){

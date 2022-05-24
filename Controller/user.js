@@ -44,10 +44,10 @@ exports.sendotp = async (req, res) => {
       message: "Email field Cannot be Blank",
     });
   } else {
-    var otp               = Math.floor(Math.random() * 1000000 + 1);
+    var otp               = Math.floor(100000 + Math. random() * 900000);
     var subject           = "Varify your Email";
     var message           = "<h3>Wecome to Analog, <br> To Varify your email on Analog. Your OTP is : <br>" + otp + "</h3>";
-    let varify = await User.updateOne({ email: req.body.email },{ $set: { otp: otp } });
+    let varify            = await User.updateOne({ email: req.body.email },{ $set: { otp: otp } });
     if (varify) {
       sendMail(req.body.email, subject, message);
       return res.status(200).json({
@@ -73,10 +73,10 @@ function checkEmail(email) {
 }
 
 exports.signup = async (req, res) => {
-  const email = req.body.email ? req.body.email : "";
-  const password = req.body.password ? req.body.password : "";
-  const confirmPassword = req.body.confirm_password ? req.body.confirm_password : "";
-  const referral_code = req.body.referral_code;
+  const email             = req.body.email ? req.body.email : "";
+  const password          = req.body.password ? req.body.password : "";
+  const confirmPassword   = req.body.confirm_password ? req.body.confirm_password : "";
+  const referral_code     = req.body.referral_code;
   if (confirmPassword !== password) {
     return res.json({
       status: 0,
@@ -94,19 +94,18 @@ exports.signup = async (req, res) => {
             message: "User is already exist",
           });
         } else {
-          var otp = Math.floor(Math.random() * 1000000 + 1);
-          const user_id = "ANA" + Math.floor(Math.random() * 10000000 + 1);
-          const signup_bonus = 500;
-          const _user = new User({
-            email: req.body.email,
-            user_id: user_id,
-            password: req.body.password,
-            refferal: req.body.referral_code,
-            inceptive_wallet: signup_bonus,
-            airdrop_wallet : signup_bonus,
-            otp: otp,
-          });
-
+          var otp             = Math.floor(100000 + Math. random() * 900000);
+          const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
+          const signup_bonus  = 500;
+          const _user         = new User({
+                                email             : req.body.email,
+                                user_id           : user_id,
+                                password          : password,
+                                refferal          : referral_code,
+                                inceptive_wallet  : signup_bonus,
+                                airdrop_wallet    : signup_bonus,
+                                otp               : otp,
+                              });
           _user.save( async (error, data) => {
             
           const settings = require('../models/settings');
@@ -147,10 +146,115 @@ exports.signup = async (req, res) => {
   }
 };
 
+exports.signInWithGoogle = async (req, res) => {
+  const email             = req.body.email ? req.body.email : "";
+  const password          = req.body.password ? req.body.password : "";
+  const settings = require('../models/settings');
+  if (email && checkEmail(email) && password) {
+    try {
+      await User.findOne({ email: email }).exec(async (error, user) => {
+        if (user) {        
+          const  _password = user.gmailPass || "_";
+          if (bcrypt.compareSync(password, _password)) {            
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+              expiresIn: "1h",
+            });  
+
+           const s        =  await settings.findOne({ email : email });            
+           return res.status(200).json({
+             status              : 1,
+             token               : token,
+             user                : user._id,
+             email               : email,
+             googleAuth          : s.google_authenticator,
+             message             : "Login Successful",                  
+           });       
+
+          }else{
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+              expiresIn: "1h",
+            });  
+            const s        =  await settings.findOne({ email : email });  
+            const hashPass = bcrypt.hashSync(password, 10);
+            await User.updateOne({ email: email },{ $set: { gmailPass: hashPass, isVarify: 1 }}).then( async(data) => {
+              return res.status(200).json({
+                status              : 1,
+                token               : token,
+                user                : user._id,
+                email               : email,
+                googleAuth          : s.google_authenticator,
+                message             : "Login Successful",                  
+              });    
+            }
+          )}
+
+        } else {         
+          const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
+          const signup_bonus  = 500;
+          const hashPass = bcrypt.hashSync(password, 10);
+          const _user         = new User({
+                                email             : req.body.email,
+                                user_id           : user_id,
+                                password          : password,                              
+                                inceptive_wallet  : signup_bonus,
+                                airdrop_wallet    : signup_bonus,
+                                isVarify          : 1,
+                                gmailPass         : hashPass                              
+                              });
+          _user.save( async (error, data) => {            
+
+          await settings.create({ email : email }).then((data) => { 
+            //console.log("setting updated "+data); 
+          }).catch((err) => { 
+           // console.log(" Error in create setting "+ err) 
+          });
+
+            if (error) {
+              console.log("Error in Sign Up", error.message);
+              return res.status(400).json({
+                status: 0,
+                message: "Somthing went wrong",
+              });
+            } else if (data) {
+              await createWallet(email);
+              var subject = "Registration completed successully";
+              var message = "<h3>Hello , <br> Your have Registerd successully on Analog.</h3>";
+              sendMail(email, subject, message);
+
+              const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, {
+                expiresIn: "1h",
+              });   
+                      
+             const s        =  await settings.findOne({ email : email });
+              
+             return res.status(200).json({
+               status              : 1,
+               token               : token,
+               user                : data._id,
+               email               : email,
+               googleAuth          : s.google_authenticator,
+               message             : "Login Successful",                  
+             });       
+                       
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.log("Error in Sign Up ", error.message);
+    }
+  } else {
+    return res.status(400).json({
+      status: 0,
+      message: "somthing went wrong",
+    });
+  }
+};
+
 
 exports.signin = async (req, res) => {
-  const email = req.body.email ? req.body.email : "";
-  const password = req.body.password ? req.body.password : "";
+  const email               = req.body.email ? req.body.email : "";
+  const password            = req.body.password ? req.body.password : "";
   if (email && checkEmail(email) && password) {
     try {
       await User.findOne({ email: email }).exec(async (error, user) => {
@@ -175,7 +279,7 @@ exports.signin = async (req, res) => {
             });   
             
            const settings = require('../models/settings');
-           const s =  await settings.findOne({ email : email });
+           const s        =  await settings.findOne({ email : email });
             
            return res.status(200).json({
              status              : 1,
@@ -209,8 +313,8 @@ exports.signin = async (req, res) => {
 };
 
 exports.varify = async (req, res) => {
-  const email = req.body.email ? req.body.email : "";
-  const otp = req.body.otp ? req.body.otp : "";
+  const email             = req.body.email ? req.body.email : "";
+  const otp               = req.body.otp ? req.body.otp : "";
   if (email && otp != "") {
     try {
       await User.findOne({ email: req.body.email }).exec(
@@ -595,482 +699,6 @@ exports.login_history = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-exports.transaction_update = async (req, res) => {
-  const Web3 = require("web3");
-
-  const dex = [
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "from",
-          type: "address",
-        },
-        { indexed: true, internalType: "address", name: "to", type: "address" },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "value",
-          type: "uint256",
-        },
-      ],
-      name: "Transfer",
-      type: "event",
-    },
-    {
-      constant: true,
-      inputs: [{ name: "_owner", type: "address" }],
-      name: "balanceOf",
-      outputs: [{ name: "balance", type: "uint256" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "decimals",
-      outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { name: "_to", type: "address" },
-        { name: "_value", type: "uint256" },
-      ],
-      name: "transfer",
-      outputs: [{ name: "success", type: "bool" }],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-  ];
-
-  /** trx
-   *
-   */
-  const TronWeb = require("tronweb");
-  const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io" });
-  /**
-   * bnb
-   */
-  const BSCTESTNET_WSS = "https://data-seed-prebsc-1-s1.binance.org:8545/";
-  //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
-  //const web3ProviderBnb = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
-  const web3ProviderBnb = new Web3.providers.HttpProvider(BSCTESTNET_WSS);
-  const web3Bnb = new Web3(web3ProviderBnb);
-
-  /**
-   * eth
-   */
-  // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-  const eth_testnet =
-    "https://kovan.infura.io/v3/235ebabc8cf1441c8ead19deb49bba49";
-  const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
-  const web3Eth = new Web3(web3Provider);
-
-  /**
-   * polygon / Matic
-   */
-  const MATICTESTNET_WSS = "https://rpc-mumbai.maticvigil.com";
-  //const BSCMAINNET_WSS = "https://bsc-dataseed.binance.org/";
-  //const web3ProviderMatic = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
-  const web3ProviderMatic = new Web3.providers.HttpProvider(MATICTESTNET_WSS);
-  const web3Matic = new Web3(web3ProviderMatic);
-
-  const email = req.body.email;
-  if (email) {
-    let go = await canUpdate(email);
-    if (go) {
-      var walletETH     = await userWallet.findOne({ email: email, symbol: "ETH" });
-      var walletTRX     = await userWallet.findOne({ email: email, symbol: "TRX" });
-      var walletBNB     = await userWallet.findOne({ email: email, symbol: "BNB" });
-      var walletMATIC   = await userWallet.findOne({ email: email, symbol: "MATIC"});
-      var walletUSDT    = await userWallet.findOne({ email: email, symbol: "USDT" });
-      var walletBUSD    = await userWallet.findOne({ email: email, symbol: "BUSD" });
-      var walletSHIB    = await userWallet.findOne({ email: email, symbol: "SHIB" });
-
-      if (walletTRX && walletTRX.symbol == "TRX") {
-        console.log("TRX");
-        try {
-          let wallet = walletTRX;
-          const decimal = 1e6;
-          let trx_balance = await tronWeb.trx.getBalance(walletTRX.walletAddr);
-          console.log(trx_balance / decimal + " TRX balance");
-          const balance = trx_balance / decimal;
-          if (balance > 0) {
-            /**
-             * check for w balance
-             */
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;    
-            const v_balance  = wallet.v_balanace ? parseFloat(wallet.v_balanace) : 0;     
-            const new_w_balance = balance;
-            const updated_balance = new_w_balance ;
-            /**
-             * update user's wallet
-             */ 
-             if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "TRX" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    v_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, new_w_balance );          
-
-                   var subject = "New TRX Transaction";
-                   var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
-                   sendMail(email, subject, msg);                 
-              }         
-          }
-        }
-        } catch (err) {
-          console.log("Error in getting TRX balance " + err);
-        }
-      }
-
-      if (walletETH && walletETH.symbol == "ETH") {
-        console.log("ETH");
-        try {
-          let wallet = walletETH;
-          const decimal = 1e18;
-          let eth_balance = await web3Eth.eth.getBalance(walletETH.walletAddr);
-          console.log(eth_balance / decimal + " ETH balance");
-          const balance = eth_balance / decimal;
-          if (balance > 0) {
-            /**
-             * check for w balance
-             */
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "ETH" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, new_w_balance);
-
-                var subject = "New ETH Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} ETH deposited in your account`;            
-                sendMail(email, subject, msg);  
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting ETH balance " + err);
-        }
-      }
-
-      if (walletBNB && walletBNB.symbol == "BNB") {
-        console.log("BNB");
-        try {
-          let wallet = walletBNB;
-          const decimal = 1e18;
-          const bnb_balance = await web3Bnb.eth.getBalance(walletBNB.walletAddr);
-          console.log(bnb_balance / decimal + " BNB balance");
-          const balance = bnb_balance / decimal;
-          if (balance > 0) {
-            /**
-             * check for w balance
-             */
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "BNB" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, new_w_balance);
-
-                var subject = "New BNB Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BNB deposited in your account`;            
-                sendMail(email, subject, msg); 
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting BNB balance " + err);
-        }
-      }
-
-      if (walletMATIC && walletMATIC.symbol == "MATIC") {
-        console.log("MATIC");
-        try {
-          let wallet = walletMATIC;
-          const decimal = 1e18;          
-          const matic_balance = await web3Matic.eth.getBalance(wallet.walletAddr);
-          console.log(matic_balance / decimal + " Matic balance");
-          const balance = matic_balance / decimal;
-
-          if (balance > 0) {
-            /**
-             * check for w balance
-             */
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "MATIC" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory( email, "MATIC", wallet.walletAddr, new_transaction, new_w_balance);
-
-                var subject = "New MATIC Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} MATIC deposited in your account`;            
-                sendMail(email, subject, msg); 
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting Matic Balance " + err);
-        }
-      }
-
-      if (walletUSDT && walletUSDT.symbol == "USDT") {
-        console.log("USDT");
-        try {
-          let wallet = walletUSDT;
-          const decimal = 1e6;
-          tronWeb.setAddress(wallet.walletAddr);
-          const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-          const hex_balance = await instance.balanceOf(wallet.walletAddr).call();
-          const usdt_balance = Number(hex_balance._hex);
-
-          if (usdt_balance > 0) {
-            /**
-             * check for w balance
-             */
-
-            let balance = usdt_balance ? usdt_balance / decimal : 0;
-            const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            console.log(new_w_balance + " USDT balance");
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "USDT" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory( email, "USDT", wallet.walletAddr, new_transaction, new_w_balance );
-
-                var subject = "New USDT Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} USDT deposited in your account`;            
-                sendMail(email, subject, msg); 
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting USDT balance " + err);
-        }
-      }
-
-      if (walletBUSD && walletBUSD.symbol == "BUSD") {
-        console.log("BUSD");
-        try {
-          let wallet = walletBUSD;
-          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d");
-          const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
-          console.log("Bal: ", bal);
-          let busd_balance = bal ? bal / Number(`1e${decimal}`) : 0;
-
-          if (busd_balance > 0) {
-            /**
-             * check for w balance
-             */
-            let balance = busd_balance ? busd_balance / decimal : 0;
-            const w_balance = wallet[0].balance
-              ? parseFloat(wallet[0].balance)
-              : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            console.log(new_w_balance + " BUSD balance");
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "BUSD" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory( email, "BUSD", wallet.walletAddr, new_transaction, new_w_balance);
-
-                var subject = "New BUSD Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BUSD deposited in your account`;            
-                sendMail(email, subject, msg); 
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting BUSD balance " + err);
-        }
-      }
-
-      if (walletSHIB && walletSHIB.symbol == "SHIB") {
-        console.log("SHIB");
-        try {
-          let wallet = walletSHIB;
-          var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d"
-          );
-          const decimal = 18; //await contract.methods.decimals().call();
-          const bal = await contract.methods.balanceOf(wallet.walletAddr).call();
-          console.log("Bal: ", bal);
-          let shib_balance = bal ? bal / Number(`1e${decimal}`) : 0;
-
-          if (shib_balance > 0) {
-            /**
-             * check for w balance
-             */
-            let balance = shib_balance ? shib_balance / decimal : 0;
-            const w_balance = wallet[0].balance ? parseFloat(wallet.balance) : 0;
-            const new_w_balance = balance;
-            /**
-             * update user's wallet
-             */
-            console.log(new_w_balance + " SHIB balance");
-            if (new_w_balance != w_balance) {
-              await userWallet.updateOne(
-                { email: email, symbol: "SHIBA" },
-                {
-                  $set: {
-                    balance: new_w_balance,
-                    old_balanace: w_balance,
-                  },
-                }
-              );
-              if (balance > 0) {
-                const new_transaction = new_w_balance - w_balance;
-                createDepositHistory( email, "SHIB", wallet.walletAddr, new_transaction, new_w_balance);
-
-                var subject = "New SHIB Transaction";
-                var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} SHIB deposited in your account`;            
-                sendMail(email, subject, msg); 
-              }
-            }
-          }
-        } catch (err) {
-          console.log("Error in getting SHIB balance " + err);
-        }
-      }
-    }
-  }
-};
-
-function createDepositHistory(email, symbol, address, amount, balance) {
-  const transaction_history = require("../models/transaction_history");
-  try {
-    // if (user_id && type && address && amount) {
-    transaction_history
-      .create({
-        email: email,
-        symbol: symbol,
-        status: 1,
-        amount: amount,
-        balance: balance,
-        to_address: address,
-        type: "deposit",
-      })
-      .then((data) => {
-        // console.log("history created", user_id);
-      })
-      .catch((error) => {
-        // console.log("error: ", error.message);
-      });
-
-    // } else {
-    //     return false;
-    // }
-    return true;
-  } catch (error) {
-    return false;
-}
-}
-
-async function canUpdate(email) {
-const transaction_history = require('../models/transaction_history');
-try {
-    let last_deposit = await transaction_history.findOne({ email: email }).sort({ createdAt: -1 });
-    if (last_deposit) {
-        let last_created = last_deposit.createdAt ? last_deposit.createdAt : undefined;
-        if (last_created) {
-            let d = new Date(last_created).getTime();
-            if (d) {
-                if (new Date().getTime() - d > 3000) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return true;
-            }
-        } else {
-            return true;
-        }
-    } else {
-        return true;
-    }
-} catch (error) {
-    console.log("error in canupdate: ", error.message)
-    return false;
-}
-}
-
 
 exports.settings = async (req, res) => {
   const { email, task } = req.body;  
@@ -1503,6 +1131,12 @@ async function findUserId(email){
   return refferalCode.user_id;
 }
 
+async function findEmailId(userId){
+  const refferalCode = await User.findOne({ user_id : userId });
+  return refferalCode.email;
+}
+
+
 exports.add_whitelisted_ip = async (req, res) => {
   try{
     const { email, ip, } = req.body;
@@ -1620,9 +1254,8 @@ exports.update_refferal = async (req, res) => {
   const { email, refferalCode } = req.body;
   try{
      const _u    = await User.count({ user_id : refferalCode });
-     const _user = await User.findOne({ email : email });
-     if(_user.user_id != refferalCode){ 
-      if(_u){       
+     const _user = await User.findOne({ email : email });   
+      if(_u && _user.user_id != refferalCode){       
        User.updateOne({ email: email }, {$set : { refferal: refferalCode }}).then(() => {
          return res.status(200).json({
             status : 1,
@@ -1636,18 +1269,16 @@ exports.update_refferal = async (req, res) => {
        });
       }else{
         return res.status(400).json({
-          status : 0,
-          message : "Invalid refferal Code or Already updated"
+          status : 2,
+          message : "Invalid refferal Code or Already exits"
         })
-      }
-    }else{
-      return res.status(400).json({
+      }    
+  }catch(error){
+        console.log("Error in update refferal " + error);
+        return res.status(400).json({
           status : 0,
           message : "Something went wrong"
         })
-    }
-  }catch(error){
-    console.log("Error in update refferal " + error);
   }
 }
 
@@ -1683,7 +1314,8 @@ exports.geRefferalData = async (req, res) => {
         refferals.map( async(data) => {
            const reffEmail = data.email; 
 
-           await buyModel.aggregate([{
+           await buyModel.aggregate([
+             {
                $match : { email : reffEmail }
              }, {
               $group: {
@@ -1714,4 +1346,243 @@ function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+/*
+exports.affiliateLevelData = async (req,res) => {
+  try{
+      const buyModel = require("../models/buy");
+      const { email, level } = req.body;      
+     
+      const reffInc = await buyModel.aggregate([
+                      {
+                        $match : { email : email } // , from_level : level
+                      }, {
+                      $group: {
+                        _id: { from_level: "$from_level"},
+                        balance: { $sum: "$bonus" },
+                      },
+                    },
+                  ]) 
+          
+    const totalReff = await buyModel.aggregate([
+                        {
+                          $match : { email : email }
+                        }, {
+                        $group: {
+                          _id: { from_level: "$from_level"},
+                          total : { $sum : 1 }                       
+                        },
+                      },
+                    ]) 
+    const totalExpense = await buyModel.aggregate([
+                          {
+                            $match : { email : email, bonus_type : "Buying" }
+                          }, {
+                          $group: {
+                            _id: { from_level: "$from_level"},
+                            balance: { $sum: "$amount" },
+                          },
+                        },
+                      ]) 
+   const totalAna = await buyModel.aggregate([
+                        {
+                          $match : { email : email,  bonus_type : "Buying" }
+                        }, {
+                        $group: {
+                          _id: { from_level: "$from_level"},
+                          balance: { $sum: "$token_buying" },
+                        },
+                      },
+                    ])
+              
+     res.status(200).json({
+       status : 1,
+       refferalIncome : reffInc,
+       totalAffiliates : totalReff,
+       totalExpense : totalExpense,
+       totalAna : totalAna
+     })
+
+  }catch(err){
+    console.log("Error in refferal" +err);
+    return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
+  }
+}
+*/
+
+// website data 
+
+exports.bannerData = async (req, res) => {
+  try{
+   const banner = require("../models/notifications");
+   await banner.find({ status : true }).then((data) => {
+      res.status(200).json({
+        status : 1,
+        message : data
+      })
+  }).catch((err) => {
+    res.status(400).json({
+      status : 0,
+      message : "Something went worng"
+    })
+  });      
+  
+  }catch(err){
+    console.log("Error in websiteData api "+ err);
+    return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
+  }
+}
+
+
+exports.refferalLevelWiseData = async (req, res) => {
+   try{
+    const { email } = req.body;
+    const buyModel = require("../models/buy");
+
+    const user_id =  await findUserId(email);  
+    let amtLevel1 = 0;
+    let amtLevel2 = 0;
+    let amtLevel3 = 0;
+    let totalAna1 = 0;
+    let totalAna2 = 0;
+    let totalAna3 = 0;
+    let totalExpense1 = 0;
+    let totalExpense2 = 0;
+    let totalExpense3 = 0;
+      
+    const list1 = await levelWiseRefferallist(user_id, 1);
+
+    for(i=0; i< list1.length; i++){
+       let email1 = await findEmailId(list1[i]);  
+       await buyModel.find({ from_user : email1, from_level : 1 }).then((data) => {
+          data.map((d) => {
+            amtLevel1 = amtLevel1 + d.bonus
+            totalAna1 = totalAna1 + d.token_quantity
+            totalExpense1 = totalExpense1 + d.amount
+          })
+        })
+      }
+      const list2 = await levelWiseRefferallist(user_id, 2);
+      for(i=0; i< list2.length; i++){
+        let email1 = await findEmailId(list2[i]);  
+        await buyModel.find({ from_user : email1, from_level : 2 }).then((data) => {
+           data.map((d) => {
+             amtLevel2 = amtLevel2 + d.bonus
+             totalAna2 = totalAna2 + d.token_quantity
+             totalExpense2 = totalExpense2 + d.amount
+           })
+         })
+       }
+
+       const list3 = await levelWiseRefferallist(user_id, 3);
+       for(i=0; i< list3.length; i++){
+        let email1 = await findEmailId(list3[i]);  
+        await buyModel.find({ from_user : email1, from_level : 3 }).then((data) => {
+           data.map((d) => {
+             amtLevel3 = amtLevel3 + d.bonus
+             totalAna3 = totalAna3 + d.token_quantity
+             totalExpense3 = totalExpense3 + d.amount
+           })
+         })
+       }
+
+    res.status(200).json({
+      status : 1,
+      level1 : { totalUsers : list1.length, totalInc : amtLevel1, totalAna : totalAna1, totalExpense : totalExpense1 },
+      level2 : { totalUsers : list2.length, totalInc : amtLevel2, totalAna : totalAna2, totalExpense : totalExpense2 },
+      level3 : { totalUsers : list3.length, totalInc : amtLevel3, totalAna : totalAna3, totalExpense : totalExpense3 },
+    });
+
+   }catch(err){
+     console.log("Error in refferalLevelWiseData api " + err);
+     return res.status(400).json({
+      status : 0,
+      message : "Something went wrong "
+    });
+   }
+}
+
+
+async function levelWiseRefferallist(user_id, level){
+
+  const d = await getDownline(user_id);  
+  const arr = convertToArray(d, user_id);  
+  if(level == 1){
+    return arr;
+  }
+  /** level 2  */
+  const arr2 = [];
+  for(i=0; i<arr.length; i++){
+      let u_id = arr[i];         
+      const d2 = await getDownline(u_id);      
+      const arr23 = convertToArray(d2, u_id);   
+      for(j=0; j< arr23.length; j++){  
+        arr2.push(arr23[j]);
+      }
+  }
+  if(level == 2){
+    return arr2;
+  }
+
+   /** level 3  */
+   const arr3 = [];
+   for(i=0; i<arr2.length; i++){  
+       let u_id = arr2[i];     
+       const d3 = await getDownline(u_id);  
+       const arr233 = convertToArray(d3, u_id);
+       for(j=0; j< arr233.length; j++){ 
+         arr3.push(arr233[j]);   
+       } 
+   }
+   if(level == 3){
+    return arr3;
+  }
+  
+}
+
+
+
+function convertToArray(d, user_id){
+  const arr = []; 
+  let i=0;
+  d.map((data) => { 
+      arr.push(data.user_id);  
+  }) 
+  var idx = arr.indexOf(user_id);
+  if (idx != -1){
+    arr.splice(idx, 1);
+  } 
+  return arr; 
+}
+
+async function getDownline(ref_ids){
+
+  const refferals = ref_ids;  
+  const totalMembersData = await User.aggregate([
+      { $match: { "user_id":  refferals } },
+      {
+          $graphLookup: {
+              from: "users",
+              startWith: "$user_id",
+              connectFromField: "user_id",
+              connectToField: "refferal",
+              maxDepth: 0,
+              depthField: "numConnections",
+              as: "children",             
+          },
+      },
+      {
+        $project: {    
+            'children.user_id': 1
+        }
+      }
+  ])  
+  return totalMembersData[0].children
 }

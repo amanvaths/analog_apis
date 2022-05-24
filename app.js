@@ -12,6 +12,7 @@ mongoose.connect(db, { useNewUrlParser: true, }).then(() => console.log('MongoDB
 app.use(cors({
   origin: '*' 
 }));
+const User = require('./models/user');
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -24,13 +25,22 @@ const notification = require('./router/notification')
 app.use('/api',userRouter);
 app.use('/api',notification);
 
+
 app.get('/get', async (req, res) => {  
 
+ 
+   
 });
+
+
+
 
 app.listen(port, '0.0.0.0' , () => {
     console.log(`App listening at http://localhost:${port}`);
 });
+
+
+
 
 
 /**
