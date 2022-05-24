@@ -38,12 +38,155 @@ async function getCMCData(base_currency = false, currency = false) {
   }
 }
 
+async function injectInGraph(currency_type, compare_currency, price, volume=0) {
+  try {
+      const graph_data = require('../json/ohlc_custom.json');
+      let timestamp = Date.now() / 1000;
+      console.log("graph data",graph_data);
+      console.log("currency_type",currency_type);
+      console.log("compare_currency",compare_currency);
+      console.log("price",price);
+      console.log("volume",volume);
+      if (graph_data) {
+          let key = currency_type.toUpperCase() + compare_currency.toUpperCase();
+          let chart_data = graph_data[key];
+          if (chart_data) {
+              let o = chart_data['o'];
+              let h = chart_data['h'];
+              let l = chart_data['l'];
+              let c = chart_data['c'];
+              let v = chart_data['v'];
+              let t = chart_data['t'];
+              let s = chart_data['s'];
+              if (
+                  o && h && l && c && v && t &&
+                  o.length > 0 &&
+                  h.length > 0 &&
+                  l.length > 0 &&
+                  c.length > 0 &&
+                  v.length > 0 &&
+                  t.length > 0
+              ) {
+                  let last_o = o[o.length - 1];
+                  let last_h = h[h.length - 1];
+                  let last_l = l[l.length - 1];
+                  let last_c = c[c.length - 1];
+                  let last_v = v[v.length - 1];
+                  let last_t = t[t.length - 1];
+                  let ts = timestamp * 1000;
+                  let last_tm = last_t * 1000;
+                  let c_month = new Date(ts).getMonth();
+                  let c_date = new Date(ts).getDate();
+                  let c_hour = new Date(ts).getHours();
+                  let l_month = new Date(last_tm).getMonth();
+                  let l_date = new Date(last_tm).getDate();
+                  let l_hour = new Date(last_tm).getHours();
+                  if (c_month == l_month && c_date == l_date && c_hour == l_hour) {
+                      // update high, low, close, volume
+                      if (price > last_h) {
+                          last_h = price;
+                      }
+                      if (price < last_l) {
+                          last_l = price;
+                      }
+                      last_c = price;
+                      last_v = last_v + volume;
+                      last_t = timestamp;
+                      h[h.length - 1] = last_h;
+                      l[l.length - 1] = last_l;
+                      c[c.length - 1] = last_c;
+                      v[v.length - 1] = last_v;
+                      t[t.length - 1] = last_t;
+                     
+                      chart_data['h'] = h;
+                      chart_data['l'] = l;
+                      chart_data['c'] = c;
+                      chart_data['v'] = v;
+                      chart_data['t'] = t;
+                      graph_data[key] = chart_data;
+                      storeOHLCVT(graph_data);
+                  } else {
+                      // set open, close, high, low, volume
+                      last_o = price;
+                      last_h = price;
+                      last_l = price;
+                      last_c = price;
+                      last_v = volume;
+                      last_t = timestamp;
+                     
+                      o[o.length] = last_o;
+                      h[h.length] = last_h;
+                      l[l.length] = last_l;
+                      c[c.length] = last_c;
+                      v[v.length] = last_v;
+                      t[t.length] = last_t;
+                     
+                      chart_data['o'] = o;
+                      chart_data['h'] = h;
+                      chart_data['l'] = l;
+                      chart_data['c'] = c;
+                      chart_data['v'] = v;
+                      chart_data['t'] = t;
+                      graph_data[key] = chart_data;
+                      storeOHLCVT(graph_data);
+                  }
+                  return {
+                      last_o,
+                      last_h,
+                      last_l,
+                      last_c,
+                      last_v,
+                      last_t,
+                  }
+              } else {
+                  let cd = {
+                      o: [price],
+                      h: [price],
+                      l: [price],
+                      c: [price],
+                      v: [volume],
+                      t: [timestamp],
+                      s: 'ok'
+                  }
+                  graph_data[key] = cd;
+                  storeOHLCVT(graph_data);
+                  return {};
+              }
+          } else {
+              return {};
+          }
+      } else {
+          return {};
+      }
+  } catch (error) {
+      console.log("Error in graph data injection: ", error.message);
+      return {};
+  }
+}
+function storeOHLCVT(data) {
+  try {
+      setTimeout(()=>{
+          var fs = require('fs');
+          let path = require('path')
+          let dirname = path.join(__dirname, `../json/ohlc_custom.json`);
+          var json = JSON.stringify(data);
+           console.log("path: ", dirname, json);
+          fs.writeFile(dirname, json, 'utf8', (d) => {
+               console.log("saved", new Date());
+          });
+      }, 5000)
+  } catch (error) {
+      console.log('Fehler bei der Aktualisierung der Grafikdaten: ', error.message);
+  }
+}
+
+
 exports.createOrder = async (req, res)=> { 
   const wallet = require("../models/userWallet");
   const Presale = require("../models/presale");
   try {
     const { amount, compairCurrency, email } = req.body;
-    let quantity=req.body.amount.toFixed(2);
+    let quantity=Number(amount).toFixed(2)
     const currencyType="USDT"
      console.log(currencyType)
     const  walletData =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
@@ -66,6 +209,7 @@ exports.createOrder = async (req, res)=> {
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
       var one_ANA_in=ANA_price/usdtininr;
+      var one_ANA_inject=ANA_price/usdtininr;
       pref_raw_price=pref_raw_price/usdtininr
       console.log("Quantity",quantity)
       console.log("one",one_ANA_in)
@@ -78,6 +222,7 @@ exports.createOrder = async (req, res)=> {
       const cmcdatanew = await getCMCData('usdt','inr');
       const usdtininr = cmcdatanew.USDT.quote.INR.price;
       var one_ANA_in=ANA_price;
+      var one_ANA_inject=ANA_price/usdtininr;
       console.log("Quantity",quantity)
       console.log("one",one_ANA_in)
       var compairVal = mul(one_ANA_in,quantity);
@@ -143,9 +288,14 @@ exports.createOrder = async (req, res)=> {
             }])
               }
               // token price update
-
+              
+              // order history
               var order_id =Date.now().toString(16).toUpperCase();
               await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
+
+              await injectInGraph('ana','usdt',one_ANA_inject.toFixed(5),quantity)
+              // order history
+
               // referral commission
               console.log("Order Id",order_id)
               await  User.findOne({ email :email })
@@ -168,6 +318,7 @@ exports.createOrder = async (req, res)=> {
               const buying_bonus = (bonus_perc/100) * usdt_amount;
               const token_balance = token_quantity
               let referral1 = user.refferal;
+              let userid = user.user_id;
               let ref1 = (lev1/100) * usdt_amount;
               let ref2 = "";
               let ref3 = "";
@@ -233,6 +384,7 @@ exports.createOrder = async (req, res)=> {
                               token_quantity : token_quantity,
                               bonus_type : "Level",
                               from_user : req.body.email,
+                              from_userid : userid,
                               bonus : ref1,
                               bonus_percent : lev1,
                               from_level:1,
@@ -263,6 +415,7 @@ exports.createOrder = async (req, res)=> {
                                   token_quantity : token_quantity,
                                   bonus_type : "Level",
                                   from_user : req.body.email,
+                                  from_userid : userid,
                                   bonus : ref2,
                                   bonus_percent : lev2,
                                   from_level:2,
@@ -293,6 +446,7 @@ exports.createOrder = async (req, res)=> {
                                       token_quantity : token_quantity,
                                       bonus_type : "Level",
                                       from_user : req.body.email,
+                                      from_userid : userid,
                                       bonus : ref3,
                                       bonus_percent : lev3,
                                       from_level:3,
@@ -320,7 +474,7 @@ exports.createOrder = async (req, res)=> {
                               if(result){
                                   return res.status(200).json({
                                       status : true,
-                                      message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+token_price+" is Successfull"
+                                      message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
                                   }); 
                               }
                   }).catch((error)=>{
