@@ -149,36 +149,44 @@ exports.signup = async (req, res) => {
 exports.signInWithGoogle = async (req, res) => {
   const email             = req.body.email ? req.body.email : "";
   const password          = req.body.password ? req.body.password : "";
-
+  const settings = require('../models/settings');
   if (email && checkEmail(email) && password) {
     try {
       await User.findOne({ email: email }).exec(async (error, user) => {
-        if (user) {
-          const  _password = user.password;
-          if (bcrypt.compareSync(password, _password)) {
-            
+        if (user) {        
+          const  _password = user.gmailPass || "_";
+          if (bcrypt.compareSync(password, _password)) {            
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
               expiresIn: "1h",
-            });   
-            
-           const settings = require('../models/settings');
-           const s        =  await settings.findOne({ email : email });
-            
+            });  
+
+           const s        =  await settings.findOne({ email : email });            
            return res.status(200).json({
              status              : 1,
              token               : token,
-             user                : _id,
+             user                : user._id,
              email               : email,
              googleAuth          : s.google_authenticator,
              message             : "Login Successful",                  
            });       
 
           }else{
-            return res.status(400).json({
-              status: 0,
-              message: "Somthing went wrong",
-            });
-          }
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+              expiresIn: "1h",
+            });  
+            const s        =  await settings.findOne({ email : email });  
+            const hashPass = bcrypt.hashSync(password, 10);
+            await User.updateOne({ email: email },{ $set: { gmailPass: hashPass, isVarify: 1 }}).then( async(data) => {
+              return res.status(200).json({
+                status              : 1,
+                token               : token,
+                user                : user._id,
+                email               : email,
+                googleAuth          : s.google_authenticator,
+                message             : "Login Successful",                  
+              });    
+            }
+          )}
 
         } else {         
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
@@ -193,9 +201,8 @@ exports.signInWithGoogle = async (req, res) => {
                                 isVarify          : 1,
                                 gmailPass         : hashPass                              
                               });
-          _user.save( async (error, data) => {
-            
-          const settings = require('../models/settings');
+          _user.save( async (error, data) => {            
+
           await settings.create({ email : email }).then((data) => { 
             //console.log("setting updated "+data); 
           }).catch((err) => { 
@@ -217,14 +224,13 @@ exports.signInWithGoogle = async (req, res) => {
               const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, {
                 expiresIn: "1h",
               });   
-              
-             const settings = require('../models/settings');
+                      
              const s        =  await settings.findOne({ email : email });
               
              return res.status(200).json({
                status              : 1,
                token               : token,
-               user                : _id,
+               user                : user._id,
                email               : email,
                googleAuth          : s.google_authenticator,
                message             : "Login Successful",                  
