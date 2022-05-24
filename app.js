@@ -28,7 +28,7 @@ app.use('/api',notification);
 
 app.get('/get', async (req, res) => {  
 
-  const user_id = "ANA504400";   // ANA7280193
+  const user_id = "ANA7280193";   //  ANA504400
   const d = await getDownline(user_id);  
   const arr = convertToArray(d, user_id);  
 
@@ -37,6 +37,7 @@ app.get('/get', async (req, res) => {
   for(i=0; i<arr.length; i++){
       let u_id = arr[i];      
       const d2 = await getDownline(u_id);  
+      console.log(d2);
       const arr23 = convertToArray(d2, u_id);
       arr2.push(arr23);
   }
@@ -44,12 +45,13 @@ app.get('/get', async (req, res) => {
    /** level 3  */
    const arr3 = [];
    for(i=0; i<arr2.length; i++){
-       let u_id = arr2[i];   
-      //  const d2 = await getDownline(u_id);  
-      //  const arr233 = convertToArray(d2, u_id);
-      //  arr3.push(arr233);
+       let u_id = arr2[i]; 
+       const d3 = await getDownline2(u_id);  
+       const arr233 = convertToArray(d3, u_id);
+       arr3.push(arr233);
    }
    res.send(arr2);
+   
 });
 
 
@@ -75,9 +77,9 @@ function convertToArray(d, user_id){
 
 async function getDownline(ref_ids){
 
-  const refferals = ref_ids; 
+  const refferals = ref_ids;  
   const totalMembersData = await User.aggregate([
-      { $match: { "user_id": refferals  } },
+      { $match: { "user_id":  refferals } },
       {
           $graphLookup: {
               from: "users",
@@ -94,11 +96,34 @@ async function getDownline(ref_ids){
             'children.user_id': 1
         }
       }
-  ])
+  ])  
   return totalMembersData[0].children
 }
 
+async function getDownline2(ref_ids){
 
+  const refferals = ref_ids;  
+  const totalMembersData = await User.aggregate([
+      { $match: { "user_id":  { $in : refferals } } },
+      {
+          $graphLookup: {
+              from: "users",
+              startWith: "$user_id",
+              connectFromField: "user_id",
+              connectToField: "refferal",
+              maxDepth: 0,
+              depthField: "numConnections",
+              as: "children",             
+          },
+      },
+      {
+        $project: {    
+            'children.user_id': 1
+        }
+      }
+  ])  
+  return totalMembersData[0].children
+}
 
 
 

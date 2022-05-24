@@ -183,12 +183,15 @@ exports.signInWithGoogle = async (req, res) => {
         } else {         
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
+          const hashPass = bcrypt.hashSync(password, 10);
           const _user         = new User({
                                 email             : req.body.email,
                                 user_id           : user_id,
                                 password          : password,                              
                                 inceptive_wallet  : signup_bonus,
-                                airdrop_wallet    : signup_bonus                              
+                                airdrop_wallet    : signup_bonus,
+                                isVarify          : 1,
+                                gmailPass         : hashPass                              
                               });
           _user.save( async (error, data) => {
             
