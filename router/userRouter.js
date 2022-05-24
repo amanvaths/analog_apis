@@ -25,7 +25,7 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle
+  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -73,7 +73,7 @@ router.post('/randomPriceChange', randomPriceChange);
 router.post('/bannerData', bannerData);
 router.post('/signInWithGoogle', signInWithGoogle);
 //router.post('/affiliateLevelData', affiliateLevelData)
-
+router.post('/refferalLevelWiseData', refferalLevelWiseData);
 /**
  * Admin Routes
  */
