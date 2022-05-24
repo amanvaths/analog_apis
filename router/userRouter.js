@@ -70,7 +70,7 @@ router.post('/geRefferalData', geRefferalData);
 router.post('/totalSpend', totalSpend);
 router.post('/incomeFromLevels', incomeFromLevels);
 router.post('/ohlcvtUpdate', ohlcvtUpdate);
-router.post('/randomPriceChange', randomPriceChange);
+//router.post('/randomPriceChange', randomPriceChange);
 router.post('/bannerData', bannerData);
 router.post('/signInWithGoogle', signInWithGoogle);
 //router.post('/affiliateLevelData', affiliateLevelData)

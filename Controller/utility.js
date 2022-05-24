@@ -230,6 +230,7 @@ if(rid.user_id){
     //console.log(refids)
     res.status(200).json({level_list:refids});
 }
+
 exports.randomPriceChange = async (req, res) => {
     const date =  new Date().getTime(); 
     
@@ -289,6 +290,7 @@ exports.randomPriceChange = async (req, res) => {
     }
     return
 }
+
 exports.ohlcvtUpdate = async (req, res) => {
     const date =  new Date().getTime(); 
     
