@@ -230,7 +230,7 @@ exports.signInWithGoogle = async (req, res) => {
              return res.status(200).json({
                status              : 1,
                token               : token,
-               user                : user._id,
+               user                : data._id,
                email               : email,
                googleAuth          : s.google_authenticator,
                message             : "Login Successful",                  
