@@ -1441,12 +1441,56 @@ exports.bannerData = async (req, res) => {
 }
 
 
+
+
+
+async function levelWiseList(userIds, level){
+  let level1 = "";
+  let level2 = "";
+  let level3 = "";  
+  await myRefferal(userIds).then( async(data1) => {
+      level1 = convertToArray(data1); 
+      await myRefferal(level1).then( async(data2) => {
+        level2 = convertToArray(data2);      
+        await myRefferal(level2).then( async(data3) => {
+          level3 = convertToArray(data3);          
+        })
+      })
+  })
+
+  if(level == 1){   
+    return level1;
+  }else if(level == 2){
+    return level2;
+  }else if(level == 3){
+    return level3;
+  }
+}
+
+async function myRefferal(user_ids){
+  const list = await User.find({ refferal : { $in : user_ids }  }, { user_id: 1 }).sort({ createdAt : -1 });
+  return list;
+}
+
+function convertToArray(data){
+  let arr = [];
+  for(i=0; i< data.length; i++){
+    arr.push(data[i].user_id)
+  }
+  return arr;
+}
+
+
+
+
+
+
 exports.refferalLevelWiseData = async (req, res) => {
    try{
     const { email } = req.body;
     const buyModel = require("../models/buy");
-
-    const user_id =  await findUserId(email);  
+    let user_id = [];
+    user_id.push(await findUserId(email));  
     let amtLevel1 = 0;
     let amtLevel2 = 0;
     let amtLevel3 = 0;
@@ -1457,7 +1501,7 @@ exports.refferalLevelWiseData = async (req, res) => {
     let totalExpense2 = 0;
     let totalExpense3 = 0;
       
-    const list1 = await levelWiseRefferallist(user_id, 1);
+    const list1 = await levelWiseList(user_id, 1);
 
     for(i=0; i< list1.length; i++){
        let email1 = await findEmailId(list1[i]);  
@@ -1482,7 +1526,7 @@ exports.refferalLevelWiseData = async (req, res) => {
             }             
       }
 
-      const list2 = await levelWiseRefferallist(user_id, 2);
+      const list2 = await levelWiseList(user_id, 2);
       for(i=0; i< list2.length; i++){
         let email1 = await findEmailId(list2[i]);  
         await buyModel.find({ from_user : email1, from_level : 2, bonus_type : "Level" }).then((data) => {
@@ -1506,7 +1550,7 @@ exports.refferalLevelWiseData = async (req, res) => {
         }                
        }
 
-       const list3 = await levelWiseRefferallist(user_id, 3);
+       const list3 = await levelWiseList(user_id, 3);
        for(i=0; i< list3.length; i++){
         let email1 = await findEmailId(list3[i]);  
         await buyModel.find({ from_user : email1, from_level : 3, bonus_type : "Level" }).then((data) => {
@@ -1549,6 +1593,14 @@ exports.refferalLevelWiseData = async (req, res) => {
 }
 
 
+
+
+
+
+
+
+
+/*
 async function levelWiseRefferallist(user_id, level){
 
   const d = await getDownline(user_id);  
@@ -1556,7 +1608,7 @@ async function levelWiseRefferallist(user_id, level){
   if(level == 1){
     return arr;
   }
-  /** level 2  */
+ 
   const arr2 = [];
   for(i=0; i<arr.length; i++){
       let u_id = arr[i];         
@@ -1570,7 +1622,7 @@ async function levelWiseRefferallist(user_id, level){
     return arr2;
   }
 
-   /** level 3  */
+ 
    const arr3 = [];
    for(i=0; i<arr2.length; i++){  
        let u_id = arr2[i];     
@@ -1586,7 +1638,7 @@ async function levelWiseRefferallist(user_id, level){
   
 }
 
-
+/*
 
 function convertToArray(d, user_id){
   const arr = []; 
@@ -1626,30 +1678,34 @@ async function getDownline(ref_ids){
   return totalMembersData[0].children
 }
 
+*/
 
 exports.levelWiseList = async (req, res) => {
   try{ 
-      const { email, level } = req.body;
-      const userId = await findUserId(email);    
-      const list = await levelWiseRefferallist(userId, level);  
-      const userListArray = [];    
+      const { email, level } = req.body;      
+      let userId = [];
+      userId.push(await findUserId(email));   
+      const list = await levelWiseList(userId, level);  
+
+     const userListArray = [];    
       for(i = 0; i< list.length; i++){
          let user_id = list[i];      
          const arr = {};
-         const user = await User.findOne({ user_id : user_id }, { email :1, user_id : 1 });         
-         const totalEpx = await totalExpenseIncome(user.email);
-         const totalBuy = await totalBuyIncome(user.email);
-         const totalAff = await totalAffiliateIncome(user.email);       
-         arr["email"]     = user.email;
-         arr["user_id"]   = user.user_id;
-         arr["sponsor"]  = user.refferal;
-         arr["totalExp"]  = totalEpx;
-         arr["totalBuy"]  = totalBuy;
-         arr["totalAff"]  = totalAff;
-         arr["totalHandout"] = 0;
-         userListArray.push(arr);    
+          await User.findOne({ user_id : user_id }, { email :1, user_id : 1, refferal: 1 }).then( async(_user) => {
+          const totalEpx = await totalExpenseIncome(_user.email);
+          const totalBuy = await totalBuyIncome(_user.email);
+          const totalAff = await totalAffiliateIncome(_user.email);       
+          arr["email"]     = _user.email;
+          arr["user_id"]   = _user.user_id;
+          arr["sponsor"]  = _user.refferal;
+          arr["totalExp"]  = totalEpx;
+          arr["totalBuy"]  = totalBuy;
+          arr["totalAff"]  = totalAff;
+          arr["totalHandout"] = 0;
+          userListArray.push(arr);    
+         })  
       }
-     
+          
       res.status(200).json({
         status : 1,
         data : userListArray
@@ -1659,6 +1715,8 @@ exports.levelWiseList = async (req, res) => {
     console.log("Errorn in levelwiselist api " + err);
   }
 }
+
+
 
 async function totalExpenseIncome(email){
     try{

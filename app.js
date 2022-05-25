@@ -27,22 +27,22 @@ app.use('/api',notification);
 
 
 app.get('/get', async (req, res) => {  
-  let arr={};
-  arr["key"] = "value";
-  res.send(arr);   
+  const arr = ["ANA7280193"]
+  const list = await levelWiseList(arr, 2); 
+
 });
 // const after = Date.now();
 // const before = Date.now();
 
 // console.log('cache load ok executed in', (after - before) / 1000); 
-
+// let arr={};
+// arr["key"] = "value";
+// res.send(arr);
 
 
 app.listen(port, '0.0.0.0' , () => {
     console.log(`App listening at http://localhost:${port}`);
 });
-
-
 
 
 
