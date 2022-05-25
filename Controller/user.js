@@ -1532,9 +1532,11 @@ exports.refferalLevelWiseData = async (req, res) => {
 
     res.status(200).json({
       status : 1,
-      level1 : { totalUsers : list1.length, totalInc : amtLevel1, totalAna : totalAna1, totalExpense : totalExpense1 },
-      level2 : { totalUsers : list2.length, totalInc : amtLevel2, totalAna : totalAna2, totalExpense : totalExpense2 },
-      level3 : { totalUsers : list3.length, totalInc : amtLevel3, totalAna : totalAna3, totalExpense : totalExpense3 },
+      data: {
+        level1 : { totalUsers : list1.length, totalInc : amtLevel1, totalAna : totalAna1, totalExpense : totalExpense1},
+        level2 : { totalUsers : list2.length, totalInc : amtLevel2, totalAna : totalAna2, totalExpense : totalExpense2 },
+        level3 : { totalUsers : list3.length, totalInc : amtLevel3, totalAna : totalAna3, totalExpense : totalExpense3 },
+      }
     });
 
    }catch(err){
