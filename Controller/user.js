@@ -1686,30 +1686,33 @@ exports.levelWiseList = async (req, res) => {
       let userId = [];
       userId.push(await findUserId(email));   
       const list = await levelWiseList(userId, level);  
+     
+     const userListArray = [];   
 
-     const userListArray = [];    
-      for(i = 0; i< list.length; i++){
-         let user_id = list[i];      
-         const arr = {};
-          await User.findOne({ user_id : user_id }, { email :1, user_id : 1, refferal: 1 }).then( async(_user) => {
-          const totalEpx = await totalExpenseIncome(_user.email);
-          const totalBuy = await totalBuyIncome(_user.email);
-          const totalAff = await totalAffiliateIncome(_user.email);       
-          arr["email"]     = _user.email;
-          arr["user_id"]   = _user.user_id;
-          arr["sponsor"]  = _user.refferal;
-          arr["totalExp"]  = totalEpx;
-          arr["totalBuy"]  = totalBuy;
-          arr["totalAff"]  = totalAff;
-          arr["totalHandout"] = 0;
-          userListArray.push(arr);    
-         })  
-      }
-          
-      res.status(200).json({
-        status : 1,
-        data : userListArray
-      })
+     list.forEach( async function(data, i) {     
+       const arr = {};    
+       await User.findOne({ user_id : data }, { email :1, user_id : 1, refferal: 1 }).then( async(_user) => {                        
+            const totalEpx =  await totalExpenseIncome(_user.email);
+            const totalBuy =  await totalBuyIncome(_user.email);
+            const totalAff =  await totalAffiliateIncome(_user.email);       
+            arr["email"]     = _user.email;
+            arr["user_id"]   = _user.user_id;
+            arr["sponsor"]   = _user.refferal;
+            arr["totalExp"]  = totalEpx;
+            arr["totalBuy"]  = totalBuy;
+            arr["totalAff"]  = totalAff;
+            arr["totalHandout"] = 0;
+            userListArray.push(arr);    
+           })  
+         
+           if(userListArray.length === list.length) {
+            res.status(200).json({
+              status : 1,
+              data : userListArray
+            })
+        }
+     });
+
 
   }catch(err){
     console.log("Errorn in levelwiselist api " + err);

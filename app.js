@@ -29,8 +29,7 @@ app.use('/api', chart)
 
 
 app.get('/get', async (req, res) => {  
-  const arr = ["ANA7280193"]
-  const list = await levelWiseList(arr, 2); 
+ 
 
 });
 // const after = Date.now();
