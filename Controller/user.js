@@ -1625,10 +1625,108 @@ async function getDownline(ref_ids){
 }
 
 
-async function totalIncome(email, level){
-  try{
+exports.levelWiseList = async (req, res) => {
+  try{ 
+      const { email, level } = req.body;
+      const userId = await findUserId(email);    
+      const list = await levelWiseRefferallist(userId, level);  
+      const userListArray = [];    
+      for(i = 0; i< list.length; i++){
+         let user_id = list[i];      
+         const arr = {};
+         const user = await User.findOne({ user_id : user_id }, { email :1, user_id : 1 });         
+         const totalEpx = await totalExpenseIncome(user.email);
+         const totalBuy = await totalBuyIncome(user.email);
+         const totalAff = await totalAffiliateIncome(user.email);       
+         arr["email"]     = user.email;
+         arr["user_id"]   = user.user_id;
+         arr["totalExp"]  = totalEpx;
+         arr["totalBuy"]  = totalBuy;
+         arr["totalAff"]  = totalAff;
+         userListArray.push(arr);    
+      }
+     
+      res.status(200).json({
+        status : 1,
+        data : userListArray
+      })
 
   }catch(err){
-    console.log("Error in totalIncome api " + err);
+    console.log("Errorn in levelwiselist api " + err);
+  }
+}
+
+async function totalExpenseIncome(email){
+    try{
+      const buyModel = require("../models/buy");
+      let totalExpense = 0;    
+     
+      const totalExp = await buyModel.aggregate([{
+        $match : { email : email,  bonus_type : "Buying" }}, 
+                 { $group: {
+                    _id: { from_level: "$from_level" },
+                    balance: { $sum: "$amount" },
+                  },
+                },
+              ])
+          if(totalExp.length > 0){
+            totalExpense = totalExp[0].balance;
+          }
+
+    return totalExpense;
+
+    }catch(err){
+      console.log("Error in total income function " + err);
+    }
+}
+
+
+async function totalBuyIncome(email){
+  try{
+    const buyModel = require("../models/buy");   
+    let totalBuy = 0;   
+  
+    const total_buy = await buyModel.aggregate([{
+        $match : { email : email,  bonus_type : "Buying" }}, 
+                 { $group: {
+                    _id: { from_level: "$from_level" },
+                    balance: { $sum: "$token_buying" },
+                   },
+                  },
+                 ])
+          if(total_buy.length > 0){
+            totalBuy = total_buy[0].balance;
+            }
+  
+     return totalBuy;
+
+  }catch(err){
+    console.log("Error in total income function " + err);
+  }
+}
+
+
+
+async function totalAffiliateIncome(email){
+  try{
+    const buyModel = require("../models/buy");   
+    let totalAffiliates = 0;   
+  
+    const total_aff = await buyModel.aggregate([{
+        $match : { email : email,  bonus_type : "Level" }}, 
+                 { $group: {
+                    _id: { from_level: "$from_level" },
+                    balance: { $sum: "$bonus" },
+                   },
+                  },
+                 ])
+          if(total_aff.length > 0){
+            totalAffiliates = total_aff[0].balance;
+            }
+  
+     return totalAffiliates;
+
+  }catch(err){
+    console.log("Error in total affiliates function " + err);
   }
 }

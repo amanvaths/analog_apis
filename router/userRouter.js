@@ -25,7 +25,7 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData
+  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -75,6 +75,7 @@ router.post('/bannerData', bannerData);
 router.post('/signInWithGoogle', signInWithGoogle);
 //router.post('/affiliateLevelData', affiliateLevelData)
 router.post('/refferalLevelWiseData', refferalLevelWiseData);
+router.post('/levelWiseList', levelWiseList);
 /**
  * Admin Routes
  */
@@ -145,7 +146,7 @@ async function getCMCData(req, res) {
       headers: {
         "Content-Type": "Application/json",
         // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-        "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
+        "X-CMC_PRO_API_KEY": "20e8177b-58a9-4b14-8b33-fa9b4765c5b3", //  024d5931-52b8-4c1f-8d99-3928fd987163
         "Access-Control-Allow-Origin": "*",
       },
     });

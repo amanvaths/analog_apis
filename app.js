@@ -27,11 +27,14 @@ app.use('/api',notification);
 
 
 app.get('/get', async (req, res) => {  
-
- 
-   
+  let arr={};
+  arr["key"] = "value";
+  res.send(arr);   
 });
+// const after = Date.now();
+// const before = Date.now();
 
+// console.log('cache load ok executed in', (after - before) / 1000); 
 
 
 
