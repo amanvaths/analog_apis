@@ -1642,9 +1642,11 @@ exports.levelWiseList = async (req, res) => {
          const totalAff = await totalAffiliateIncome(user.email);       
          arr["email"]     = user.email;
          arr["user_id"]   = user.user_id;
+         arr["sponsor"]  = user.refferal;
          arr["totalExp"]  = totalEpx;
          arr["totalBuy"]  = totalBuy;
          arr["totalAff"]  = totalAff;
+         arr["totalHandout"] = 0;
          userListArray.push(arr);    
       }
      
