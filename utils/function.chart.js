@@ -29,17 +29,17 @@ async function getConfigExchange(data) {
           },
         ],
         "supported_resolutions": [
-          "1H",
-          "2H",
-          "3H",
-          "4H",
-          "6H",
-          "9H",
+          // "1H",
+          // "2H",
+          // "3H",
+          // "4H",
+          // "6H",
+          // "9H",
           "12H",
-          "1D",
-          "2D",
-          "3D",
-          "1W"
+          // "1D",
+          // "2D",
+          // "3D",
+          // "1W"
 
         ]
       };
@@ -76,17 +76,17 @@ async function getMarkExchange(data) {
           },
         ],
         "supported_resolutions": [
-          "1H",
-          "2H",
-          "3H",
-          "4H",
-          "6H",
-          "9H",
+          // "1H",
+          // "2H",
+          // "3H",
+          // "4H",
+          // "6H",
+          // "9H",
           "12H",
-          "1D",
-          "2D",
-          "3D",
-          "1W"
+          // "1D",
+          // "2D",
+          // "3D",
+          // "1W"
         ]
       };
     return config;
@@ -122,17 +122,17 @@ async function getStudyTemplateExchange(data) {
           },
         ],
         "supported_resolutions": [
-          "1H",
-          "2H",
-          "3H",
-          "4H",
-          "6H",
-          "9H",
+          // "1H",
+          // "2H",
+          // "3H",
+          // "4H",
+          // "6H",
+          // "9H",
           "12H",
-          "1D",
-          "2D",
-          "3D",
-          "1W"
+          // "1D",
+          // "2D",
+          // "3D",
+          // "1W"
         ]
       };
     return config;
@@ -156,17 +156,17 @@ async function getSymbolExchange(exName) {
         "compare_symbols":false,
         "description": exName,
         "supported_resolutions": [
-          "1H",
-          "2H",
-          "3H",
-          "4H",
-          "6H",
-          "9H",
+          // "1H",
+          // "2H",
+          // "3H",
+          // "4H",
+          // "6H",
+          // "9H",
           "12H",
-          "1D",
-          "2D",
-          "3D",
-          "1W"
+          // "1D",
+          // "2D",
+          // "3D",
+          // "1W"
         ],
         "pricescale": 10000,
         "ticker": exName,
@@ -192,15 +192,15 @@ async function getsymbolInfoExchange(exName) {
         "description": exName,
         "compare_symbols":false,
         "supported_resolutions": [
-          "1h",
-          "2H",
-          "3H",
-          "4H",
-          "6H",
+          // "1h",
+          // "2H",
+          // "3H",
+          // "4H",
+          // "6H",
           "12H",
-          "1D",
-          "2D",
-          "3D",
+          // "1D",
+          // "2D",
+          // "3D",
         ],
         "pricescale": 10000,
         "ticker": exName
