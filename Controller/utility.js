@@ -13,12 +13,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 async function injectInGraph(currency_type, compare_currency, price, volume=0,i) {
     try {
         const graph_data = require('../json/ohlc_custom.json');
-        if(i%10==0){
-         var timestamp = Date.now() + (60*60*1000)
-         timestamp = timestamp / 1000
-            } else {
-        var timestamp = Date.now() / 1000;
-            }
+        var date = new Date();
+// add a day
+        var timestamp = date.setDate(date.getDate() + i);
+        timestamp = timestamp / 1000
         console.log("graph data",graph_data);
         console.log("currency_type",currency_type);
         console.log("compare_currency",compare_currency);

@@ -143,9 +143,9 @@ async function getTimeExchange(data) {
 }
 async function getSymbolExchange(exName) {
     const config = {
-        "name": "BITFLASH",
-        "exchange-traded": "Bitcoin/Inr",
-        "exchange-listed": "BITFLASH",
+        "name": "ANALOG",
+        "exchange-traded": "analog/Inr",
+        "exchange-listed": "Analog",
         "timezone": "IST",
         "minmov": 1,
         "minmov2": 0,
@@ -177,15 +177,15 @@ async function getSymbolExchange(exName) {
 }
 async function getsymbolInfoExchange(exName) {
     const config = {
-        "name": "BITFLASH",
-        "exchange-traded": "Bitcoin/Inr",
-        "exchange-listed": "BITFLASH",
+        "name": "ANALOG",
+        "exchange-traded": "Analog/USDT",
+        "exchange-listed": "ANALOG",
         "timezone": "IST",
         "minmov": 1,
         "minmov2": 4,
         "pointvalue": 1,
         "session": "0930-1630",
-        "has_intraday": true,
+        "has_intraday": false,
         "has_no_volume": false,
         "has_weekly_and_monthly":false,
         "has_empty_bars":false,

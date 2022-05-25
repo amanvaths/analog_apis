@@ -22,8 +22,10 @@ app.use("/images", express.static(__dirname + "/uploads/images"));
 
 const userRouter = require('./router/userRouter')
 const notification = require('./router/notification')
+const chart = require('./router/chart')
 app.use('/api',userRouter);
 app.use('/api',notification);
+app.use('/api', chart)
 
 
 app.get('/get', async (req, res) => {  

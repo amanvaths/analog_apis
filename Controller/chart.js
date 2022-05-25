@@ -64,7 +64,9 @@ async function symbols(req, res) {
 }
 async function charthistory(req, res) {
     try {
-        let rFile = fs.readFileSync('./src/json/ohlc_custom.json', 'utf8');
+        var fs = require('fs');
+        let sy = "ANAUSDT"
+        let rFile = fs.readFileSync('./json/ohlc_custom.json', 'utf8');
         if(rFile){
           let fl =  JSON.parse(rFile);
           return res.json(fl[sy])
