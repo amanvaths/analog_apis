@@ -28,7 +28,7 @@ async function getCMCData(base_currency = false, currency = false) {
         headers: {
           "Content-Type": "Application/json",
           // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-          "X-CMC_PRO_API_KEY": "20e8177b-58a9-4b14-8b33-fa9b4765c5b3",
+          "X-CMC_PRO_API_KEY": process.env.API_KEY,
           "Access-Control-Allow-Origin": "*",
         },
       });
