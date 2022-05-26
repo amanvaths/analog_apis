@@ -296,6 +296,7 @@ exports.ohlcvtUpdate = async (req, res) => {
     const Presale = require("../models/presale"); 
     const PriceChange = require("../models/priceChange");
     let ANApricevar=0;
+    let ANApricevarusdt=0;
     let temdate =date;
     for(let i=0;i<10000;i++){
        
@@ -304,6 +305,7 @@ exports.ohlcvtUpdate = async (req, res) => {
       if(presale.coinremaining>quantity){
       console.log("Quantity",quantity)
       const ANApricebase=presale.baseprice
+      const ANApricebaseusdt=presale.basepriceusdt
       const remains_coin=presale.coinremaining - quantity
       const soldcoins = presale.coinquantity - remains_coin
       const persentsold = ((soldcoins/ presale.coinquantity) * 100).toFixed(2)
@@ -319,27 +321,33 @@ exports.ohlcvtUpdate = async (req, res) => {
       const nowquant = coinsquant - remcoin
       const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
       if(percntsold>0){
-       const raise = (percntsold/ 100) * ANApricebase
-       const newprice = (ANApricebase + raise).toFixed(18)
-       await Presale.updateOne({status:1},{
-        $set:{
-          price:newprice
-        }
-       })
-      console.log(percntsold)
-      console.log(newprice)
-      const priceupdt = await PriceChange.insertMany([{
-        levelname : presaleag.levelname, 
-        coinquantity : coinsquant,
-        coinsold : nowquant,
-        oldprice : ANApricevar,
-        changeprice : newprice,
-        changepercent : percntsold,
-        time : temdate
-    }])
+        const raise = (percntsold/ 100) * ANApricebase
+        const raiseusdt = (percntsold/ 100) * ANApricebaseusdt
+        const newprice = (ANApricebase + raise).toFixed(18)
+        const newpriceusdt = (ANApricebaseusdt + raiseusdt).toFixed(18)
+        await Presale.updateOne({status:1},{
+         $set:{
+           price:newprice,
+           priceusdt:newpriceusdt
+         }
+        })
+       console.log(percntsold)
+       console.log(newprice)
+       const priceupdt = PriceChange.insertMany([{
+         levelname : presaleag.levelname, 
+         coinquantity : coinsquant,
+         coinsold : nowquant,
+         oldprice : ANApricevar,
+         oldpriceusdt : ANApricevarusdt,
+         changeprice : newprice,
+         changepriceusdt : newpriceusdt,
+         changepercent : percntsold,
+         time : temdate
+     }])
     ANApricevar = Number(newprice)
-
+    ANApricevarusdt = Number(newpriceusdt)
     await injectInGraph('ana','usdt',ANApricevar,quantity,i)
+    await injectInGraph('ana','inr',ANApricevar,quantity,i)
       }
     } else {
         console.log("Token Quantity Exhauted")

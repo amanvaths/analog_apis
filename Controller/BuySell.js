@@ -206,6 +206,7 @@ exports.createOrder = async (req, res)=> {
       var ANApricevarusdt=presale.priceusdt
       var pref_raw_price=ANA_price;
       var ANApricebase=presale.baseprice;
+      var ANApricebaseusdt=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
@@ -472,9 +473,9 @@ exports.createOrder = async (req, res)=> {
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
                const raise = (percntsold/ 100) * ANApricebase
-               const raiseusdt = (percntsold/ 100) * one_ANA_inject
+               const raiseusdt = (percntsold/ 100) * ANApricebaseusdt
                const newprice = (ANApricebase + raise).toFixed(18)
-               const newpriceusdt = (one_ANA_inject + raiseusdt).toFixed(18)
+               const newpriceusdt = (ANApricebaseusdt + raiseusdt).toFixed(18)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice,
