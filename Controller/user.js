@@ -1532,7 +1532,7 @@ exports.levelWiseList = async (req, res) => {
      list.forEach( async function(data, i) {   
        const arr = {};    
        await User.findOne({ user_id : data }, { email :1, user_id : 1, refferal: 1 }).then( async(_user) => {                        
-            const totalExp1 =  await totalExpenseIncome(_user.email);
+            const totalExp1 =  await totalBuyExpenseIncome(_user.email);
             const totalEpx = totalExp1.totalExpense;
             const totalBuy =  totalExp1.totalBuy;
             const totalAff =  await totalAffiliateIncome(_user.email);       
@@ -1648,6 +1648,10 @@ exports.airdrop = async (req, res) => {
     })
   }catch(err){
     console.log("Error in airdrop " + err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
   }
 }
 
@@ -1661,5 +1665,25 @@ async function createAirdrop(email, socialActivity, airdrop){
       })
   }catch(err){
     console.log("Error in create airdrop " + err);
+  }
+}
+
+
+exports.handout =async (req, res) => {
+  try{
+    const { email } = req.body;
+    const buyModel = require('../models/buy');
+    const buy = await buyModel.find({ email : email, bonus_type : "Buying" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1
+    });
+    res.status(200).json({
+      status : 1,
+      data : buy
+    })
+  }catch(err){
+    console.log("Error in handout api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
   }
 }
