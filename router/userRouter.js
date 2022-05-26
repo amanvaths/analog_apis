@@ -26,7 +26,7 @@ const {
   userWalletData,
   configSettings,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
-  airdrop, handout
+  airdrop, bounty
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -78,7 +78,7 @@ router.post('/signInWithGoogle', signInWithGoogle);
 router.post('/refferalLevelWiseData', refferalLevelWiseData);
 router.post('/levelWiseList', levelWiseList);
 router.post('/airdrop', airdrop);
-router.post('/handout', handout);
+router.post('/bounty', bounty);
 /**
  * Admin Routes
  */

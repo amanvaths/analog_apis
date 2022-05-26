@@ -1669,7 +1669,7 @@ async function createAirdrop(email, socialActivity, airdrop){
 }
 
 
-exports.handout =async (req, res) => {
+exports.bounty =async (req, res) => {
   try{
     const { email } = req.body;
     const buyModel = require('../models/buy');
