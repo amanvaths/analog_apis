@@ -7,6 +7,38 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+async function getCMCData(base_currency = false, currency = false) {
+    try {
+      const query_coin_symbol_array = [
+        "btc",
+        "eth",
+        "trx",
+        "usdt",
+        "busd",
+        "shib",
+        "bnb",
+        "matic",
+        "sol",
+      ];
+      var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
+      var conver_currency = currency ? currency : "usd";
+      const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
+      const axios = require("axios");
+      const ress = await axios.get(final_third_party_api_url, {
+        headers: {
+          "Content-Type": "Application/json",
+          // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
+          "X-CMC_PRO_API_KEY": process.env.API_KEY,
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      console.log(ress.data.data);
+      return ress.data.data;
+    } catch (error) {
+      return false;
+    }
+  }
+
 exports.presalelevel = async (req, res) => { 
     console.log(req.body);
       if(req.body.levelname == ''){
@@ -56,14 +88,19 @@ exports.presalelevel = async (req, res) => {
                       message: "levelname Already Registered..."
                   });
               }else{ 
+                const cmcdatanew = await getCMCData('usdt','inr');
+                const usdtininr = cmcdatanew.USDT.quote.INR.price;
+                var one_ANA_in=req.body.coinprice/usdtininr;
                         const data = Presale.insertMany([{
                             levelname : req.body.levelname, 
                             coinquantity : req.body.coinquantity,
                             coinremaining : req.body.coinquantity,
                             price : req.body.coinprice,
+                            priceusdt : one_ANA_in,
                             baseprice : req.body.coinprice,
+                            basepriceusdt : one_ANA_in,
                             duration : req.body.duration,
-                            status : req.body.status,
+                            status : 0,
                         }])
 
                         if (data) {  
