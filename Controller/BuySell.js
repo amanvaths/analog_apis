@@ -581,7 +581,7 @@ exports.getAllOrder = async (req, res) => {
 exports.deleteOrders = async (req, res) => {
   const Order = require("../models/order");
   try {
-    await Order.deleteOne({ _id: req.body.id });
+    await Order.deleteOne({ _id: req.query.id });
     return res.status(200).json({ message: "Record Deleted" });
   } catch (error) {
     return res.status(400).json({ message: "Somthing went wrong" });
