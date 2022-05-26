@@ -36,7 +36,7 @@ async function getConfigExchange(data) {
           // "6H",
           // "9H",
           "12H",
-          // "1D",
+          "1D",
           // "2D",
           // "3D",
           // "1W"
@@ -83,7 +83,7 @@ async function getMarkExchange(data) {
           // "6H",
           // "9H",
           "12H",
-          // "1D",
+          "1D",
           // "2D",
           // "3D",
           // "1W"
@@ -129,7 +129,7 @@ async function getStudyTemplateExchange(data) {
           // "6H",
           // "9H",
           "12H",
-          // "1D",
+          "1D",
           // "2D",
           // "3D",
           // "1W"
@@ -163,7 +163,7 @@ async function getSymbolExchange(exName) {
           // "6H",
           // "9H",
           "12H",
-          // "1D",
+          "1D",
           // "2D",
           // "3D",
           // "1W"
@@ -198,7 +198,7 @@ async function getsymbolInfoExchange(exName) {
           // "4H",
           // "6H",
           "12H",
-          // "1D",
+          "1D",
           // "2D",
           // "3D",
         ],

@@ -27,7 +27,7 @@ async function getCMCData(base_currency = false, currency = false) {
       headers: {
         "Content-Type": "Application/json",
         // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-        "X-CMC_PRO_API_KEY": process.env.API_KEY,
+        "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY,
         "Access-Control-Allow-Origin": "*",
       },
     });
@@ -42,11 +42,12 @@ async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
       const graph_data = require('../json/ohlc_custom.json');
       let timestamp = Date.now() / 1000;
-      console.log("graph data",graph_data);
-      console.log("currency_type",currency_type);
-      console.log("compare_currency",compare_currency);
-      console.log("price",price);
-      console.log("volume",volume);
+
+      // console.log("graph data",graph_data);
+      // console.log("currency_type",currency_type);
+      // console.log("compare_currency",compare_currency);
+      // console.log("price",price);
+      // console.log("volume",volume);
       if (graph_data) {
           let key = currency_type.toUpperCase() + compare_currency.toUpperCase();
           let chart_data = graph_data[key];
@@ -199,6 +200,7 @@ exports.createOrder = async (req, res)=> {
           message: "ANA Buy Quantity exceeds presale limit"
       }); 
       }
+      var order_id =Date.now().toString(16).toUpperCase();
       req.body.currency=compairCurrency;
       req.body.base_currency=req.body.currencyType.toLowerCase();
       let ANA_price = presale.price;
@@ -317,8 +319,8 @@ exports.createOrder = async (req, res)=> {
                         preferred_currency_amount:pref_curr_amount,
                         bonus_type : "Buying",
                         order_id : order_id,
-                        presalelevel:presaleag.levelname
-                    }]).then((result)=>{
+                        presalelevel:presale.levelname
+                    }]).then(async (result)=>{
                         if(referral1 && refuser1){
                             const _userref1 = Buy.insertMany([{
                                 email : refuser1, 
@@ -332,7 +334,7 @@ exports.createOrder = async (req, res)=> {
                                 from_level:1,
                                 currency : currencyType,
                                 order_id : order_id,
-                                presalelevel:presaleag.levelname
+                                presalelevel:presale.levelname
                             }]).then(async (de) => {
                                 user_purchase = await User.updateOne({
                                     email: refuser1
@@ -363,7 +365,7 @@ exports.createOrder = async (req, res)=> {
                                     from_level:2,
                                     currency : currencyType,
                                     order_id : order_id,
-                                    presalelevel:presaleag.levelname
+                                    presalelevel:presale.levelname
                                 }]).then(async (te) => {
                                     user_purchase = await User.updateOne({
                                         email: refuser2
@@ -394,7 +396,7 @@ exports.createOrder = async (req, res)=> {
                                         from_level:3,
                                         currency : currencyType,
                                         order_id : order_id,
-                                        presalelevel:presaleag.levelname
+                                        presalelevel:presale.levelname
                                     }]).then(async (ke) => {
                                         user_purchase = await User.updateOne({
                                             email: refuser3
@@ -412,29 +414,7 @@ exports.createOrder = async (req, res)=> {
                                         console.log("error_yaha_hai : ",error)
                                         });
                                 }
-  
-                                if(result){
-                                    return res.status(200).json({
-                                        status : true,
-                                        message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
-                                    }); 
-                                }
-                    }).catch((error)=>{
-                    console.log(error)
-                    });
-                    
-                    
-                  });
-              }else{ 
-                return res.status(400).json({
-                    status : false,
-                    message: "User Not Found"
-                });   
-          }
-          });
-                //buy and referral commission end
-                
-                // user balance update and token percent sold updation
+                                  // user balance update and token percent sold updation
                 let CTbalance = currencyT.v_balance + compairVal; 
                 console.log("use balance",compairVal)
                 await wallet.updateOne({_id:currencyT._id},{
@@ -501,9 +481,31 @@ exports.createOrder = async (req, res)=> {
               var order_id =Date.now().toString(16).toUpperCase();
               await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
 
-              await injectInGraph('ana','usdt',one_ANA_inject.toFixed(5),quantity)
+              await injectInGraph('ana','usd',one_ANA_inject.toFixed(5),quantity)
               await injectInGraph('ana','inr',ANA_price.toFixed(5),quantity)
               // order history
+              if(result){
+                                  
+                return res.status(200).json({
+                    status : true,
+                    message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
+                }); 
+            }
+                    }).catch((error)=>{
+                    console.log(error)
+                    });
+                    
+                    
+                  });
+              }else{ 
+                return res.status(400).json({
+                    status : false,
+                    message: "User Not Found"
+                });   
+          }
+          });
+                //buy and referral commission end
+                
       } else {
         console.log( "Insufficient "+req.body.currencyType+" Balance")
           return res.status(400).json({
