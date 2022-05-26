@@ -338,7 +338,7 @@ exports.ohlcvtUpdate = async (req, res) => {
          coinquantity : coinsquant,
          coinsold : nowquant,
          oldprice : ANApricevar,
-         oldpriceusdt : ANApricevarusdt,
+         oldpriceusdt : ANApricevarusdt,  
          changeprice : newprice,
          changepriceusdt : newpriceusdt,
          changepercent : percntsold,
