@@ -1,42 +1,12 @@
 const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
+const { sendMail, getCMCData } = require('../utils/function');
 const mongoose = require("mongoose");
 const User = require("../models/user");
 const Buy = require("../models/buy");
 const Bonus = require("../models/referral_percent");
 const PriceChange = require("../models/priceChange");
 
-async function getCMCData(base_currency = false, currency = false) {
-  try {
-    const query_coin_symbol_array = [
-      "btc",
-      "eth",
-      "trx",
-      "usdt",
-      "busd",
-      "shib",
-      "bnb",
-      "matic",
-      "sol",
-    ];
-    var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
-    var conver_currency = currency ? currency : "usd";
-    const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
-    const axios = require("axios");
-    const ress = await axios.get(final_third_party_api_url, {
-      headers: {
-        "Content-Type": "Application/json",
-        // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-        "X-CMC_PRO_API_KEY": process.env.API_KEY,
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-    console.log(ress.data.data);
-    return ress.data.data;
-  } catch (error) {
-    return false;
-  }
-}
 
 async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
@@ -206,6 +176,7 @@ exports.createOrder = async (req, res)=> {
       var ANApricevarusdt=presale.priceusdt
       var pref_raw_price=ANA_price;
       var ANApricebase=presale.baseprice;
+      var ANApricebaseusdt=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
         const usdtininr = cmcdatanew.USDT.quote.INR.price;
@@ -472,9 +443,9 @@ exports.createOrder = async (req, res)=> {
               const percntsold = ((nowquant/ coinsquant) * 100).toFixed(2)
               if(percntsold>0){
                const raise = (percntsold/ 100) * ANApricebase
-               const raiseusdt = (percntsold/ 100) * one_ANA_inject
+               const raiseusdt = (percntsold/ 100) * ANApricebaseusdt
                const newprice = (ANApricebase + raise).toFixed(18)
-               const newpriceusdt = (one_ANA_inject + raiseusdt).toFixed(18)
+               const newpriceusdt = (ANApricebaseusdt + raiseusdt).toFixed(18)
                await Presale.updateOne({status:1},{
                 $set:{
                   price:newprice,

@@ -1,6 +1,6 @@
 const userWallet = require('../models/userWallet');
 const user = require('../models/user');
-const { sendMail } = require('../utils/function');
+const { sendMail, getCMCData } = require('../utils/function');
 
 exports.userDeposit = async (req, res) => {
     const Web3 = require("web3");
@@ -524,35 +524,3 @@ exports.userDeposit = async (req, res) => {
   }
 
 
-  async function getCMCData(base_currency = false, currency = false) {
-    try {
-      const query_coin_symbol_array = [
-        "btc",
-        "eth",
-        "trx",
-        "usdt",
-        "busd",
-        "shib",
-        "bnb",
-        "matic",
-        "sol",
-      ];
-      var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
-      var conver_currency = currency ? currency : "usd";
-      const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
-      const axios = require("axios");
-      const ress = await axios.get(final_third_party_api_url, {
-        headers: {
-          "Content-Type": "Application/json",
-          // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-          "X-CMC_PRO_API_KEY": "024d5931-52b8-4c1f-8d99-3928fd987163",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-     // console.log(ress.data.data);
-      return ress.data.data;
-    } catch (error) {
-      return false;
-    }
-  }
-  
