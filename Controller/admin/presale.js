@@ -100,7 +100,7 @@ exports.presalelevel = async (req, res) => {
                             baseprice : req.body.coinprice,
                             basepriceusdt : one_ANA_in,
                             duration : req.body.duration,
-                            status : req.body.status,
+                            status : 0,
                         }])
 
                         if (data) {  
