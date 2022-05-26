@@ -96,6 +96,7 @@ exports.presalelevel = async (req, res) => {
                             coinquantity : req.body.coinquantity,
                             coinremaining : req.body.coinquantity,
                             price : req.body.coinprice,
+                            priceusdt : one_ANA_in,
                             baseprice : req.body.coinprice,
                             basepriceusdt : one_ANA_in,
                             duration : req.body.duration,
