@@ -1425,6 +1425,17 @@ exports.refferalLevelWiseData = async (req, res) => {
     let totalExpense3 = 0;
       
     const list1 = await levelWiseList(user_id, 1);
+
+    const totalSum1 = await buyModel.aggregate([{ $match : { email : "danish.mu3@gmail.com", bonus_type : "Level" }}, { 
+                                                  $group: { _id: { email: "$email" },
+                                                            amtLevel1: { $sum: "$bonus" },
+                                                            totalAna1 : { $sum : "$toten" }
+                                                          },
+                                                 
+                                                },
+                                              ])   
+          console.log(totalSum1)
+
     for(i=0; i< list1.length; i++){
        let email1 = await findEmailId(list1[i]);      
         const totalSum1 = await buyModel.aggregate([{ $match : { email : email1, from_level : "1", bonus_type : "Level" }}, { 
@@ -1673,7 +1684,7 @@ exports.bounty =async (req, res) => {
   try{
     const { email } = req.body;
     const buyModel = require('../models/buy');
-    const buy = await buyModel.find({ email : email, bonus_type : "Buying" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1
+    const buy = await buyModel.find({ email : email, bonus_type : "Buying" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1, createdAt : 1
     });
     res.status(200).json({
       status : 1,
