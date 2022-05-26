@@ -25,7 +25,8 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
-  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList
+  removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
+  airdrop
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -76,6 +77,7 @@ router.post('/signInWithGoogle', signInWithGoogle);
 //router.post('/affiliateLevelData', affiliateLevelData)
 router.post('/refferalLevelWiseData', refferalLevelWiseData);
 router.post('/levelWiseList', levelWiseList);
+router.post('/airdrop', airdrop);
 /**
  * Admin Routes
  */
@@ -139,7 +141,7 @@ async function getCMCData(req, res) {
         "Access-Control-Allow-Origin": "*",
       },
     });
-    //console.log(ress.data.data);
+  
     return res.status(200).json(ress.data.data);
   } catch (error) {
     return res.status(400).json({ message: error.message });
