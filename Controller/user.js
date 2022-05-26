@@ -1304,32 +1304,19 @@ exports.recentActivities = async (req, res) => {
 exports.geRefferalData = async (req, res) => {
   try {
     const { email } = req.body;
+    const buyModel = require('../models/buy');  
     const userId = await findUserId(email);      
     if (userId) {   
       const refferal = await User.count({ refferal: userId });     
       if (refferal >0) {        
-        const refferals = await User.find({ refferal: userId });      
-        const buyModel = require('../models/buy');  
-        let totIncome = 0 ;
-        refferals.map( async(data) => {
-           const reffEmail = data.email; 
-
-           await buyModel.aggregate([
-             {
-               $match : { email : reffEmail }
-             }, {
-              $group: {
-                _id: { from_user: "$from_user"},
-                balance: { $sum: "$bonus" },
-              },
-            },
-          ]).then( async(data) => {   
-           if(data.length > 0){        
-            totIncome = totIncome + data[0].balance
-           }
-          });          
-        }) 
-        await sleep(5000);       
+       const refferalInc = await buyModel.aggregate([{ $match : { email : email }}, {
+                                    $group : { 
+                                      _id : { email: "$email"},
+                                     balance: { $sum: "$bonus" },
+                                    },
+                                  },
+                                ])
+       const totIncome = refferalInc[0].balance;       
        
          return res.status(200).json({
             totalRefferal : refferal,          
@@ -1348,71 +1335,6 @@ function sleep(ms) {
   });
 }
 
-/*
-exports.affiliateLevelData = async (req,res) => {
-  try{
-      const buyModel = require("../models/buy");
-      const { email, level } = req.body;      
-     
-      const reffInc = await buyModel.aggregate([
-                      {
-                        $match : { email : email } // , from_level : level
-                      }, {
-                      $group: {
-                        _id: { from_level: "$from_level"},
-                        balance: { $sum: "$bonus" },
-                      },
-                    },
-                  ]) 
-          
-    const totalReff = await buyModel.aggregate([
-                        {
-                          $match : { email : email }
-                        }, {
-                        $group: {
-                          _id: { from_level: "$from_level"},
-                          total : { $sum : 1 }                       
-                        },
-                      },
-                    ]) 
-    const totalExpense = await buyModel.aggregate([
-                          {
-                            $match : { email : email, bonus_type : "Buying" }
-                          }, {
-                          $group: {
-                            _id: { from_level: "$from_level"},
-                            balance: { $sum: "$amount" },
-                          },
-                        },
-                      ]) 
-   const totalAna = await buyModel.aggregate([
-                        {
-                          $match : { email : email,  bonus_type : "Buying" }
-                        }, {
-                        $group: {
-                          _id: { from_level: "$from_level"},
-                          balance: { $sum: "$token_buying" },
-                        },
-                      },
-                    ])
-              
-     res.status(200).json({
-       status : 1,
-       refferalIncome : reffInc,
-       totalAffiliates : totalReff,
-       totalExpense : totalExpense,
-       totalAna : totalAna
-     })
-
-  }catch(err){
-    console.log("Error in refferal" +err);
-    return res.status(400).json({
-      status : 0,
-      message : "Something went wrong "
-    });
-  }
-}
-*/
 
 // website data 
 
@@ -1502,76 +1424,93 @@ exports.refferalLevelWiseData = async (req, res) => {
     let totalExpense3 = 0;
       
     const list1 = await levelWiseList(user_id, 1);
+    console.log(list1 ,1);
 
+    const totalSum = await buyModel.aggregate([{ $match : { email : email, from_level : "2", bonus_type : "Level" }}, { 
+                                                  $group: { _id: { from_level: "$from_level" },
+                                                  amtLevel1: { $sum: "$bonus" },
+                                                  totalAna1 : { $sum : "$toten" }
+                                                          },
+                                                },
+                                              ])  
+      console.log(totalSum, 0);
     for(i=0; i< list1.length; i++){
-       let email1 = await findEmailId(list1[i]);  
-       await buyModel.find({ from_user : email1, from_level : 1, bonus_type : "Level" }).then((data) => {
-          data.map((d) => {
-            amtLevel1 = amtLevel1 + d.bonus
-            totalAna1 = totalAna1 + d.token_quantity          
-          })
-        })
-
-        const totalExp1 = await buyModel.aggregate([{
-                                  $match : { email : email1,  bonus_type : "Buying" }}, 
-                                           { $group: {
-                                              _id: { from_level: "$from_level" },
-                                              balance: { $sum: "$token_buying" },
-                                            },
-                                          },
-                                        ])
-
-            if(totalExp1.length > 0){           
-              totalExpense1 = totalExpense1 + totalExp1[0].balance
-            }             
+       let email1 = await findEmailId(list1[i]);      
+        const totalSum1 = await buyModel.aggregate([{ $match : { email : email1, from_level : 1, bonus_type : "Level" }}, { 
+                                                      $group: { _id: { email: "$email" },
+                                                      amtLevel1: { $sum: "$bonus" },
+                                                      totalAna1 : { $sum : "$toten" }
+                                                              },
+                                                    },
+                                                  ])   
+        if(totalSum1.length > 0){
+          amtLevel1 = totalSum1[0].amtLevel1;
+          totalAna1 = totalSum1[0].totalAna1;
+        }
+        const totalExp1 = await buyModel.aggregate([{ $match : { email : email1,  bonus_type : "Buying" }}, { 
+                                                      $group: { _id: { email: "$email" },
+                                                      balance: { $sum: "$token_buying" },
+                                                              },
+                                                    },
+                                                  ])   
+          if(totalExp1.length > 0){
+            totalExpense1 = totalExp1[0].balance  
+          }                
       }
 
       const list2 = await levelWiseList(user_id, 2);
+      console.log(list2,2);
       for(i=0; i< list2.length; i++){
         let email1 = await findEmailId(list2[i]);  
-        await buyModel.find({ from_user : email1, from_level : 2, bonus_type : "Level" }).then((data) => {
-           data.map((d) => { 
-             amtLevel2 = amtLevel2 + d.bonus
-             totalAna2 = totalAna2 + d.token_quantity           
-           })
-         })
+       
+        const totalSum2 = await buyModel.aggregate([{ $match : { email : email1, from_level : 2, bonus_type : "Level" }}, { 
+                                                    $group: { _id: { email: "$email" },
+                                                    amtLevel2: { $sum: "$bonus" },
+                                                    totalAna2 : { $sum : "$toten" }
+                                                            },
+                                                  },
+                                                ])   
+          if(totalSum2.length > 0){
+                 amtLevel1 = totalSum2[0].amtLevel1;
+                 totalAna1 = totalSum2[0].totalAna1;
+            }
 
-         const totalExp2 = await buyModel.aggregate([{
-          $match : { email : email1,  bonus_type : "Buying" }}, 
-                   { $group: {
-                      _id: { from_level: "$from_level" },
-                      balance: { $sum: "$token_buying" },
-                    },
-                  },
-                ])
+         const totalExp2 = await buyModel.aggregate([{ $match : { email : email1,  bonus_type : "Buying" }}, 
+                                                      { $group: { _id: { email : "$email" },
+                                                        balance: { $sum: "$token_buying" }, }, 
+                                                      },
+                                                    ])
    
-        if(totalExp2.length > 0){           
-          totalExpense2 = totalExpense2 + totalExp2[0].balance
+        if(totalExp2.length > 0){                                              
+          totalExpense2 = totalExpense2 + totalExp2[0].balance   
         }                
        }
 
        const list3 = await levelWiseList(user_id, 3);
+       console.log(list3, 3);
        for(i=0; i< list3.length; i++){
-        let email1 = await findEmailId(list3[i]);  
-        await buyModel.find({ from_user : email1, from_level : 3, bonus_type : "Level" }).then((data) => {
-           data.map((d) => {
-             amtLevel3 = amtLevel3 + d.bonus
-             totalAna3 = totalAna3 + d.token_quantity           
-           })
-         })
+        let email1 = await findEmailId(list3[i]); 
+       const totalSum3 = await buyModel.aggregate([{ $match : { email : email1, from_level : 2, bonus_type : "Level" }}, { 
+                                                     $group: { _id: { email: "$email" },
+                                                     amtLevel3: { $sum: "$bonus" },
+                                                     totalAna3 : { $sum : "$toten" }
+                                                            },
+                                                  },
+                                                ])   
+        if(totalSum3.length > 0){
+          amtLevel3 = totalSum3[0].amtLevel3;
+          totalAna3 = totalSum3[0].totalAna3;
+        }
 
-         const totalExp3 = await buyModel.aggregate([{
-          $match : { email : email1,  bonus_type : "Buying" }}, 
-                   { $group: {
-                      _id: { from_level: "$from_level" },
-                      balance: { $sum: "$token_buying" },
-                    },
-                  },
-                ])
-
-         if(totalExp3.length > 0){           
-          totalExpense3 = totalExpense3 + totalExp3[0].balance
-        }      
+         const totalExp3 = await buyModel.aggregate([{ $match : { email : email1,  bonus_type : "Buying" }}, 
+                                                      { $group: { _id: { email: "$email" },
+                                                        balance: { $sum: "$token_buying" },
+                                                      },
+                                                    },
+                                                  ])   
+          if(totalExp3.length > 0){           
+          totalExpense3 = totalExpense3 + totalExp3[0].balance    
+          }        
        }
 
     res.status(200).json({
@@ -1593,103 +1532,15 @@ exports.refferalLevelWiseData = async (req, res) => {
 }
 
 
-
-
-
-
-
-
-
-/*
-async function levelWiseRefferallist(user_id, level){
-
-  const d = await getDownline(user_id);  
-  const arr = convertToArray(d, user_id);  
-  if(level == 1){
-    return arr;
-  }
- 
-  const arr2 = [];
-  for(i=0; i<arr.length; i++){
-      let u_id = arr[i];         
-      const d2 = await getDownline(u_id);      
-      const arr23 = convertToArray(d2, u_id);   
-      for(j=0; j< arr23.length; j++){  
-        arr2.push(arr23[j]);
-      }
-  }
-  if(level == 2){
-    return arr2;
-  }
-
- 
-   const arr3 = [];
-   for(i=0; i<arr2.length; i++){  
-       let u_id = arr2[i];     
-       const d3 = await getDownline(u_id);  
-       const arr233 = convertToArray(d3, u_id);
-       for(j=0; j< arr233.length; j++){ 
-         arr3.push(arr233[j]);   
-       } 
-   }
-   if(level == 3){
-    return arr3;
-  }
-  
-}
-
-/*
-
-function convertToArray(d, user_id){
-  const arr = []; 
-  let i=0;
-  d.map((data) => { 
-      arr.push(data.user_id);  
-  }) 
-  var idx = arr.indexOf(user_id);
-  if (idx != -1){
-    arr.splice(idx, 1);
-  } 
-  return arr; 
-}
-
-async function getDownline(ref_ids){
-
-  const refferals = ref_ids;  
-  const totalMembersData = await User.aggregate([
-      { $match: { "user_id":  refferals } },
-      {
-          $graphLookup: {
-              from: "users",
-              startWith: "$user_id",
-              connectFromField: "user_id",
-              connectToField: "refferal",
-              maxDepth: 0,
-              depthField: "numConnections",
-              as: "children",             
-          },
-      },
-      {
-        $project: {    
-            'children.user_id': 1
-        }
-      }
-  ])  
-  return totalMembersData[0].children
-}
-
-*/
-
 exports.levelWiseList = async (req, res) => {
   try{ 
       const { email, level } = req.body;      
       let userId = [];
       userId.push(await findUserId(email));   
       const list = await levelWiseList(userId, level);  
-     
-     const userListArray = [];   
-
-     list.forEach( async function(data, i) {     
+    
+     const userListArray = [];     
+     list.forEach( async function(data, i) {   
        const arr = {};    
        await User.findOne({ user_id : data }, { email :1, user_id : 1, refferal: 1 }).then( async(_user) => {                        
             const totalEpx =  await totalExpenseIncome(_user.email);
@@ -1698,10 +1549,11 @@ exports.levelWiseList = async (req, res) => {
             arr["email"]     = _user.email;
             arr["user_id"]   = _user.user_id;
             arr["sponsor"]   = _user.refferal;
+            arr["sponsor_email"] = await findEmailId(_user.refferal);
             arr["totalExp"]  = totalEpx;
             arr["totalBuy"]  = totalBuy;
             arr["totalAff"]  = totalAff;
-            arr["totalHandout"] = 0;
+            arr["totalHandout"] = 0;           
             userListArray.push(arr);    
            })  
          
@@ -1711,8 +1563,7 @@ exports.levelWiseList = async (req, res) => {
               data : userListArray
             })
         }
-     });
-
+    });
 
   }catch(err){
     console.log("Errorn in levelwiselist api " + err);
@@ -1726,14 +1577,12 @@ async function totalExpenseIncome(email){
       const buyModel = require("../models/buy");
       let totalExpense = 0;    
      
-      const totalExp = await buyModel.aggregate([{
-        $match : { email : email,  bonus_type : "Buying" }}, 
-                 { $group: {
-                    _id: { from_level: "$from_level" },
-                    balance: { $sum: "$amount" },
-                  },
-                },
-              ])
+      const totalExp = await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Buying" }}, 
+                                                  { $group: { _id: {  email: "$email" },
+                                                    balance: { $sum: "$amount" },
+                                                  },
+                                                  },
+                                                ])
           if(totalExp.length > 0){
             totalExpense = totalExp[0].balance;
           }
@@ -1751,14 +1600,12 @@ async function totalBuyIncome(email){
     const buyModel = require("../models/buy");   
     let totalBuy = 0;   
   
-    const total_buy = await buyModel.aggregate([{
-        $match : { email : email,  bonus_type : "Buying" }}, 
-                 { $group: {
-                    _id: { from_level: "$from_level" },
-                    balance: { $sum: "$token_buying" },
-                   },
-                  },
-                 ])
+    const total_buy = await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Buying" }}, 
+                                                  { $group: { _id: {  email: "$email" },
+                                                    balance: { $sum: "$token_buying" },
+                                                    },
+                                                  },
+                                               ])
           if(total_buy.length > 0){
             totalBuy = total_buy[0].balance;
             }
@@ -1777,18 +1624,15 @@ async function totalAffiliateIncome(email){
     const buyModel = require("../models/buy");   
     let totalAffiliates = 0;   
   
-    const total_aff = await buyModel.aggregate([{
-        $match : { email : email,  bonus_type : "Level" }}, 
-                 { $group: {
-                    _id: { from_level: "$from_level" },
-                    balance: { $sum: "$bonus" },
-                   },
-                  },
-                 ])
-          if(total_aff.length > 0){
+    const total_aff = await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Level" }}, { 
+                                                  $group: { _id: { email: "$email" },
+                                                  balance: { $sum: "$bonus" },
+                                                  },
+                                                },
+                                              ])          
+            if(total_aff.length > 0){
             totalAffiliates = total_aff[0].balance;
             }
-  
      return totalAffiliates;
 
   }catch(err){

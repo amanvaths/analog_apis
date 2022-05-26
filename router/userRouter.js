@@ -115,16 +115,6 @@ router.post('/allTeam', allTeam);
 
 
 
-
-
-
-/**
-user Deposits
- */
-//router.post('/userDeposit', userDeposit);
-
-
-
 async function getCMCData(req, res) {
   try {
     const query_coin_symbol_array = [
@@ -145,7 +135,7 @@ async function getCMCData(req, res) {
       headers: {
         "Content-Type": "Application/json",
         // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-        "X-CMC_PRO_API_KEY": "20e8177b-58a9-4b14-8b33-fa9b4765c5b3", //  024d5931-52b8-4c1f-8d99-3928fd987163
+        "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY, //  024d5931-52b8-4c1f-8d99-3928fd987163
         "Access-Control-Allow-Origin": "*",
       },
     });
