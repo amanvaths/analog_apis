@@ -7,40 +7,6 @@ const Buy = require("../models/buy");
 const Bonus = require("../models/referral_percent");
 const PriceChange = require("../models/priceChange");
 
-<<<<<<< HEAD
-async function getCMCData(base_currency = false, currency = false) {
-  try {
-    const query_coin_symbol_array = [
-      "btc",
-      "eth",
-      "trx",
-      "usdt",
-      "busd",
-      "shib",
-      "bnb",
-      "matic",
-      "sol",
-    ];
-    var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
-    var conver_currency = currency ? currency : "usd";
-    const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
-    const axios = require("axios");
-    const ress = await axios.get(final_third_party_api_url, {
-      headers: {
-        "Content-Type": "Application/json",
-        // "X-CMC_PRO_API_KEY": process.env.COIN_MARKET_CAP_API_KEY
-        "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY,
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-    console.log(ress.data.data);
-    return ress.data.data;
-  } catch (error) {
-    return false;
-  }
-}
-=======
->>>>>>> ffb2812f4f1499b8542536e6361fe73d1c2ec7db
 
 async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
