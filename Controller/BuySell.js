@@ -1,11 +1,13 @@
 const { find } = require("../models/userWallet");
 const { mul, sub, add } = require("../utils/Math");
+const { sendMail, getCMCData } = require('../utils/function');
 const mongoose = require("mongoose");
 const User = require("../models/user");
 const Buy = require("../models/buy");
 const Bonus = require("../models/referral_percent");
 const PriceChange = require("../models/priceChange");
 
+<<<<<<< HEAD
 async function getCMCData(base_currency = false, currency = false) {
   try {
     const query_coin_symbol_array = [
@@ -37,6 +39,8 @@ async function getCMCData(base_currency = false, currency = false) {
     return false;
   }
 }
+=======
+>>>>>>> ffb2812f4f1499b8542536e6361fe73d1c2ec7db
 
 async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
@@ -613,7 +617,7 @@ exports.getAllOrder = async (req, res) => {
 exports.deleteOrders = async (req, res) => {
   const Order = require("../models/order");
   try {
-    await Order.deleteOne({ _id: req.body.id });
+    await Order.deleteOne({ _id: req.query.id });
     return res.status(200).json({ message: "Record Deleted" });
   } catch (error) {
     return res.status(400).json({ message: "Somthing went wrong" });
@@ -721,6 +725,7 @@ exports.getUser = async (req, res) => {
       status: 200,
       error: false,
       user: user,
+      totalCount:user.length
     });
   } catch (error) {
     console.log("Error from: allUser ", error);

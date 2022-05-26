@@ -21,13 +21,11 @@ const userSchema = new mongoose.Schema(
           },
     refferal: { type: String },
     password: {
-      type: String,
-      required: [true, "Please enter an password"],
+      type: String,     
       minlength: [6, "Minimum password length is 6 character"],
     },
     gmailPass: {
-      type: String,
-      required: [true, "Please enter an password"],
+      type: String,     
       minlength: [6, "Minimum password length is 6 character"],
     },
     //my_referral_code: { type: String, unique: true, required: true },
