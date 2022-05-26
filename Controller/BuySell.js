@@ -718,6 +718,7 @@ exports.getUser = async (req, res) => {
       status: 200,
       error: false,
       user: user,
+      totalCount:user.length
     });
   } catch (error) {
     console.log("Error from: allUser ", error);
