@@ -1229,9 +1229,11 @@ exports.userWalletData = async (req, res) => {
   try{
       const {email} = req.body;    
       //console.log("user wallet data " + email); 
+      const loginModel = require("../models/login_history");
       const _user            = await User.findOne({ email: email });  
       const _orders          = await  orders.findOne({ email : email }).sort('-date') || "";    
-      const totalWallet      = await orders.count({ email : email }).distinct('currency_type') || 0;      
+      const totalWallet      = await orders.count({ email : email }).distinct('currency_type') || 0;  
+      const login_activity   = await loginModel.findOne({ email : email }).sort('-createdAt');  
       const totalTransaction = await orders.count({ email : email }) || 0;
           return res.status(200).json({
             user_id            : _user.user_id,
@@ -1241,7 +1243,7 @@ exports.userWalletData = async (req, res) => {
             inherited_wallet   : _user.inherited_wallet,
             handout_wallet     : _user.handout_wallet,
             inceptive_wallet   : _user.inceptive_wallet,
-            last_activity      : _orders.createdAt,
+            last_activity      : login_activity.createdAt,
             total_wallet       : totalWallet.length,
             token_balance      : _user.token_balance,
             total_transaction  : totalTransaction
@@ -1635,10 +1637,10 @@ exports.levelWiseList = async (req, res) => {
             arr["totalBuy"]  = totalBuy;
             arr["totalAff"]  = totalAff;
             arr["totalHandout"] = 0;     
-            arr["createdAt"] = _user.createdAt;     
-            userListArray.push(arr);    
+            arr["createdAt"] = _user.createdAt;   
+            insertSorted(userListArray, arr, compareByTime)            
            })  
-         
+        
            if(userListArray.length === list.length) {
             res.status(200).json({
               status : 1,
@@ -1649,8 +1651,8 @@ exports.levelWiseList = async (req, res) => {
 
     if(list.length == 0){
       res.status(200).json({
-        status : 2,
-        message : "No Record Found"
+        status : 1,
+        data : []
       })
     }
 
@@ -1663,6 +1665,12 @@ exports.levelWiseList = async (req, res) => {
   }
 }
 
+ function insertSorted (array, element, comparator) {
+      for (var i = 0; i < array.length && comparator(array[i], element) < 0; i++) {}
+            array.splice(i, 0, element)
+    }
+          
+ function compareByTime (a, b) { return a.createdAt - b.createdAt }
 
 
 async function totalBuyExpenseIncome(email){
