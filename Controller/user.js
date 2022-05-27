@@ -1308,16 +1308,19 @@ exports.geRefferalData = async (req, res) => {
     const buyModel = require('../models/buy');  
     const userId = await findUserId(email);      
     if (userId) {   
-      const refferal = await User.count({ refferal: userId });     
+      const refferal = await User.count({ refferal: userId });  
+     let totIncome = 0   
       if (refferal >0) {        
-       const refferalInc = await buyModel.aggregate([{ $match : { email : email }}, {
+       const refferalInc = await buyModel.aggregate([{ $match : { email : email, bonus_type: "Level" }}, {
                                     $group : { 
                                       _id : { email: "$email"},
                                      balance: { $sum: "$bonus" },
                                     },
                                   },
                                 ])
-       const totIncome = refferalInc[0].balance;       
+        if(refferalInc.length> 0){
+           totIncome = refferalInc[0].balance;  
+        }           
        
          return res.status(200).json({
             totalRefferal : refferal,          
@@ -1576,19 +1579,22 @@ exports.refferalLevelWiseData = async (req, res) => {
 
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
-           totalExpense1 = await totalBuyExpenseIncome(email1)  
+           const totalexp =  await totalBuyExpenseIncome(email1)  
+           totalExpense1 = totalexp.totalExpense;
      }
 
      const list2 = await levelWiseList(user_id, 2);
      for(i=0; i< list2.length; i++){
        let email1 = await findEmailId(list2[i]);  
-         totalExpense2 = await totalBuyExpenseIncome(email1); 
+         const totalexp =  await totalBuyExpenseIncome(email1) 
+         totalExpense2 = totalexp.totalExpense; 
       }
 
       const list3 = await levelWiseList(user_id, 3);
       for(i=0; i< list3.length; i++){        
-       let email1 = await findEmailId(list3[i]);   
-         totalExpense3 = await totalBuyExpenseIncome(email1); 
+       let email1 = await findEmailId(list3[i]);
+         const totalexp =  await totalBuyExpenseIncome(email1)    
+         totalExpense3 = totalexp.totalExpense; ; 
       }
 
    res.status(200).json({
