@@ -29,7 +29,28 @@ app.use('/api', chart)
 
 
 app.get('/get', async (req, res) => {  
- 
+  const buyModel = require("./models/buy")
+  await buyModel.aggregate([{ $match : { email : "amitnadcab@gmail.com" }}, {   // "danish.mu3@gmail.com"
+                                                $group: { _id: { from_level: "$from_level" },
+                                                          amtLevel1: { $sum: "$bonus" },
+                                                          totalAna1 : { $sum : "$toten" }
+                                                        },                                               
+                                              },                                        
+                                            ]).then((data) => {  
+                                              data.map((d, i) => { 
+                                                 if(d._id.from_level == 1){
+                                                  console.log(data[i].amtLevel1, 1);                                                 
+                                                }  
+                                                if(d._id.from_level == 3){
+                                                  console.log(data[i].amtLevel1, 3);                                                 
+                                                }
+                                                if(d._id.from_level == 2){
+                                                  console.log(data[i].amtLevel1, 2);                                                 
+                                                }
+                                              })
+                                             
+                                            }) 
+      
 
 });
 // const after = Date.now();

@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     total_spend_inr: { type: Number, default: 0 },
     otp: { type: Number, default: 0 },
     isVarify: { type: Number, default: 0 },    
-    currency : { type: String },    
+    currency : { type: String, default: "INR" },    
     affilites_wallet : { type: Number, default: 0 },
     bounty_wallet : { type: Number, default: 0 },
     airdrop_wallet : { type: Number, default: 0 },
