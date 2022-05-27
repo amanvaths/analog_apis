@@ -346,7 +346,7 @@ exports.ohlcvtUpdate = async (req, res) => {
      }])
     ANApricevar = Number(newprice)
     ANApricevarusdt = Number(newpriceusdt)
-    await injectInGraph('ana','usdt',ANApricevar,quantity,i)
+    await injectInGraph('ana','usd',ANApricevarusdt,quantity,i)
     await injectInGraph('ana','inr',ANApricevar,quantity,i)
       }
     } else {
