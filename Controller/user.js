@@ -650,7 +650,7 @@ exports.walletData = async (req, res) => {
     const { email } = req.body;
     const limitValue = req.body.limit || 1000;
     const skipValue = req.body.skip || 0;
-    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});   
+    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ symbol: 1 });   
     if (walletData) {
       return res.status(200).json(walletData);
     } else {
@@ -1408,9 +1408,6 @@ function convertToArray(data){
 
 
 
-
-
-
 exports.refferalLevelWiseData1 = async (req, res) => {
    try{
     const { email } = req.body;
@@ -1525,8 +1522,6 @@ exports.refferalLevelWiseData1 = async (req, res) => {
 }
 
 
-
-
 exports.refferalLevelWiseData = async (req, res) => {
   try{
    const { email } = req.body;
@@ -1614,13 +1609,6 @@ exports.refferalLevelWiseData = async (req, res) => {
    });
   }
 }
-
-
-
-
-
-
-
 
 
 
@@ -1791,3 +1779,6 @@ exports.bounty =async (req, res) => {
     })
   }
 }
+
+
+
