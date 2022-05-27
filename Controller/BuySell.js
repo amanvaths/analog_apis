@@ -207,6 +207,7 @@ exports.createOrder = async (req, res)=> {
       console.log("total_purchase_price",compairVal)
       }
       console.log('wallet balance',currencyT.usdt_balance)
+      if(inrx_amount>=5000){
       if(currencyT.usdt_balance >= compairVal ) {
              
 
@@ -484,7 +485,14 @@ exports.createOrder = async (req, res)=> {
               message: "Insufficient "+req.body.currencyType+" Balance",
             });
       }    
-      
+    } else {
+     
+        return res.status(400).json({
+            status: false,
+            error: true,
+            message: "Minimul Buy Order Value is 5000 INRX or USDT Equivalent to",
+          });
+    }   
   } catch (error) {
       console.log("Error from: createOrder ", error)
     return res.status(400).json({
