@@ -141,7 +141,7 @@ function storeOHLCVT(data) {
           let path = require('path')
           let dirname = path.join(__dirname, `../json/ohlc_custom.json`);
           var json = JSON.stringify(data);
-           console.log("path: ", dirname, json);
+           //console.log("path: ", dirname, json);
           fs.writeFile(dirname, json, 'utf8', (d) => {
                console.log("saved", new Date());
           });
@@ -170,7 +170,7 @@ exports.createOrder = async (req, res)=> {
           message: "ANA Buy Quantity exceeds presale limit"
       }); 
       }
-      var order_id =Date.now().toString(16).toUpperCase();
+      
       req.body.currency=compairCurrency;
       req.body.base_currency=req.body.currencyType.toLowerCase();
       let ANA_price = presale.price;
@@ -212,7 +212,6 @@ exports.createOrder = async (req, res)=> {
              
 
                 // buy and  referral commission
-                console.log("Order Id",order_id)
                 await  User.findOne({ email :email })
           .exec(async (error, user) => {
               if (user){ 
@@ -242,6 +241,8 @@ exports.createOrder = async (req, res)=> {
                 let refuser1="";
                 let refuser2="";
                 let refuser3="";
+                var order_id =Date.now().toString(16).toUpperCase();
+                console.log("Order Id",order_id)
                 // get referral ids 
                
                     let rid = await User.findOne({  user_id : referral1 });
@@ -285,13 +286,15 @@ exports.createOrder = async (req, res)=> {
                         currency_price : one_ANA_in,
                         currenty_prefer: req.body.base_currency,
                         bonus_percent : bonus_perc,
-                        currency : currencyType,
+                        currency : compairCurrency,
                         amount : compairVal,
                         preferred_currency_amount:pref_curr_amount,
                         bonus_type : "Buying",
                         order_id : order_id,
                         presalelevel:presale.levelname
                     }]).then(async (result)=>{
+                      console.log("referal_level 1",referral1)
+                      console.log("referal_user 1",refuser1)
                         if(referral1 && refuser1){
                             const _userref1 = Buy.insertMany([{
                                 email : refuser1, 
@@ -303,7 +306,9 @@ exports.createOrder = async (req, res)=> {
                                 bonus : ref1,
                                 bonus_percent : lev1,
                                 from_level:1,
-                                currency : currencyType,
+                                currency : compairCurrency,
+                                amount : compairVal,
+                                preferred_currency_amount:pref_curr_amount,
                                 order_id : order_id,
                                 presalelevel:presale.levelname
                             }]).then(async (de) => {
@@ -334,7 +339,9 @@ exports.createOrder = async (req, res)=> {
                                     bonus : ref2,
                                     bonus_percent : lev2,
                                     from_level:2,
-                                    currency : currencyType,
+                                    currency : compairCurrency,
+                                    amount : compairVal,
+                                    preferred_currency_amount:pref_curr_amount,
                                     order_id : order_id,
                                     presalelevel:presale.levelname
                                 }]).then(async (te) => {
@@ -365,7 +372,9 @@ exports.createOrder = async (req, res)=> {
                                         bonus : ref3,
                                         bonus_percent : lev3,
                                         from_level:3,
-                                        currency : currencyType,
+                                        currency : compairCurrency,
+                                        amount : compairVal,
+                                        preferred_currency_amount:pref_curr_amount,
                                         order_id : order_id,
                                         presalelevel:presale.levelname
                                     }]).then(async (ke) => {
@@ -449,22 +458,24 @@ exports.createOrder = async (req, res)=> {
               // token price update
               
               // order history
-              var order_id =Date.now().toString(16).toUpperCase();
-              await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
+                            await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
 
-              await injectInGraph('ana','usd',one_ANA_inject.toFixed(5),quantity)
-              await injectInGraph('ana','inr',ANA_price.toFixed(5),quantity)
+                            await injectInGraph('ana','usd',one_ANA_inject.toFixed(5),quantity)
+                            await injectInGraph('ana','inr',ANA_price.toFixed(5),quantity)
               // order history
-              if(result){
-                                  
-                return res.status(200).json({
-                    status : true,
-                    message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
-                }); 
-            }
-                    }).catch((error)=>{
-                    console.log(error)
-                    });
+                        if(result){
+                                            
+                          return res.status(200).json({
+                              status : true,
+                              message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
+                          }); 
+                      } else {
+                        return res.status(400).json({
+                          status : false,
+                          message: "Error While Execution"
+                      }); 
+                      }
+                    })
                     
                     
                   });
