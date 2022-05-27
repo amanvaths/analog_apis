@@ -109,7 +109,7 @@ exports.userDeposit = async (req, res) => {
           console.log("TRX");
           try {
             let wallet = walletTRX;
-            const decimal = 1e6;
+            const decimal = 1e6;        
             let trx_balance = await tronWeb.trx.getBalance(wallet.walletAddr);
             console.log(trx_balance / decimal + " TRX balance");
             const balance = trx_balance / decimal;                   
@@ -119,13 +119,12 @@ exports.userDeposit = async (req, res) => {
                */
               const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0; 
               const cmcdata = await getCMCData('TRX','USDT');
-              const trxInUSDT = cmcdata.TRX.quote.USDT.price || 0;                    
+              const trxInUSDT = cmcdata.TRX.quote.USDT.price || 0; 
               /**
                * update user's wallet
-               */ 
-               //console.log("exe....1 balance = " + balance + " w_balance =" + w_balance);
+               */             
                 
-              if (balance>0 && w_balance && balance != w_balance) {
+              if (balance>0 && trxInUSDT && balance != w_balance) {
 
               await userWallet.updateOne({ email: email, symbol: "TRX" },{ $set: { balance : balance }}).then( async(data) => {
                 console.log("updated trx")
@@ -175,7 +174,7 @@ exports.userDeposit = async (req, res) => {
               /**
                * update user's wallet
                */
-               if (balance>0 && w_balance>0 && balance != w_balance) {
+               if (balance>0 && ethInUSDT && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "ETH" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated ETH")
@@ -219,12 +218,12 @@ exports.userDeposit = async (req, res) => {
                * check for w balance
                */
               const w_balance       = wallet.balance ? parseFloat(wallet.balance) : 0;
-              const cmcdata = await getCMCData('BNB','USDT');
-              const bnbInUSDT = cmcdata.BNB.quote.USDT.price || 0;             
+              const cmcdata         = await getCMCData('BNB','USDT');
+              const bnbInUSDT       = cmcdata.BNB.quote.USDT.price || 0;             
               /**
                * update user's wallet
                */
-               if (balance>0 && w_balance>0 && balance != w_balance) {
+               if (balance>0 && bnbInUSDT && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "BNB" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated BNB")
@@ -267,13 +266,13 @@ exports.userDeposit = async (req, res) => {
               /**
                * check for w balance
                */
-              const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;  
-              const cmcdata = await getCMCData('MATIC','USDT');
-              const maticInUSDT = cmcdata.MATIC.quote.USDT.price || 0;  
+              const w_balance    = wallet.balance ? parseFloat(wallet.balance) : 0;  
+              const cmcdata      = await getCMCData('MATIC','USDT');
+              const maticInUSDT  = cmcdata.MATIC.quote.USDT.price || 0;  
               /**
                * update user's wallet
                */
-               if (balance>0 && w_balance>0 && balance != w_balance) {
+               if (balance>0 && maticInUSDT && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "MATIC" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated MATIC")
@@ -324,7 +323,7 @@ exports.userDeposit = async (req, res) => {
               /**
                * update user's wallet
                */
-               if (balance>0 && w_balance>0 && balance != w_balance) {
+               if (balance>0 && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "USDT" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated USDT")
@@ -373,7 +372,7 @@ exports.userDeposit = async (req, res) => {
               /**
                * update user's wallet
                */           
-              if (balance>0 && w_balance>0 && balance != w_balance) {
+              if (balance>0 && busdInUSDT && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "BUSD" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated MATIC")
@@ -426,7 +425,7 @@ exports.userDeposit = async (req, res) => {
               /**
                * update user's wallet
                */  
-              if (balance>0 && w_balance>0 && balance != w_balance) {
+              if (balance>0 && shibInUSDT && balance != w_balance) {
 
                 await userWallet.updateOne({ email: email, symbol: "SHIB" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated SHIB")

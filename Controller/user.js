@@ -650,7 +650,7 @@ exports.walletData = async (req, res) => {
     const { email } = req.body;
     const limitValue = req.body.limit || 1000;
     const skipValue = req.body.skip || 0;
-    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});   
+    const walletData = await userWallet.find({ email }).limit(limitValue).skip(skipValue).sort({ symbol: 1 });   
     if (walletData) {
       return res.status(200).json(walletData);
     } else {
@@ -1229,9 +1229,11 @@ exports.userWalletData = async (req, res) => {
   try{
       const {email} = req.body;    
       //console.log("user wallet data " + email); 
+      const loginModel = require("../models/login_history");
       const _user            = await User.findOne({ email: email });  
       const _orders          = await  orders.findOne({ email : email }).sort('-date') || "";    
-      const totalWallet      = await orders.count({ email : email }).distinct('currency_type') || 0;      
+      const totalWallet      = await orders.count({ email : email }).distinct('currency_type') || 0;  
+      const login_activity   = await loginModel.findOne({ email : email }).sort('-createdAt');  
       const totalTransaction = await orders.count({ email : email }) || 0;
           return res.status(200).json({
             user_id            : _user.user_id,
@@ -1241,7 +1243,7 @@ exports.userWalletData = async (req, res) => {
             inherited_wallet   : _user.inherited_wallet,
             handout_wallet     : _user.handout_wallet,
             inceptive_wallet   : _user.inceptive_wallet,
-            last_activity      : _orders.createdAt,
+            last_activity      : login_activity.createdAt,
             total_wallet       : totalWallet.length,
             token_balance      : _user.token_balance,
             total_transaction  : totalTransaction
@@ -1308,16 +1310,19 @@ exports.geRefferalData = async (req, res) => {
     const buyModel = require('../models/buy');  
     const userId = await findUserId(email);      
     if (userId) {   
-      const refferal = await User.count({ refferal: userId });     
+      const refferal = await User.count({ refferal: userId });  
+     let totIncome = 0   
       if (refferal >0) {        
-       const refferalInc = await buyModel.aggregate([{ $match : { email : email }}, {
+       const refferalInc = await buyModel.aggregate([{ $match : { email : email, bonus_type: "Level" }}, {
                                     $group : { 
                                       _id : { email: "$email"},
                                      balance: { $sum: "$bonus" },
                                     },
                                   },
                                 ])
-       const totIncome = refferalInc[0].balance;       
+        if(refferalInc.length> 0){
+           totIncome = refferalInc[0].balance;  
+        }           
        
          return res.status(200).json({
             totalRefferal : refferal,          
@@ -1402,9 +1407,6 @@ function convertToArray(data){
   }
   return arr;
 }
-
-
-
 
 
 
@@ -1522,8 +1524,6 @@ exports.refferalLevelWiseData1 = async (req, res) => {
 }
 
 
-
-
 exports.refferalLevelWiseData = async (req, res) => {
   try{
    const { email } = req.body;
@@ -1576,19 +1576,22 @@ exports.refferalLevelWiseData = async (req, res) => {
 
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
-           totalExpense1 = await totalBuyExpenseIncome(email1)  
+           const totalexp =  await totalBuyExpenseIncome(email1)  
+           totalExpense1 = totalexp.totalExpense;
      }
 
      const list2 = await levelWiseList(user_id, 2);
      for(i=0; i< list2.length; i++){
        let email1 = await findEmailId(list2[i]);  
-         totalExpense2 = await totalBuyExpenseIncome(email1); 
+         const totalexp =  await totalBuyExpenseIncome(email1) 
+         totalExpense2 = totalexp.totalExpense; 
       }
 
       const list3 = await levelWiseList(user_id, 3);
       for(i=0; i< list3.length; i++){        
-       let email1 = await findEmailId(list3[i]);   
-         totalExpense3 = await totalBuyExpenseIncome(email1); 
+       let email1 = await findEmailId(list3[i]);
+         const totalexp =  await totalBuyExpenseIncome(email1)    
+         totalExpense3 = totalexp.totalExpense; ; 
       }
 
    res.status(200).json({
@@ -1608,13 +1611,6 @@ exports.refferalLevelWiseData = async (req, res) => {
    });
   }
 }
-
-
-
-
-
-
-
 
 
 
@@ -1641,10 +1637,10 @@ exports.levelWiseList = async (req, res) => {
             arr["totalBuy"]  = totalBuy;
             arr["totalAff"]  = totalAff;
             arr["totalHandout"] = 0;     
-            arr["createdAt"] = _user.createdAt;     
-            userListArray.push(arr);    
+            arr["createdAt"] = _user.createdAt;   
+            insertSorted(userListArray, arr, compareByTime)            
            })  
-         
+        
            if(userListArray.length === list.length) {
             res.status(200).json({
               status : 1,
@@ -1653,11 +1649,28 @@ exports.levelWiseList = async (req, res) => {
         }
     });
 
+    if(list.length == 0){
+      res.status(200).json({
+        status : 1,
+        data : []
+      })
+    }
+
   }catch(err){
     console.log("Errorn in levelwiselist api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "Something went wrong"
+    })
   }
 }
 
+ function insertSorted (array, element, comparator) {
+      for (var i = 0; i < array.length && comparator(array[i], element) < 0; i++) {}
+            array.splice(i, 0, element)
+    }
+          
+ function compareByTime (a, b) { return a.createdAt - b.createdAt }
 
 
 async function totalBuyExpenseIncome(email){
@@ -1785,3 +1798,6 @@ exports.bounty =async (req, res) => {
     })
   }
 }
+
+
+
