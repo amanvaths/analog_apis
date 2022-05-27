@@ -67,6 +67,7 @@ async function charthistory(req, res) {
         const {symbol} = req.query;
         let sy = symbol.split('-').join('').toUpperCase();
         var fs = require('fs');
+        console.log(sy)
         // let sy = "ANAUSD"
         let rFile = fs.readFileSync('./json/ohlc_custom.json', 'utf8');
         if(rFile){

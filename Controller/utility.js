@@ -17,11 +17,11 @@ async function injectInGraph(currency_type, compare_currency, price, volume=0,i)
 // add a day
         var timestamp = date.setDate(date.getDate() + i);
         timestamp = timestamp / 1000
-        console.log("graph data",graph_data);
-        console.log("currency_type",currency_type);
-        console.log("compare_currency",compare_currency);
-        console.log("price",price);
-        console.log("volume",volume);
+        // console.log("graph data",graph_data);
+        // console.log("currency_type",currency_type);
+        // console.log("compare_currency",compare_currency);
+        // console.log("price",price);
+        // console.log("volume",volume);
         if (graph_data) {
             let key = currency_type.toUpperCase() + compare_currency.toUpperCase();
             let chart_data = graph_data[key];
