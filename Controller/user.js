@@ -1647,8 +1647,19 @@ exports.levelWiseList = async (req, res) => {
         }
     });
 
+    if(list.length == 0){
+      res.status(200).json({
+        status : 2,
+        message : "No Record Found"
+      })
+    }
+
   }catch(err){
     console.log("Errorn in levelwiselist api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "Something went wrong"
+    })
   }
 }
 
