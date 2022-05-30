@@ -1556,7 +1556,7 @@ exports.refferalLevelWiseData = async (req, res) => {
            totalExpense1 = totalexp.totalExpense;
            totalAna1     =  totalexp.totalBuy;
            const totalAff =  await totalAffiliateIncome(email1, 1); 
-           amtLevel1 =   totalAff;
+           amtLevel1 =   totalAff;                 
      }
 
      const list2 = await levelWiseList(user_id, 2);
@@ -1566,7 +1566,7 @@ exports.refferalLevelWiseData = async (req, res) => {
          totalExpense2 = totalexp.totalExpense; 
          totalAna2     =  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 2); 
-         amtLevel2 =   totalAff;
+         amtLevel2 =   totalAff;          
       }
 
       const list3 = await levelWiseList(user_id, 3);
@@ -1576,7 +1576,7 @@ exports.refferalLevelWiseData = async (req, res) => {
          totalExpense3 = totalexp.totalExpense; 
          totalAna3     =  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 3); 
-         amtLevel3 =   totalAff;
+         amtLevel3 =   totalAff;            
       }
 
    res.status(200).json({
@@ -1787,7 +1787,7 @@ exports.bounty =async (req, res) => {
 
 exports.witdrawl = async (req, res) => {
   try{
-    const { email, toWalletAddr, amount, fees, remarks } = req.body;
+    const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;
     const witdrawlModel = require("../models/withdrawl");
     const userId = await findUserId(email);
     await witdrawlModel.create({ 
@@ -1795,7 +1795,8 @@ exports.witdrawl = async (req, res) => {
       user_id       : userId,
       toWalletAddr  : toWalletAddr,
       amount        : amount,
-      fees          : fees, 
+      fees          : fees,
+      fromWallet    : fromWallet, 
       remarks       : remarks
     }).then((data) => {
       res.status(200).json({
