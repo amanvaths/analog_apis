@@ -5,7 +5,9 @@ const referral_percentSchema = new mongoose.Schema({
     level1 : { type : Number , default: 0 }, 
     level2 : { type : Number , default: 0 }, 
     level3 : { type : Number , default: 0 }, 
-   
+    ho_level1 : { type : Number , default: 0 }, 
+    ho_level2 : { type : Number , default: 0 }, 
+    ho_level3 : { type : Number , default: 0 }, 
 }, { timestamps: true});
 
 
