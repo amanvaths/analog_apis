@@ -75,29 +75,22 @@ function checkEmail(email) {
 exports.signup = async (req, res) => {
   const email             = req.body.email ? req.body.email : "";
   const password          = req.body.password ? req.body.password : "";
-  const confirmPassword   = req.body.confirm_password ? req.body.confirm_password : "";
-  const referral_code     = req.body.referral_code;
-  if (confirmPassword !== password) { 
-    return res.json({
-      status: 0,
-      message: "Password and confirm password do not Match",
-    });
-  }
+  const referral_code     = req.body.referral_code;   
  
   if (email && checkEmail(email) && password) {
     try {
-      await User.findOne({ email: email }).exec(async (error, user) => {
+      await User.findOne({ email: email }).exec(async (error, user) => {       
         if (user) {
           return res.json({
             status: -1,
             message: "User is already exist",
           });
         } else {
-          var otp             = Math.floor(100000 + Math. random() * 900000);
+          const otp             = Math.floor(100000 + Math. random() * 900000);
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
           const _user         = new User({
-                                email             : req.body.email,
+                                email             : email,
                                 user_id           : user_id,
                                 password          : password,
                                 refferal          : referral_code,
@@ -105,14 +98,7 @@ exports.signup = async (req, res) => {
                                 airdrop_wallet    : signup_bonus,
                                 otp               : otp,
                               });
-          _user.save( async (error, data) => {
-            
-          const settings = require('../models/settings');
-          await settings.create({ email : email }).then((data) => { 
-            //console.log("setting updated "+data); 
-          }).catch((err) => { 
-           // console.log(" Error in create setting "+ err) 
-          });
+          _user.save( async (error, data) => {      
 
             if (error) {
               console.log("Error in Sign Up", error.message);
@@ -121,6 +107,13 @@ exports.signup = async (req, res) => {
                 message: "Somthing went wrong",
               });
             } else if (data) {
+              const settings = require('../models/settings');
+              await settings.create({ email : email }).then((data) => { 
+                //console.log("setting updated "+data); 
+              }).catch((err) => { 
+               // console.log(" Error in create setting "+ err) 
+              });
+
               await createWallet(email);
               const socialActivity = "Signup Bonus";
               await createAirdrop(email, socialActivity, signup_bonus)
@@ -138,6 +131,10 @@ exports.signup = async (req, res) => {
       });
     } catch (error) {
       console.log("Error in Sign Up ", error.message);
+      return res.status(400).json({
+        status: 0,
+        message: "somthing went wrong",
+      });
     }
   } else {
     return res.status(400).json({
@@ -1544,25 +1541,21 @@ exports.refferalLevelWiseData = async (req, res) => {
 
    await buyModel.aggregate([{ $match : { email : email }}, {   
                                 $group: { _id: { from_level: "$from_level" },
-                                          amtLevel: { $sum: "$bonus" },
-                                          totalAna : { $sum : "$toten" }
+                                          amtLevel: { $sum: "$amount" },                                         
                                         },                                               
                               },                                        
                             ]).then((data) => {  
                               data.map((d, i) => { 
                                 if(d._id.from_level == 1){                               
-                                  amtLevel1 = data[i].amtLevel;  
-                                  totalAna1 = data[i].totalAna;                                           
+                                  amtLevel1 = data[i].amtLevel;        
                                 }  
 
                                 if(d._id.from_level == 2){
-                                  amtLevel2 = data[i].amtLevel;  
-                                  totalAna2 = data[i].totalAna;                                                
+                                  amtLevel2 = data[i].amtLevel;      
                                 }
 
                                 if(d._id.from_level == 3){                              
-                                  amtLevel3 = data[i].amtLevel;  
-                                  totalAna3 = data[i].totalAna;                                                   
+                                  amtLevel3 = data[i].amtLevel;                 
                                 }                              
                               })                            
                             }) 
@@ -1571,6 +1564,7 @@ exports.refferalLevelWiseData = async (req, res) => {
       let email1 = await findEmailId(list1[i]); 
            const totalexp =  await totalBuyExpenseIncome(email1)  
            totalExpense1 = totalexp.totalExpense;
+           totalAna1     =  totalexp.totalBuy
      }
 
      const list2 = await levelWiseList(user_id, 2);
@@ -1578,13 +1572,15 @@ exports.refferalLevelWiseData = async (req, res) => {
        let email1 = await findEmailId(list2[i]);  
          const totalexp =  await totalBuyExpenseIncome(email1) 
          totalExpense2 = totalexp.totalExpense; 
+         totalAna2     =  totalexp.totalBuy
       }
 
       const list3 = await levelWiseList(user_id, 3);
       for(i=0; i< list3.length; i++){        
        let email1 = await findEmailId(list3[i]);
          const totalexp =  await totalBuyExpenseIncome(email1)    
-         totalExpense3 = totalexp.totalExpense; ; 
+         totalExpense3 = totalexp.totalExpense; 
+         totalAna3     =  totalexp.totalBuy
       }
 
    res.status(200).json({
@@ -1675,10 +1671,11 @@ async function totalBuyExpenseIncome(email){
       const totalExp = await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Buying" }}, 
                                                   { $group: { _id: {  email: "$email" },
                                                     amount: { $sum: "$amount" },
-                                                    token_buying: { $sum: "$token_buying" },
+                                                    token_buying: { $sum: "$token_quantity" },
                                                   },
                                                   },
                                                 ])
+         
          if(totalExp.length > 0){
           totalExpense = totalExp[0].amount || 0;
           totalBuy     = totalExp[0].token_buying || 0;     
@@ -1721,15 +1718,13 @@ async function totalBuyIncome(email){
 async function totalAffiliateIncome(email, level){
   try{
     const buyModel = require("../models/buy");   
-    let totalAffiliates = 0;   
-    console.log(email + " " + level);
+    let totalAffiliates = 0;      
     const total_aff = await buyModel.aggregate([{ $match : { from_user : email,  bonus_type : "Level", from_level : level }}, { 
                                                   $group: { _id: { email: "$email" },
                                                   balance: { $sum: "$bonus" },
                                                   },
                                                 },
-                                              ])  
-            console.log(total_aff);        
+                                              ])                    
             if(total_aff.length > 0){
             totalAffiliates = total_aff[0].balance;
             }
@@ -1828,6 +1823,7 @@ exports.witdrawl = async (req, res) => {
 
 exports.walletBalance = async (req, res) => {
   try{
+    const { email } = req.body;
    await User.find({ email : email }).then((user) => {
         res.status(200).json({
           status : 1,
