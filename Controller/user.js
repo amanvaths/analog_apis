@@ -1550,32 +1550,13 @@ exports.refferalLevelWiseData = async (req, res) => {
      
    const list1 = await levelWiseList(user_id, 1); 
 
-   await buyModel.aggregate([{ $match : { email : email }}, {   
-                                $group: { _id: { from_level: "$from_level" },
-                                          amtLevel: { $sum: "$amount" },                                         
-                                        },                                               
-                              },                                        
-                            ]).then((data) => {  
-                              data.map((d, i) => { 
-                                if(d._id.from_level == 1){                               
-                                  amtLevel1 = data[i].amtLevel;        
-                                }  
-
-                                if(d._id.from_level == 2){
-                                  amtLevel2 = data[i].amtLevel;      
-                                }
-
-                                if(d._id.from_level == 3){                              
-                                  amtLevel3 = data[i].amtLevel;                 
-                                }                              
-                              })                            
-                            }) 
-
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
            const totalexp =  await totalBuyExpenseIncome(email1)  
            totalExpense1 = totalexp.totalExpense;
-           totalAna1     =  totalexp.totalBuy
+           totalAna1     =  totalexp.totalBuy;
+           const totalAff =  await totalAffiliateIncome(email1, 1); 
+           amtLevel1 =   totalAff;
      }
 
      const list2 = await levelWiseList(user_id, 2);
@@ -1583,7 +1564,9 @@ exports.refferalLevelWiseData = async (req, res) => {
        let email1 = await findEmailId(list2[i]);  
          const totalexp =  await totalBuyExpenseIncome(email1) 
          totalExpense2 = totalexp.totalExpense; 
-         totalAna2     =  totalexp.totalBuy
+         totalAna2     =  totalexp.totalBuy;
+         const totalAff =  await totalAffiliateIncome(email1, 2); 
+         amtLevel2 =   totalAff;
       }
 
       const list3 = await levelWiseList(user_id, 3);
@@ -1591,7 +1574,9 @@ exports.refferalLevelWiseData = async (req, res) => {
        let email1 = await findEmailId(list3[i]);
          const totalexp =  await totalBuyExpenseIncome(email1)    
          totalExpense3 = totalexp.totalExpense; 
-         totalAna3     =  totalexp.totalBuy
+         totalAna3     =  totalexp.totalBuy;
+         const totalAff =  await totalAffiliateIncome(email1, 3); 
+         amtLevel3 =   totalAff;
       }
 
    res.status(200).json({
@@ -1838,12 +1823,14 @@ exports.walletBalance = async (req, res) => {
    await User.findOne({ email : email }).then((user) => {
         res.status(200).json({
           status : 1,
-          affilitesWallet   : user.affilites_wallet,
-          bountyWallet      : user.bounty_wallet,
-          airdrop_wallet    : user.airdrop_wallet,
-          inherited_wallet  : user.inherited_wallet,
-          handout_wallet    : user.handout_wallet,
-          inceptive_wallet  : user.inceptive_wallet       
+          data :  {
+            affilitesWallet : { walletName : "Affiliates", balance : user.affilites_wallet },
+            bountyWallet    : { walletName : "Bounty", balance : user.affilites_wallet },
+            airdropWallet   : { walletName : "Airdrop", balance : user.affilites_wallet },
+            inheritedWallet : { walletName : "Inherited", balance : user.affilites_wallet },
+            handoutWallet   : { walletName : "Handout", balance : user.affilites_wallet },
+            inceptiveWallet : { walletName : "Inceptive", balance : user.affilites_wallet },
+          }                   
         })
    }).catch((err) => {  
       res.status(200).json({
@@ -1859,3 +1846,6 @@ exports.walletBalance = async (req, res) => {
     })
   }
 }
+
+
+
