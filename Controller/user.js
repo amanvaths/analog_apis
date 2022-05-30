@@ -1542,8 +1542,6 @@ exports.refferalLevelWiseData = async (req, res) => {
      
    const list1 = await levelWiseList(user_id, 1); 
 
-
-
    await buyModel.aggregate([{ $match : { email : email }}, {   
                                 $group: { _id: { from_level: "$from_level" },
                                           amtLevel: { $sum: "$bonus" },
@@ -1565,14 +1563,9 @@ exports.refferalLevelWiseData = async (req, res) => {
                                 if(d._id.from_level == 3){                              
                                   amtLevel3 = data[i].amtLevel;  
                                   totalAna3 = data[i].totalAna;                                                   
-                                }
-                              
-                              })
-                            
+                                }                              
+                              })                            
                             }) 
-
-
-
 
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
@@ -1628,7 +1621,7 @@ exports.levelWiseList = async (req, res) => {
             const totalExp1 =  await totalBuyExpenseIncome(_user.email);
             const totalEpx = totalExp1.totalExpense;
             const totalBuy =  totalExp1.totalBuy;
-            const totalAff =  await totalAffiliateIncome(_user.email);       
+            const totalAff =  await totalAffiliateIncome(_user.email, level);       
             arr["email"]     = _user.email;
             arr["user_id"]   = _user.user_id;
             arr["sponsor"]   = _user.refferal;
@@ -1711,7 +1704,7 @@ async function totalBuyIncome(email){
                                                     balance: { $sum: "$token_buying" },
                                                     },
                                                   },
-                                               ])
+                                               ])        
           if(total_buy.length > 0){
             totalBuy = total_buy[0].balance;
             }
@@ -1725,17 +1718,18 @@ async function totalBuyIncome(email){
 
 
 
-async function totalAffiliateIncome(email){
+async function totalAffiliateIncome(email, level){
   try{
     const buyModel = require("../models/buy");   
     let totalAffiliates = 0;   
-  
-    const total_aff = await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Level" }}, { 
+    console.log(email + " " + level);
+    const total_aff = await buyModel.aggregate([{ $match : { from_user : email,  bonus_type : "Level", from_level : level }}, { 
                                                   $group: { _id: { email: "$email" },
                                                   balance: { $sum: "$bonus" },
                                                   },
                                                 },
-                                              ])          
+                                              ])  
+            console.log(total_aff);        
             if(total_aff.length > 0){
             totalAffiliates = total_aff[0].balance;
             }
@@ -1785,7 +1779,7 @@ exports.bounty =async (req, res) => {
     const { email } = req.body;
     const buyModel = require('../models/buy');
     const buy = await buyModel.find({ email : email, bonus_type : "Buying" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1, createdAt : 1
-    });
+    }).sort({ createdAt: -1 });
     res.status(200).json({
       status : 1,
       data : buy
@@ -1800,4 +1794,61 @@ exports.bounty =async (req, res) => {
 }
 
 
+exports.witdrawl = async (req, res) => {
+  try{
+    const { email, toWalletAddr, amount, fees, remarks } = req.body;
+    const witdrawlModel = require("../models/withdrawl");
+    const userId = await findUserId(email);
+    await witdrawlModel.create({ 
+      email         : email,
+      user_id       : userId,
+      toWalletAddr  : toWalletAddr,
+      amount        : amount,
+      fees          : fees, 
+      remarks       : remarks
+    }).then((data) => {
+      res.status(200).json({
+        status  : 1,
+        message : "Withdrawl request created successfully" 
+      })
+    }).catch((err) => {
+      res.status(400).json({
+        status : 0,
+        message : "something went wrong"
+      })
+    })
+  }catch(err){
+    console.log("Error in witdrawl api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
+  }
+}
 
+exports.walletBalance = async (req, res) => {
+  try{
+   await User.find({ email : email }).then((user) => {
+        res.status(200).json({
+          status : 1,
+          affilitesWallet   : user.affilites_wallet,
+          bountyWallet      : user.bounty_wallet,
+          airdrop_wallet    : user.airdrop_wallet,
+          inherited_wallet  : user.inherited_wallet,
+          handout_wallet    : user.handout_wallet,
+          inceptive_wallet  : user.inceptive_wallet       
+        })
+   }).catch((err) => {  
+      res.status(200).json({
+        status : 0,
+        message : "something went wrong"    
+    })
+   })   
+  }catch(err) {
+    console.log("err in withdrawl Balance api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
+  }
+}
