@@ -173,6 +173,9 @@ user_purchase = await Bonus.updateOne({
         level1:req.body.level1,
         level2:req.body.level2,
         level3:req.body.level3,
+        ho_level1:req.body.ho_level1,
+        ho_level2:req.body.ho_level2,
+        ho_level3:req.body.ho_level3,
     }
    }
 )
