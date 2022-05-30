@@ -5,6 +5,7 @@ const buySchema = new mongoose.Schema({
     date : {type: Date, default: Date.now},    
     status : { type : Number , default: 0 }, 
     bonus : { type : Number , default : 0},
+    ho_bonus : { type : Number , default : 0},
     currency_type : { type : String , default : 0},
     compair_currency : { type : String , default : 0},
     token_price : { type : Number , default: 0,  required : true },

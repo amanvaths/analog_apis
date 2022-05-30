@@ -229,13 +229,19 @@ exports.createOrder = async (req, res)=> {
                 const lev1 = parseInt(percnt.level1)
                 const lev2 = parseInt(percnt.level2)
                 const lev3 = parseInt(percnt.level3)
+                const holev1 = parseInt(percnt.ho_level1)
+                const holev2 = parseInt(percnt.ho_level2)
+                const holev3 = parseInt(percnt.ho_level3)
                 const buying_bonus = (bonus_perc/100) * usdt_amount;
                 const token_balance = token_quantity
                 let referral1 = user.refferal;
                 let userid = user.user_id;
+                let ho_ref1 = (holev1/100) * usdt_amount;
                 let ref1 = (lev1/100) * usdt_amount;
                 let ref2 = "";
                 let ref3 = "";
+                let ho_ref2 = "";
+                let ho_ref3 = "";
                 let referral2="";
                 let referral3="";
                 let refuser1="";
@@ -250,11 +256,13 @@ exports.createOrder = async (req, res)=> {
                         refuser1= rid.email
                         referral2=rid.refferal
                         ref2 = (lev2/100) * usdt_amount;
+                        ho_ref2 = (holev2/100) * usdt_amount;
                         let ridi = await User.findOne({  user_id : referral2 });
                            if(ridi){
                           refuser2= ridi.email
                                referral3=ridi.refferal
                                ref3 = (lev3/100) * usdt_amount;
+                               ho_ref3 = (holev3/100) * usdt_amount;
                              let ridim = await User.findOne({  user_id : referral3 });
                              if(ridim){
                                 refuser3= ridim.email
@@ -304,6 +312,7 @@ exports.createOrder = async (req, res)=> {
                                 from_user : req.body.email,
                                 from_userid : userid,
                                 bonus : ref1,
+                                ho_bonus : ho_ref1,
                                 bonus_percent : lev1,
                                 from_level:1,
                                 currency : compairCurrency,
@@ -319,7 +328,8 @@ exports.createOrder = async (req, res)=> {
                                       
                                     },
                                     $inc: {
-                                      affilites_wallet: ref1
+                                      affilites_wallet: ref1,
+                                      handout_wallet: ho_ref1
                                     }
                                 }
                     
@@ -337,6 +347,7 @@ exports.createOrder = async (req, res)=> {
                                     from_user : req.body.email,
                                     from_userid : userid,
                                     bonus : ref2,
+                                    ho_bonus : ho_ref2,
                                     bonus_percent : lev2,
                                     from_level:2,
                                     currency : compairCurrency,
@@ -352,7 +363,8 @@ exports.createOrder = async (req, res)=> {
                                           
                                         },
                                         $inc: {
-                                          affilites_wallet: ref2
+                                          affilites_wallet: ref2,
+                                          handout_wallet: ho_ref2
                                         }
                                     }
                         
@@ -370,6 +382,7 @@ exports.createOrder = async (req, res)=> {
                                         from_user : req.body.email,
                                         from_userid : userid,
                                         bonus : ref3,
+                                        ho_bonus : ho_ref3,
                                         bonus_percent : lev3,
                                         from_level:3,
                                         currency : compairCurrency,
@@ -385,7 +398,8 @@ exports.createOrder = async (req, res)=> {
                                               
                                             },
                                             $inc: {
-                                              affilites_wallet: ref3
+                                              affilites_wallet: ref3,
+                                              handout_wallet: ho_ref3
                                             }
                                         }
                             
