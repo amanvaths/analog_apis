@@ -1825,11 +1825,11 @@ exports.walletBalance = async (req, res) => {
           status : 1,
           data :  [ 
            { name : "Affiliates", balance : user.affilites_wallet } ,
-           { name : "Bounty", balance : user.affilites_wallet  },
-           { name : "Airdrop", balance : user.affilites_wallet } ,
-           { name : "Inherited", balance : user.affilites_wallet},
-          { name : "Handout", balance : user.affilites_wallet },
-          { name : "Inceptive", balance : user.affilites_wallet  },
+           { name : "Bounty", balance : user.bounty_wallet  },
+           { name : "Airdrop", balance : user.airdrop_wallet } ,
+           { name : "Inherited", balance : user.inherited_wallet},
+          { name : "Handout", balance : user.handout_wallet },
+          { name : "Inceptive", balance : user.inceptive_wallet  },
           ]                  
         })
    }).catch((err) => {  
