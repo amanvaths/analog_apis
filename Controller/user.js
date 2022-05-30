@@ -89,6 +89,17 @@ exports.signup = async (req, res) => {
           const otp           = Math.floor(100000 + Math. random() * 900000);
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
+          
+          if(referral_code !== ""){
+            const reff = await User.count({ user_id : referral_code })
+            if(reff == 0){
+              return res.status(400).json({
+                status: 3,
+                message: "Invalid Refferal Code",
+              });
+            }
+          }
+          
           const _user         = new User({
                                 email             : email,
                                 user_id           : user_id,
