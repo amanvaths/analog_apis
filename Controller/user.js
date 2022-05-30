@@ -86,7 +86,7 @@ exports.signup = async (req, res) => {
             message: "User is already exist",
           });
         } else {
-          const otp             = Math.floor(100000 + Math. random() * 900000);
+          const otp           = Math.floor(100000 + Math. random() * 900000);
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
           const _user         = new User({
@@ -1824,7 +1824,7 @@ exports.witdrawl = async (req, res) => {
 exports.walletBalance = async (req, res) => {
   try{
     const { email } = req.body;
-   await User.find({ email : email }).then((user) => {
+   await User.findOne({ email : email }).then((user) => {
         res.status(200).json({
           status : 1,
           affilitesWallet   : user.affilites_wallet,

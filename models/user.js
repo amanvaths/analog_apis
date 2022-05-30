@@ -13,10 +13,9 @@ const userSchema = new mongoose.Schema(
       validate: [isEmail, "Please enter a valid email"],
     },
     user_id : { type: String, unique : true },
-    username : { type: String, unique : true },
+    username : { type: String },
     contact_no : { 
-            type: Number,
-            unique : true,
+            type: Number,         
             minlength: [10, "Contact no. Minimum length is 10 digit"],
           },
     refferal: { type: String },
