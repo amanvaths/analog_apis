@@ -11,7 +11,9 @@ const PriceChange = require("../models/priceChange");
 async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
       const graph_data = require('../json/ohlc_custom.json');
-      let timestamp = Date.now() / 1000;
+      var date = new Date();
+      var timestamp = date.setDate(date.getDate() + i);
+        timestamp = timestamp / 1000
 
       // console.log("graph data",graph_data);
       // console.log("currency_type",currency_type);
