@@ -1823,14 +1823,14 @@ exports.walletBalance = async (req, res) => {
    await User.findOne({ email : email }).then((user) => {
         res.status(200).json({
           status : 1,
-          data :  {
-            affilitesWallet : { walletName : "Affiliates", balance : user.affilites_wallet },
-            bountyWallet    : { walletName : "Bounty", balance : user.affilites_wallet },
-            airdropWallet   : { walletName : "Airdrop", balance : user.affilites_wallet },
-            inheritedWallet : { walletName : "Inherited", balance : user.affilites_wallet },
-            handoutWallet   : { walletName : "Handout", balance : user.affilites_wallet },
-            inceptiveWallet : { walletName : "Inceptive", balance : user.affilites_wallet },
-          }                   
+          data :  [ 
+           { affilitesWallet : { name : "Affiliates", balance : user.affilites_wallet } },
+           { bountyWallet    : { name : "Bounty", balance : user.affilites_wallet } },
+           { airdropWallet   : { name : "Airdrop", balance : user.affilites_wallet } },
+           { inheritedWallet : { name : "Inherited", balance : user.affilites_wallet } },
+           { handoutWallet   : { name : "Handout", balance : user.affilites_wallet } },
+           { inceptiveWallet : { name : "Inceptive", balance : user.affilites_wallet } },
+          ]                  
         })
    }).catch((err) => {  
       res.status(200).json({
