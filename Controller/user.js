@@ -1824,12 +1824,12 @@ exports.walletBalance = async (req, res) => {
         res.status(200).json({
           status : 1,
           data :  [ 
-           { affilitesWallet : { name : "Affiliates", balance : user.affilites_wallet } },
-           { bountyWallet    : { name : "Bounty", balance : user.affilites_wallet } },
-           { airdropWallet   : { name : "Airdrop", balance : user.affilites_wallet } },
-           { inheritedWallet : { name : "Inherited", balance : user.affilites_wallet } },
-           { handoutWallet   : { name : "Handout", balance : user.affilites_wallet } },
-           { inceptiveWallet : { name : "Inceptive", balance : user.affilites_wallet } },
+           { name : "Affiliates", balance : user.affilites_wallet } ,
+           { name : "Bounty", balance : user.affilites_wallet  },
+           { name : "Airdrop", balance : user.affilites_wallet } ,
+           { name : "Inherited", balance : user.affilites_wallet},
+          { name : "Handout", balance : user.affilites_wallet },
+          { name : "Inceptive", balance : user.affilites_wallet  },
           ]                  
         })
    }).catch((err) => {  
