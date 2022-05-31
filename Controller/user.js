@@ -1556,7 +1556,7 @@ exports.refferalLevelWiseData = async (req, res) => {
            totalExpense1 = totalexp.totalExpense;
            totalAna1     =  totalexp.totalBuy;
            const totalAff =  await totalAffiliateIncome(email1, 1); 
-           amtLevel1 =   totalAff;                 
+           amtLevel1 =   totalAff.totalAffiliates;                 
      }
 
      const list2 = await levelWiseList(user_id, 2);
@@ -1566,7 +1566,7 @@ exports.refferalLevelWiseData = async (req, res) => {
          totalExpense2 = totalexp.totalExpense; 
          totalAna2     =  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 2); 
-         amtLevel2 =   totalAff;          
+         amtLevel2 =   totalAff.totalAffiliates;          
       }
 
       const list3 = await levelWiseList(user_id, 3);
@@ -1576,7 +1576,7 @@ exports.refferalLevelWiseData = async (req, res) => {
          totalExpense3 = totalexp.totalExpense; 
          totalAna3     =  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 3); 
-         amtLevel3 =   totalAff;            
+         amtLevel3 =   totalAff.totalAffiliates;            
       }
 
    res.status(200).json({
@@ -1610,19 +1610,19 @@ exports.levelWiseList = async (req, res) => {
      list.forEach( async function(data, i) {   
        const arr = {};    
        await User.findOne({ user_id : data }, { email :1, user_id : 1, refferal: 1, createdAt : 1 }).then( async(_user) => {                        
-            const totalExp1 =  await totalBuyExpenseIncome(_user.email);
-            const totalEpx = totalExp1.totalExpense;
-            const totalBuy =  totalExp1.totalBuy;
-            const totalAff =  await totalAffiliateIncome(_user.email, level);       
-            arr["email"]     = _user.email;
-            arr["user_id"]   = _user.user_id;
-            arr["sponsor"]   = _user.refferal;
-            arr["sponsor_email"] = await findEmailId(_user.refferal);
-            arr["totalExp"]  = totalEpx;
-            arr["totalBuy"]  = totalBuy;
-            arr["totalAff"]  = totalAff;
-            arr["totalHandout"] = 0;     
-            arr["createdAt"] = _user.createdAt;   
+            const totalExp1         =  await totalBuyExpenseIncome(_user.email);
+            const totalEpx          = totalExp1.totalExpense;
+            const totalBuy          =  totalExp1.totalBuy;
+            const totalAff          =  await totalAffiliateIncome(_user.email, level);      
+            arr["email"]            = _user.email;
+            arr["user_id"]          = _user.user_id;
+            arr["sponsor"]          = _user.refferal;
+            arr["sponsor_email"]    = await findEmailId(_user.refferal);
+            arr["totalExp"]         = totalEpx;
+            arr["totalBuy"]         = totalBuy;
+            arr["totalAff"]         = totalAff.totalAffiliates;  
+            arr["totalHandout"]     = totalAff.totalHandout ;    
+            arr["createdAt"]        = _user.createdAt;   
             insertSorted(userListArray, arr, compareByTime)            
            })  
         
@@ -1714,17 +1714,25 @@ async function totalBuyIncome(email){
 async function totalAffiliateIncome(email, level){
   try{
     const buyModel = require("../models/buy");   
-    let totalAffiliates = 0;      
+    let totalAffiliates = 0;
+    let totalHandout = 0;   
+    const arr = {};   
     const total_aff = await buyModel.aggregate([{ $match : { from_user : email,  bonus_type : "Level", from_level : level }}, { 
                                                   $group: { _id: { email: "$email" },
                                                   balance: { $sum: "$bonus" },
+                                                  handout: { $sum : "$ho_bonus"}
                                                   },
                                                 },
-                                              ])                    
+                                              ])  
+                              
             if(total_aff.length > 0){
             totalAffiliates = total_aff[0].balance;
+            totalHandout    = total_aff[0].handout;
             }
-     return totalAffiliates;
+
+            arr["totalAffiliates"]  = totalAffiliates;
+            arr["totalHandout"]     = totalHandout; 
+       return arr;  
 
   }catch(err){
     console.log("Error in total affiliates function " + err);
@@ -1790,31 +1798,130 @@ exports.witdrawl = async (req, res) => {
     const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;
     const witdrawlModel = require("../models/withdrawl");
     const userId = await findUserId(email);
-    await witdrawlModel.create({ 
-      email         : email,
-      user_id       : userId,
-      toWalletAddr  : toWalletAddr,
-      amount        : amount,
-      fees          : fees,
-      fromWallet    : fromWallet, 
-      remarks       : remarks
-    }).then((data) => {
-      res.status(200).json({
-        status  : 1,
-        message : "Withdrawl request created successfully" 
+    if(fromWallet !== ""){
+     await User.findOne({ email : email }).then( async(user) => {
+        if(user){  
+          const walletWithdraw = await walletWithdraw(fromWallet, email, amount);
+          if(walletWithdraw){
+            await witdrawlModel.create({ 
+              email         : email,
+              user_id       : userId,
+              toWalletAddr  : toWalletAddr,
+              amount        : amount,
+              fees          : fees,
+              fromWallet    : fromWallet, 
+              remarks       : remarks
+            }).then((data) => {
+              res.status(200).json({
+                status  : 1,
+                message : "Withdrawl request created successfully" 
+              })
+            }).catch((err) => {
+              res.status(400).json({
+                status : 0,
+                message : "something went wrong"
+              })
+            })
+          }else{
+            res.status(400).json({
+              status : 0,
+              message : "something went wrong"
+            })
+          }
+        }
       })
-    }).catch((err) => {
-      res.status(400).json({
-        status : 0,
-        message : "something went wrong"
-      })
+  }else{
+    res.status(400).json({
+      status : 0,
+      message : "something went wrong"
     })
+  }
+   
   }catch(err){
     console.log("Error in witdrawl api " + err);
     res.status(200).json({
       status : 0,
       message : "something went wrong"
     })
+  }
+}
+
+async function walletWithdraw(wallet,email, amount)
+{
+  wallet = tolowercase(wallet);
+  if(wallet == "affiliates"){
+    await User.findOne({ email : email }).then( async(user) => {
+        if(user.affilites_wallet >= amount){
+          await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
+            return true;
+          }).catch((err) =>{
+            return false;
+          })
+        }else{
+          return false;
+        }
+    })   
+  }else if(wallet == "bounty"){
+    await User.findOne({ email : email }).then( async(user) => {
+      if(user.bounty_wallet >= amount){
+        await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
+          return true;
+        }).catch((err) =>{
+          return false;
+        })
+      }else{
+        return false;
+      }
+    })   
+  }else if(wallet == "airdrop"){
+    await User.findOne({ email : email }).then( async(user) => {
+      if(user.airdrop_wallet >= amount){
+        await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
+          return true;
+        }).catch((err) =>{
+          return false;
+        })
+      }else{
+        return false;
+      }
+    })   
+  }else if(wallet == "inherited"){
+    await User.findOne({ email : email }).then( async(user) => {
+      if(user.inherited_wallet >= amount){
+        await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
+          return true;
+        }).catch((err) =>{
+          return false;
+        })
+      }else{
+        return false;
+      }
+    })   
+  }else if(wallet == "handout"){
+    await User.findOne({ email : email }).then( async(user) => {
+      if(user.handout_wallet >= amount){
+        await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
+          return true;
+        }).catch((err) =>{
+          return false;
+        })
+      }else{
+        return false;
+      }
+    })   
+
+  }else if(wallet == "inceptive"){
+    await User.findOne({ email : email }).then( async(user) => {
+      if(user.inceptive_wallet >= amount){
+        await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
+          return true;
+        }).catch((err) =>{
+          return false;
+        })
+      }else{
+        return false;
+      }
+    })   
   }
 }
 
