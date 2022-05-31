@@ -1795,38 +1795,122 @@ exports.bounty =async (req, res) => {
 
 exports.witdrawl = async (req, res) => {
   try{
-    const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;
-    const witdrawlModel = require("../models/withdrawl");
+    const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;   
     const userId = await findUserId(email);
     if(fromWallet !== ""){
      await User.findOne({ email : email }).then( async(user) => {
-        if(user){  
-          const walletWithdraw = await walletWithdraw(fromWallet, email, amount);
-          if(walletWithdraw){
-            await witdrawlModel.create({ 
-              email         : email,
-              user_id       : userId,
-              toWalletAddr  : toWalletAddr,
-              amount        : amount,
-              fees          : fees,
-              fromWallet    : fromWallet, 
-              remarks       : remarks
-            }).then((data) => {
-              res.status(200).json({
-                status  : 1,
-                message : "Withdrawl request created successfully" 
-              })
-            }).catch((err) => {
-              res.status(400).json({
-                status : 0,
-                message : "something went wrong"
-              })
-            })
+        if(user){ 
+
+          wallet = fromWallet.toLowerCase();
+
+          if(wallet == "affiliates"){
+            await User.findOne({ email : email }).then( async(user) => {
+                if(user.affilites_wallet >= amount){
+                  await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
+                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                    return res.status(200).json({
+                      status : 1,
+                      message : "Withdrawl request created successfully"
+                    })
+                  })
+                }else{
+                  return res.status(400).json({
+                    status : 2,
+                    message : "Insufficient balance"
+                  })
+                }
+            })   
+          }else if(wallet == "bounty"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.bounty_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "airdrop"){   
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.airdrop_wallet >= amount){              
+                await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{     
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "inherited"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.inherited_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "handout"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.handout_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+        
+          }else if(wallet == "inceptive"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.inceptive_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
           }else{
-            res.status(400).json({
-              status : 0,
-              message : "something went wrong"
-            })
+            return res.status(400).json({
+                  status : 0,
+                  message : "Something went wrong"
+                })
           }
         }
       })
@@ -1846,84 +1930,25 @@ exports.witdrawl = async (req, res) => {
   }
 }
 
-async function walletWithdraw(wallet,email, amount)
-{
-  wallet = tolowercase(wallet);
-  if(wallet == "affiliates"){
-    await User.findOne({ email : email }).then( async(user) => {
-        if(user.affilites_wallet >= amount){
-          await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
-            return true;
-          }).catch((err) =>{
-            return false;
-          })
-        }else{
-          return false;
-        }
-    })   
-  }else if(wallet == "bounty"){
-    await User.findOne({ email : email }).then( async(user) => {
-      if(user.bounty_wallet >= amount){
-        await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
-          return true;
-        }).catch((err) =>{
-          return false;
-        })
-      }else{
-        return false;
-      }
-    })   
-  }else if(wallet == "airdrop"){
-    await User.findOne({ email : email }).then( async(user) => {
-      if(user.airdrop_wallet >= amount){
-        await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
-          return true;
-        }).catch((err) =>{
-          return false;
-        })
-      }else{
-        return false;
-      }
-    })   
-  }else if(wallet == "inherited"){
-    await User.findOne({ email : email }).then( async(user) => {
-      if(user.inherited_wallet >= amount){
-        await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
-          return true;
-        }).catch((err) =>{
-          return false;
-        })
-      }else{
-        return false;
-      }
-    })   
-  }else if(wallet == "handout"){
-    await User.findOne({ email : email }).then( async(user) => {
-      if(user.handout_wallet >= amount){
-        await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
-          return true;
-        }).catch((err) =>{
-          return false;
-        })
-      }else{
-        return false;
-      }
-    })   
 
-  }else if(wallet == "inceptive"){
-    await User.findOne({ email : email }).then( async(user) => {
-      if(user.inceptive_wallet >= amount){
-        await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
-          return true;
-        }).catch((err) =>{
-          return false;
-        })
-      }else{
-        return false;
-      }
-    })   
-  }
+async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks){
+  const userId = await findUserId(email);
+  const witdrawlModel = require("../models/withdrawl");
+    await witdrawlModel.create({ 
+      email         : email,
+      user_id       : userId,
+      toWalletAddr  : toWalletAddr,
+      amount        : amount,
+      fees          : fees,
+      fromWallet    : fromWallet, 
+      remarks       : remarks
+    }).then((data) => {
+    // console.log("withdrawl request created successfully")
+    }).catch((err) => {
+      //console.log(" err in withdrawl request" + err);
+    })
 }
+
 
 exports.walletBalance = async (req, res) => {
   try{
