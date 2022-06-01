@@ -89,6 +89,17 @@ exports.signup = async (req, res) => {
           const otp           = Math.floor(100000 + Math. random() * 900000);
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
+          
+          if(referral_code !== ""){
+            const reff = await User.count({ user_id : referral_code })
+            if(reff == 0){
+              return res.status(400).json({
+                status: 3,
+                message: "Invalid Refferal Code",
+              });
+            }
+          }
+          
           const _user         = new User({
                                 email             : email,
                                 user_id           : user_id,
@@ -1539,32 +1550,13 @@ exports.refferalLevelWiseData = async (req, res) => {
      
    const list1 = await levelWiseList(user_id, 1); 
 
-   await buyModel.aggregate([{ $match : { email : email }}, {   
-                                $group: { _id: { from_level: "$from_level" },
-                                          amtLevel: { $sum: "$amount" },                                         
-                                        },                                               
-                              },                                        
-                            ]).then((data) => {  
-                              data.map((d, i) => { 
-                                if(d._id.from_level == 1){                               
-                                  amtLevel1 = data[i].amtLevel;        
-                                }  
-
-                                if(d._id.from_level == 2){
-                                  amtLevel2 = data[i].amtLevel;      
-                                }
-
-                                if(d._id.from_level == 3){                              
-                                  amtLevel3 = data[i].amtLevel;                 
-                                }                              
-                              })                            
-                            }) 
-
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
            const totalexp =  await totalBuyExpenseIncome(email1)  
            totalExpense1 = totalexp.totalExpense;
-           totalAna1     =  totalexp.totalBuy
+           totalAna1     =  totalexp.totalBuy;
+           const totalAff =  await totalAffiliateIncome(email1, 1); 
+           amtLevel1 =   totalAff.totalAffiliates;                 
      }
 
      const list2 = await levelWiseList(user_id, 2);
@@ -1572,7 +1564,9 @@ exports.refferalLevelWiseData = async (req, res) => {
        let email1 = await findEmailId(list2[i]);  
          const totalexp =  await totalBuyExpenseIncome(email1) 
          totalExpense2 = totalexp.totalExpense; 
-         totalAna2     =  totalexp.totalBuy
+         totalAna2     =  totalexp.totalBuy;
+         const totalAff =  await totalAffiliateIncome(email1, 2); 
+         amtLevel2 =   totalAff.totalAffiliates;          
       }
 
       const list3 = await levelWiseList(user_id, 3);
@@ -1580,7 +1574,9 @@ exports.refferalLevelWiseData = async (req, res) => {
        let email1 = await findEmailId(list3[i]);
          const totalexp =  await totalBuyExpenseIncome(email1)    
          totalExpense3 = totalexp.totalExpense; 
-         totalAna3     =  totalexp.totalBuy
+         totalAna3     =  totalexp.totalBuy;
+         const totalAff =  await totalAffiliateIncome(email1, 3); 
+         amtLevel3 =   totalAff.totalAffiliates;            
       }
 
    res.status(200).json({
@@ -1614,19 +1610,19 @@ exports.levelWiseList = async (req, res) => {
      list.forEach( async function(data, i) {   
        const arr = {};    
        await User.findOne({ user_id : data }, { email :1, user_id : 1, refferal: 1, createdAt : 1 }).then( async(_user) => {                        
-            const totalExp1 =  await totalBuyExpenseIncome(_user.email);
-            const totalEpx = totalExp1.totalExpense;
-            const totalBuy =  totalExp1.totalBuy;
-            const totalAff =  await totalAffiliateIncome(_user.email, level);       
-            arr["email"]     = _user.email;
-            arr["user_id"]   = _user.user_id;
-            arr["sponsor"]   = _user.refferal;
-            arr["sponsor_email"] = await findEmailId(_user.refferal);
-            arr["totalExp"]  = totalEpx;
-            arr["totalBuy"]  = totalBuy;
-            arr["totalAff"]  = totalAff;
-            arr["totalHandout"] = 0;     
-            arr["createdAt"] = _user.createdAt;   
+            const totalExp1         =  await totalBuyExpenseIncome(_user.email);
+            const totalEpx          = totalExp1.totalExpense;
+            const totalBuy          =  totalExp1.totalBuy;
+            const totalAff          =  await totalAffiliateIncome(_user.email, level);      
+            arr["email"]            = _user.email;
+            arr["user_id"]          = _user.user_id;
+            arr["sponsor"]          = _user.refferal;
+            arr["sponsor_email"]    = await findEmailId(_user.refferal);
+            arr["totalExp"]         = totalEpx;
+            arr["totalBuy"]         = totalBuy;
+            arr["totalAff"]         = totalAff.totalAffiliates;  
+            arr["totalHandout"]     = totalAff.totalHandout ;    
+            arr["createdAt"]        = _user.createdAt;   
             insertSorted(userListArray, arr, compareByTime)            
            })  
         
@@ -1718,17 +1714,25 @@ async function totalBuyIncome(email){
 async function totalAffiliateIncome(email, level){
   try{
     const buyModel = require("../models/buy");   
-    let totalAffiliates = 0;      
+    let totalAffiliates = 0;
+    let totalHandout = 0;   
+    const arr = {};   
     const total_aff = await buyModel.aggregate([{ $match : { from_user : email,  bonus_type : "Level", from_level : level }}, { 
                                                   $group: { _id: { email: "$email" },
                                                   balance: { $sum: "$bonus" },
+                                                  handout: { $sum : "$ho_bonus"}
                                                   },
                                                 },
-                                              ])                    
+                                              ])  
+                              
             if(total_aff.length > 0){
             totalAffiliates = total_aff[0].balance;
+            totalHandout    = total_aff[0].handout;
             }
-     return totalAffiliates;
+
+            arr["totalAffiliates"]  = totalAffiliates;
+            arr["totalHandout"]     = totalHandout; 
+       return arr;  
 
   }catch(err){
     console.log("Error in total affiliates function " + err);
@@ -1791,27 +1795,132 @@ exports.bounty =async (req, res) => {
 
 exports.witdrawl = async (req, res) => {
   try{
-    const { email, toWalletAddr, amount, fees, remarks } = req.body;
-    const witdrawlModel = require("../models/withdrawl");
+    const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;   
     const userId = await findUserId(email);
-    await witdrawlModel.create({ 
-      email         : email,
-      user_id       : userId,
-      toWalletAddr  : toWalletAddr,
-      amount        : amount,
-      fees          : fees, 
-      remarks       : remarks
-    }).then((data) => {
-      res.status(200).json({
-        status  : 1,
-        message : "Withdrawl request created successfully" 
+    if(fromWallet !== ""){
+     await User.findOne({ email : email }).then( async(user) => {
+        if(user){ 
+
+          wallet = fromWallet.toLowerCase();
+
+          if(wallet == "affiliates"){
+            await User.findOne({ email : email }).then( async(user) => {
+                if(user.affilites_wallet >= amount){
+                  await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
+                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                    return res.status(200).json({
+                      status : 1,
+                      message : "Withdrawl request created successfully"
+                    })
+                  })
+                }else{
+                  return res.status(400).json({
+                    status : 2,
+                    message : "Insufficient balance"
+                  })
+                }
+            })   
+          }else if(wallet == "bounty"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.bounty_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "airdrop"){   
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.airdrop_wallet >= amount){              
+                await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{     
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "inherited"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.inherited_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else if(wallet == "handout"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.handout_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+        
+          }else if(wallet == "inceptive"){
+            await User.findOne({ email : email }).then( async(user) => {
+              if(user.inceptive_wallet >= amount){
+                await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  return res.status(200).json({
+                    status : 1,
+                    message : "Withdrawl request created successfully"
+                  })
+                })
+              }else{
+                return res.status(400).json({
+                  status : 2,
+                  message : "Insufficient balance"
+                })
+              }
+            })   
+          }else{
+            return res.status(400).json({
+                  status : 0,
+                  message : "Something went wrong"
+                })
+          }
+        }
       })
-    }).catch((err) => {
-      res.status(400).json({
-        status : 0,
-        message : "something went wrong"
-      })
+  }else{
+    res.status(400).json({
+      status : 0,
+      message : "something went wrong"
     })
+  }
+   
   }catch(err){
     console.log("Error in witdrawl api " + err);
     res.status(200).json({
@@ -1821,18 +1930,40 @@ exports.witdrawl = async (req, res) => {
   }
 }
 
+
+async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks){
+  const userId = await findUserId(email);
+  const witdrawlModel = require("../models/withdrawl");
+    await witdrawlModel.create({ 
+      email         : email,
+      user_id       : userId,
+      toWalletAddr  : toWalletAddr,
+      amount        : amount,
+      fees          : fees,
+      fromWallet    : fromWallet, 
+      remarks       : remarks
+    }).then((data) => {
+    // console.log("withdrawl request created successfully")
+    }).catch((err) => {
+      //console.log(" err in withdrawl request" + err);
+    })
+}
+
+
 exports.walletBalance = async (req, res) => {
   try{
     const { email } = req.body;
    await User.findOne({ email : email }).then((user) => {
         res.status(200).json({
           status : 1,
-          affilitesWallet   : user.affilites_wallet,
-          bountyWallet      : user.bounty_wallet,
-          airdrop_wallet    : user.airdrop_wallet,
-          inherited_wallet  : user.inherited_wallet,
-          handout_wallet    : user.handout_wallet,
-          inceptive_wallet  : user.inceptive_wallet       
+          data :  [ 
+           { name : "Affiliates", balance : user.affilites_wallet } ,
+           { name : "Bounty", balance : user.bounty_wallet  },
+           { name : "Airdrop", balance : user.airdrop_wallet } ,
+           { name : "Inherited", balance : user.inherited_wallet},
+          { name : "Handout", balance : user.handout_wallet },
+          { name : "Inceptive", balance : user.inceptive_wallet  },
+          ]                  
         })
    }).catch((err) => {  
       res.status(200).json({
@@ -1848,3 +1979,6 @@ exports.walletBalance = async (req, res) => {
     })
   }
 }
+
+
+
