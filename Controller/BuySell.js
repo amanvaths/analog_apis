@@ -476,8 +476,8 @@ exports.createOrder = async (req, res)=> {
               // order history
                             await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
 
-                            await injectInGraph('ana','usd',Number(one_ANA_inject.toFixed(7)),Number(quantity))
-                            await injectInGraph('ana','inr',Number(ANA_price.toFixed(7)),Number(quantity))
+                            await injectInGraph('ana','usd',Number(one_ANA_inject.toFixed(5)),Number(quantity))
+                            await injectInGraph('ana','inr',Number(ANA_price.toFixed(5)),Number(quantity))
               // order history
                         if(result){
                                             
