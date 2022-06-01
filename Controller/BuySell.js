@@ -11,9 +11,9 @@ const PriceChange = require("../models/priceChange");
 async function injectInGraph(currency_type, compare_currency, price, volume=0) {
   try {
       const graph_data = require('../json/ohlc_custom.json');
-      var date = new Date();
-      var timestamp = date.setDate(date.getDate() + i);
-        timestamp = timestamp / 1000
+      //var date = new Date(new Date().toLocaleDateString().split("/").reverse().join("-")).getTime()
+      var date = new Date().getTime()
+        timestamp = date / 1000
 
       // console.log("graph data",graph_data);
       // console.log("currency_type",currency_type);
@@ -476,8 +476,8 @@ exports.createOrder = async (req, res)=> {
               // order history
                             await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
 
-                            await injectInGraph('ana','usd',one_ANA_inject.toFixed(5),quantity)
-                            await injectInGraph('ana','inr',ANA_price.toFixed(5),quantity)
+                            await injectInGraph('ana','usd',Number(one_ANA_inject.toFixed(5)),Number(quantity))
+                            await injectInGraph('ana','inr',Number(ANA_price.toFixed(5)),Number(quantity))
               // order history
                         if(result){
                                             
