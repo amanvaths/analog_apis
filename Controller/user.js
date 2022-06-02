@@ -1969,7 +1969,39 @@ async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fe
     })
 }
 
-
+// withdraw order request
+async function OrderHistory(
+  amount,
+  email,
+  wallet,
+  order_id
+  ) {
+  const Order = require("../models/order");
+  const order = await new Order({
+  email: email,
+  date: Date.now(),
+  amount: amount,
+  type : "Withdraw",
+  wallet : wallet,
+  order_id : order_id
+  });
+  order.save((error, data) => {
+  if (error) {
+  console.log("Error from: OrderHistory", error.message);
+  return {
+  status: 0,
+  message: "Somthing went wrong",
+  };
+  }
+  if (data) {
+  return {
+  status: 0,
+  message: "Order Created",
+  };
+  }
+  });
+  }
+  // withdraw order request
 
 exports.walletBalance = async (req, res) => {
   try{
