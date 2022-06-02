@@ -760,7 +760,7 @@ exports.getIncome = async (req, res) => {
     } else {
       params = query;
     }
-    const ref = await Income.find(params);
+    const ref = await Income.find(params)
     return res.json({
       status: 200,
       error: false,
