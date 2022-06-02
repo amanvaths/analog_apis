@@ -183,7 +183,7 @@ exports.createOrder = async (req, res)=> {
       var ANApricebaseusdt=presale.baseprice;
       if(compairCurrency=="usd"){
         const cmcdatanew = await getCMCData('usdt','inr');
-        const usdtininr = cmcdatanew.USDT.quote.INR.price;
+        var usdtininr = cmcdatanew.USDT.quote.INR.price;
       var one_ANA_in=ANA_price/usdtininr;
       var one_ANA_inject=ANA_price/usdtininr;
       pref_raw_price=pref_raw_price/usdtininr
@@ -196,7 +196,7 @@ exports.createOrder = async (req, res)=> {
       console.log("total_purchase_price",compairVal)
       } else {
       const cmcdatanew = await getCMCData('usdt','inr');
-      const usdtininr = cmcdatanew.USDT.quote.INR.price;
+      var usdtininr = cmcdatanew.USDT.quote.INR.price;
       var one_ANA_in=ANA_price;
       var one_ANA_inject=ANA_price/usdtininr;
       console.log("Quantity",quantity)
@@ -474,7 +474,7 @@ exports.createOrder = async (req, res)=> {
               // token price update
               
               // order history
-                            await OrderHistory(compairVal, one_ANA_in,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount)
+                            await OrderHistory(compairVal,pref_raw_price,quantity, currencyType,compairCurrency,email,order_id,presaleag.levelname,pref_curr_amount,usdtininr)
 
                             await injectInGraph('ana','usd',Number(one_ANA_inject.toFixed(5)),Number(quantity))
                             await injectInGraph('ana','inr',Number(ANA_price.toFixed(5)),Number(quantity))
@@ -532,7 +532,6 @@ exports.createOrder = async (req, res)=> {
 
 async function OrderHistory(
   amount,
-  raw_price,
   pref_raw_price,
   quantity,
   currencyType,
@@ -540,7 +539,8 @@ async function OrderHistory(
   email,
   orderid,
   presale,
-  pref_curr_amount
+  pref_curr_amount,
+  usdtininr
 ) {
   const Order = require("../models/order");
   const order = await new Order({
@@ -548,13 +548,13 @@ async function OrderHistory(
     order_id: orderid,
     date: Date.now(),
     amount: amount,
-    raw_price: raw_price,
     pref_raw_price : pref_raw_price,
     cVolume: quantity,
     currency_type: currencyType,
     compair_currency: compairCurrency,
     presalelevel:presale,
-    preferred_currency_amount:pref_curr_amount
+    preferred_currency_amount:pref_curr_amount,
+    usdt_price:usdtininr
   });
 
   order.save((error, data) => {

@@ -1819,15 +1819,15 @@ exports.witdrawl = async (req, res) => {
     if(fromWallet !== "" && amount > 0){
      await User.findOne({ email : email }).then( async(user) => {
         if(user){ 
-
+          let currency=user.currency
           wallet = fromWallet.toLowerCase();
-
+          var order_id =Date.now().toString(16).toUpperCase();
           if(wallet == "affiliates"){
             await User.findOne({ email : email }).then( async(user) => {
                 if(user.affilites_wallet >= amount && amount > 0){
                   await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
                     createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks); 
-                    OrderHistory(amount,email,wallet,order_id)
+                    OrderHistory(amount,email,wallet,order_id,currency)
                     return res.status(200).json({
                       status : 1,
                       message : "Withdrawl request created successfully"
@@ -1845,6 +1845,7 @@ exports.witdrawl = async (req, res) => {
               if(user.bounty_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  OrderHistory(amount,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1862,6 +1863,7 @@ exports.witdrawl = async (req, res) => {
               if(user.airdrop_wallet >= amount && amount > 0){              
                 await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  OrderHistory(amount,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1879,6 +1881,7 @@ exports.witdrawl = async (req, res) => {
               if(user.inherited_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  OrderHistory(amount,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1896,6 +1899,7 @@ exports.witdrawl = async (req, res) => {
               if(user.handout_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  OrderHistory(amount,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1914,6 +1918,7 @@ exports.witdrawl = async (req, res) => {
               if(user.inceptive_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                  OrderHistory(amount,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1974,7 +1979,8 @@ async function OrderHistory(
   amount,
   email,
   wallet,
-  order_id
+  order_id,
+  compair_currency
   ) {
   const Order = require("../models/order");
   const order = await new Order({
@@ -1983,7 +1989,8 @@ async function OrderHistory(
   amount: amount,
   type : "Withdraw",
   wallet : wallet,
-  order_id : order_id
+  order_id : order_id,
+  compair_currency : compair_currency
   });
   order.save((error, data) => {
   if (error) {
