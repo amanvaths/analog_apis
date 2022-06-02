@@ -1792,12 +1792,31 @@ exports.bounty =async (req, res) => {
   }
 }
 
+exports.handout =async (req, res) => {
+  try{
+    const { email } = req.body;
+    const buyModel = require('../models/buy');
+    const handout = await buyModel.find({ email : email, bonus_type : "Level" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1, ho_bonus : 1, createdAt : 1
+    }).sort({ createdAt: -1 });
+    res.status(200).json({
+      status : 1,
+      data : handout
+    })
+  }catch(err){
+    console.log("Error in handout api " + err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
+  }
+}
+
 
 exports.witdrawl = async (req, res) => {
   try{
     const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;   
     const userId = await findUserId(email);
-    if(fromWallet !== ""){
+    if(fromWallet !== "" && amount > 0){
      await User.findOne({ email : email }).then( async(user) => {
         if(user){ 
 
@@ -1805,11 +1824,9 @@ exports.witdrawl = async (req, res) => {
 
           if(wallet == "affiliates"){
             await User.findOne({ email : email }).then( async(user) => {
-                if(user.affilites_wallet >= amount){
-                  var order_id =Date.now().toString(16).toUpperCase();
+                if(user.affilites_wallet >= amount && amount > 0){
                   await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
                     createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                    OrderHistory(amount,email,wallet,order_id)
                     return res.status(200).json({
                       status : 1,
                       message : "Withdrawl request created successfully"
@@ -1824,7 +1841,7 @@ exports.witdrawl = async (req, res) => {
             })   
           }else if(wallet == "bounty"){
             await User.findOne({ email : email }).then( async(user) => {
-              if(user.bounty_wallet >= amount){
+              if(user.bounty_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
                   return res.status(200).json({
@@ -1841,7 +1858,7 @@ exports.witdrawl = async (req, res) => {
             })   
           }else if(wallet == "airdrop"){   
             await User.findOne({ email : email }).then( async(user) => {
-              if(user.airdrop_wallet >= amount){              
+              if(user.airdrop_wallet >= amount && amount > 0){              
                 await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
                   return res.status(200).json({
@@ -1858,7 +1875,7 @@ exports.witdrawl = async (req, res) => {
             })   
           }else if(wallet == "inherited"){
             await User.findOne({ email : email }).then( async(user) => {
-              if(user.inherited_wallet >= amount){
+              if(user.inherited_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
                   return res.status(200).json({
@@ -1875,7 +1892,7 @@ exports.witdrawl = async (req, res) => {
             })   
           }else if(wallet == "handout"){
             await User.findOne({ email : email }).then( async(user) => {
-              if(user.handout_wallet >= amount){
+              if(user.handout_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
                   return res.status(200).json({
@@ -1893,7 +1910,7 @@ exports.witdrawl = async (req, res) => {
         
           }else if(wallet == "inceptive"){
             await User.findOne({ email : email }).then( async(user) => {
-              if(user.inceptive_wallet >= amount){
+              if(user.inceptive_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
                   createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
                   return res.status(200).json({
@@ -1951,41 +1968,7 @@ async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fe
     })
 }
 
-// withdraw order request
-async function OrderHistory(
-  amount,
-  email,
-  wallet,
-  order_id
-) {
-  const Order = require("../models/order");
-  const order = await new Order({
-    email: email,
-    date: Date.now(),
-    amount: amount,
-    type : "Withdraw",
-    wallet : wallet,
-    order_id : order_id
-  });
 
-  order.save((error, data) => {
-    if (error) {
-      console.log("Error from: OrderHistory", error.message);
-      return {
-        status: 0,
-        message: "Somthing went wrong",
-      };
-    }
-    if (data) {
-      return {
-        status: 0,
-        message: "Order Created",
-      };
-    }
-  });
-}
-
-// withdraw order request
 
 exports.walletBalance = async (req, res) => {
   try{
@@ -2019,3 +2002,47 @@ exports.walletBalance = async (req, res) => {
 
 
 
+exports.withdrawlHistory = async (req, res) => {
+  try{
+    const withdrawlModel = require("../models/withdrawl");
+    await withdrawlModel.find({ email: email }).then((data) => {
+      res.status(200).json({
+        status : 1,
+        data : data
+      });
+    })
+  }catch(err){
+    console.log("err in withdrawl history " +err);
+    res.status(200).json({
+      status : 0,
+      message : "something went wrong"
+    })
+  }
+}
+
+exports.buyChart = async (req, res) => {
+  try{
+    const buyModel = require("../models/buy");
+    const { email } = req.body;
+    arr1 = [];
+    arr2 = [];
+    await buyModel.find({ email: email }).sort({ createdAt : 1 }).then((data) => {
+      data.map((d) => {       
+       arr1.push(d.amount);
+       arr2.push(d.createdAt);
+      })  
+      
+      res.status(200).json({
+        status : 1,
+        amount : arr1,
+        date : arr2      
+      })
+    })
+  }catch(err){
+    console.log("err in withdrawl history " +err);
+    res.status(400).json({
+      status : 0,
+      message : "something went wrong"
+    })
+  }
+}
