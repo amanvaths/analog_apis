@@ -1808,7 +1808,7 @@ exports.witdrawl = async (req, res) => {
                 if(user.affilites_wallet >= amount){
                   var order_id =Date.now().toString(16).toUpperCase();
                   await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
-                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
+                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks); 
                     OrderHistory(amount,email,wallet,order_id)
                     return res.status(200).json({
                       status : 1,
