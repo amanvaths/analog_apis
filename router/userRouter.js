@@ -26,7 +26,7 @@ const {
   userWalletData,
   configSettings,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
-  airdrop, bounty, witdrawl, walletBalance
+  airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -80,7 +80,9 @@ router.post('/levelWiseList', levelWiseList);
 router.post('/airdrop', airdrop);
 router.post('/bounty', bounty);
 router.post('/witdrawl', witdrawl);
+router.post('/withdrawlHistory', withdrawlHistory);
 router.post('/walletBalance', walletBalance);
+router.post('/buyChart', buyChart);
 /**
  * Admin Routes
  */
