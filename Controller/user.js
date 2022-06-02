@@ -1814,20 +1814,24 @@ exports.handout =async (req, res) => {
 
 exports.witdrawl = async (req, res) => {
   try{
-    const { email, toWalletAddr,fromWallet, amount, fees, remarks } = req.body;   
+    const { email, toWalletAddr,fromWallet, amount, fees,usdt_price, remarks } = req.body;   
     const userId = await findUserId(email);
     if(fromWallet !== "" && amount > 0){
      await User.findOne({ email : email }).then( async(user) => {
         if(user){ 
           let currency=user.currency
+          let amount_pref = amount
+          if(currency=="inr"){
+          amount_pref = usdt_price*amount
+          }
           wallet = fromWallet.toLowerCase();
           var order_id =Date.now().toString(16).toUpperCase();
           if(wallet == "affiliates"){
             await User.findOne({ email : email }).then( async(user) => {
                 if(user.affilites_wallet >= amount && amount > 0){
                   await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
-                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks); 
-                    OrderHistory(amount,email,wallet,order_id,currency)
+                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                    OrderHistory(amount_pref,email,wallet,order_id,currency)
                     return res.status(200).json({
                       status : 1,
                       message : "Withdrawl request created successfully"
@@ -1844,8 +1848,8 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.bounty_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                  OrderHistory(amount,email,wallet,order_id,currency)
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1862,8 +1866,8 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.airdrop_wallet >= amount && amount > 0){              
                 await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                  OrderHistory(amount,email,wallet,order_id,currency)
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1880,8 +1884,8 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.inherited_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                  OrderHistory(amount,email,wallet,order_id,currency)
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1898,8 +1902,8 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.handout_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                  OrderHistory(amount,email,wallet,order_id,currency)
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1917,8 +1921,8 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.inceptive_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks);
-                  OrderHistory(amount,email,wallet,order_id,currency)
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
                     message : "Withdrawl request created successfully"
@@ -1956,7 +1960,7 @@ exports.witdrawl = async (req, res) => {
 }
 
 
-async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fees, remarks){
+async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount,currency, fees, remarks){
   const userId = await findUserId(email);
   const witdrawlModel = require("../models/withdrawl");
     await witdrawlModel.create({ 
@@ -1964,6 +1968,7 @@ async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount, fe
       user_id       : userId,
       toWalletAddr  : toWalletAddr,
       amount        : amount,
+      currency      : currency,
       fees          : fees,
       fromWallet    : fromWallet, 
       remarks       : remarks
