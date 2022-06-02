@@ -11,6 +11,8 @@ const orderSchema = new mongoose.Schema({
     currency_type : { type : String , default : 0},
     compair_currency : { type : String , default : 0},
     presalelevel : { type : String , default : 0},
+    type : {type : String, default : "Buy"},
+    wallet : {type : String , default : null},
     cVolume : { type : Number , default : 0},
    
 }, { timestamps: true});
