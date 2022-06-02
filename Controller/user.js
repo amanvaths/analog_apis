@@ -1960,7 +1960,7 @@ exports.witdrawl = async (req, res) => {
 }
 
 
-async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount,currency, fees, remarks){
+async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount,usdt,currency, fees, remarks){
   const userId = await findUserId(email);
   const witdrawlModel = require("../models/withdrawl");
     await witdrawlModel.create({ 
@@ -1969,6 +1969,7 @@ async function createWithdrawlHistory(email,fromWallet, toWalletAddr, amount,cur
       toWalletAddr  : toWalletAddr,
       amount        : amount,
       currency      : currency,
+      usdt_price    : usdt,
       fees          : fees,
       fromWallet    : fromWallet, 
       remarks       : remarks
