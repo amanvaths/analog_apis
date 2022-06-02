@@ -1553,30 +1553,30 @@ exports.refferalLevelWiseData = async (req, res) => {
    for(i=0; i< list1.length; i++){
       let email1 = await findEmailId(list1[i]); 
            const totalexp =  await totalBuyExpenseIncome(email1)  
-           totalExpense1 = totalexp.totalExpense;
-           totalAna1     =  totalexp.totalBuy;
+           totalExpense1 +=  totalexp.totalExpense;
+           totalAna1     +=  totalexp.totalBuy;
            const totalAff =  await totalAffiliateIncome(email1, 1); 
-           amtLevel1 =   totalAff.totalAffiliates;                 
+           amtLevel1     +=   totalAff.totalAffiliates;                 
      }
 
      const list2 = await levelWiseList(user_id, 2);
      for(i=0; i< list2.length; i++){
        let email1 = await findEmailId(list2[i]);  
          const totalexp =  await totalBuyExpenseIncome(email1) 
-         totalExpense2 = totalexp.totalExpense; 
-         totalAna2     =  totalexp.totalBuy;
+         totalExpense2 += totalexp.totalExpense; 
+         totalAna2     +=  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 2); 
-         amtLevel2 =   totalAff.totalAffiliates;          
+         amtLevel2     +=   totalAff.totalAffiliates;          
       }
 
       const list3 = await levelWiseList(user_id, 3);
       for(i=0; i< list3.length; i++){        
        let email1 = await findEmailId(list3[i]);
          const totalexp =  await totalBuyExpenseIncome(email1)    
-         totalExpense3 = totalexp.totalExpense; 
-         totalAna3     =  totalexp.totalBuy;
+         totalExpense3 += totalexp.totalExpense; 
+         totalAna3     +=  totalexp.totalBuy;
          const totalAff =  await totalAffiliateIncome(email1, 3); 
-         amtLevel3 =   totalAff.totalAffiliates;            
+         amtLevel3     +=   totalAff.totalAffiliates;            
       }
 
    res.status(200).json({
@@ -1784,7 +1784,7 @@ exports.bounty =async (req, res) => {
       data : buy
     })
   }catch(err){
-    console.log("Error in handout api " + err);
+    console.log("Error in bounty api " + err);
     res.status(200).json({
       status : 0,
       message : "something went wrong"
