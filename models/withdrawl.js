@@ -8,6 +8,7 @@ const withdrawlSchema = new mongoose.Schema(
     toWalletAddr    : { type: String },
     amount          : { type : String },
     currency        : { type :  String},
+    usdt_price      : { type : Number, default: 0 },
     remarks         : { type : String },
     status          : { type: Number, default: 0 },
   },

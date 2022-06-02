@@ -1830,7 +1830,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
                 if(user.affilites_wallet >= amount && amount > 0){
                   await User.updateOne({ email : email }, { $inc : { affilites_wallet : -amount }}).then((d) => {
-                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                    createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks); 
                     OrderHistory(amount_pref,email,wallet,order_id,currency)
                     return res.status(200).json({
                       status : 1,
@@ -1848,7 +1848,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.bounty_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { bounty_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks);  
                   OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
@@ -1866,7 +1866,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.airdrop_wallet >= amount && amount > 0){              
                 await User.updateOne({ email : email }, { $inc : { airdrop_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks); 
                   OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
@@ -1884,7 +1884,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.inherited_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inherited_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks); 
                   OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
@@ -1902,7 +1902,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.handout_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { handout_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks); 
                   OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
@@ -1921,7 +1921,7 @@ exports.witdrawl = async (req, res) => {
             await User.findOne({ email : email }).then( async(user) => {
               if(user.inceptive_wallet >= amount && amount > 0){
                 await User.updateOne({ email : email }, { $inc : { inceptive_wallet : -amount }}).then((d) => {
-                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,currency, fees, remarks); 
+                  createWithdrawlHistory(email,fromWallet, toWalletAddr, amount_pref,usdt_price,currency, fees, remarks); 
                   OrderHistory(amount_pref,email,wallet,order_id,currency)
                   return res.status(200).json({
                     status : 1,
