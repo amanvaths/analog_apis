@@ -2068,22 +2068,85 @@ exports.withdrawlHistory = async (req, res) => {
 
 exports.buyChart = async (req, res) => {
   try{
-    const buyModel = require("../models/buy");
+    const buyModel = require("../models/buy")
     const { email } = req.body;
-    arr1 = [];
-    arr2 = [];
-    await buyModel.find({ email: email }).sort({ createdAt : 1 }).then((data) => {
-      data.map((d) => {       
-       arr1.push(d.amount);
-       arr2.push(d.createdAt);
-      })  
-      
-      res.status(200).json({
-        status : 1,
-        amount : arr1,
-        date : arr2      
-      })
-    })
+  let totalJan = 0;
+  let totalFeb = 0;
+  let totalMar = 0;
+  let totalApr = 0;
+  let totalMay = 0;
+  let totalJun = 0;
+  let totalJul = 0;
+  let totalAug = 0;
+  let totalSep = 0;
+  let totalOct = 0;
+  let totalNov = 0;
+  let totalDec = 0;
+
+  await buyModel.aggregate([ {$match : { email : email, bonus_type: "Buying" } },{                             
+                              $group: {
+                                  _id: {                                      
+                                      month: { $month: "$createdAt" },                                    
+                                  },
+                                  Total: { $sum: "$token_quantity" }
+                              }
+                          }]).then((data) => {
+                            data.map((d) => {
+                              //console.log(d._id.month + " => " + d.Total);  
+                              if(d._id.month == 1){
+                                 totalJan =  d.Total;
+                              }
+                              if(d._id.month == 2){
+                                totalFeb =  d.Total;
+                              }
+                              if(d._id.month == 3){
+                                totalMar =  d.Total;
+                              }
+                              if(d._id.month == 4){
+                                totalApr =  d.Total;
+                              }
+                              if(d._id.month == 5){
+                                totalMay =  d.Total;
+                              }
+                              if(d._id.month == 6){
+                                totalJun =  d.Total;
+                              }
+                              if(d._id.month == 7){
+                                totalJul =  d.Total;
+                              }
+                              if(d._id.month == 8){
+                                totalAug =  d.Total;
+                              }
+                              if(d._id.month == 9){
+                                totalSep =  d.Total;
+                              }
+                              if(d._id.month == 10){
+                                totalOct =  d.Total;
+                              }
+                              if(d._id.month == 11){
+                                totalNov =  d.Total;
+                              }
+                              if(d._id.month == 12){
+                                totalDec =  d.Total;
+                              }                             
+                            })
+                          })
+
+
+    const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, totalJul, totalAug, totalSep, totalOct, totalNov, totalDec];   
+    const arr1 = [];
+       if(arr.max() > 0){
+        return res.status(200).json({
+          status : 1,
+          data : arr
+        })
+       }else{
+        return res.status(200).json({
+          status : 1,
+          data : arr1
+        })
+       }
+   
   }catch(err){
     console.log("err in withdrawl history " +err);
     res.status(400).json({
