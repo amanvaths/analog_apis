@@ -480,7 +480,11 @@ exports.createOrder = async (req, res)=> {
                             await injectInGraph('ana','inr',Number(ANA_price.toFixed(5)),Number(quantity))
               // order history
                         if(result){
-                                            
+                        var subject = "Buy Order Successfull";
+                        var message = "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency.toUpperCase()+" is Successfull";
+                        if (message) {
+                          sendMail(req.body.email, subject, message);
+                        }                   
                           return res.status(200).json({
                               status : true,
                               message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
