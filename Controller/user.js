@@ -2135,17 +2135,11 @@ exports.buyChart = async (req, res) => {
 
     const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, totalJul, totalAug, totalSep, totalOct, totalNov, totalDec];   
     const arr1 = [];
-       if(arr.max() > 0){
+     
         return res.status(200).json({
           status : 1,
           data : arr
-        })
-       }else{
-        return res.status(200).json({
-          status : 1,
-          data : arr1
-        })
-       }
+        })    
    
   }catch(err){
     console.log("err in withdrawl history " +err);

@@ -7,11 +7,18 @@ const axios = require('axios');
 const fileupload = require("express-fileupload");
 const port = 3001
 const mongoose = require('mongoose');
+const socketIO = require('socket.io');
+const http = require('http');
+let server = http.createServer(app)
+let io = socketIO(server)
+
 const db = process.env.db
 mongoose.connect(db, { useNewUrlParser: true, }).then(() => console.log('MongoDB connected...')).catch(err => console.log(err));
 app.use(cors({
   origin: '*' 
 }));
+
+
 const User = require('./models/user');
 
 app.use(express.json());
@@ -28,72 +35,47 @@ app.use('/api',notification);
 app.use('/api', chart)
 
 
+// make connection with user from server side
+io.on('connection', (socket)=>{
+  console.log('New user connected');
+   //emit message from server to user
+   socket.emit('newMessage', {
+     from:'jen@mds',
+     text:'hepppp',
+     createdAt:123
+   });
+ 
+  // listen for message from user
+  socket.on('createMessage', (newMessage)=>{
+    console.log('newMessage', newMessage);
+  });
+ 
+  // when server disconnects from user
+  socket.on('disconnect', ()=>{
+    console.log('disconnected from user');
+  });
+});
+
+
 app.get('/get', async (req, res) => {  
-  const buyModel = require("./models/buy")
-  let totalJan = 0;
-  let totalFeb = 0;
-  let totalMar = 0;
-  let totalApr = 0;
-  let totalMay = 0;
-  let totalJun = 0;
-  let totalJul = 0;
-  let totalAug = 0;
-  let totalSep = 0;
-  let totalOct = 0;
-  let totalNov = 0;
-  let totalDec = 0;
+  // const url = "https://api.blockcypher.com/v1/btc/main/addrs/1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD/balance";
+  // const ress = await axios.get(url, {
+  //   headers: {
+  //     "Content-Type": "Application/json",    
+  //     "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY, 
+  //     "Access-Control-Allow-Origin": "*",
+  //   },
+  // });
+  // console.log(ress.data.balance);
 
-  await buyModel.aggregate([{
-                              $group: {
-                                  _id: {                                      
-                                      month: { $month: "$createdAt" },                                    
-                                  },
-                                  Total: { $sum: "$token_quantity" }
-                              }
-                          }]).then((data) => {
-                            data.map((d) => {
-                              console.log(d._id.month + " => " + d.Total);  
-                              if(d._id.month == 1){
-                                 totalJan =  d.Total;
-                              }
-                              if(d._id.month == 2){
-                                totalFeb =  d.Total;
-                              }
-                              if(d._id.month == 3){
-                                totalMar =  d.Total;
-                              }
-                              if(d._id.month == 4){
-                                totalApr =  d.Total;
-                              }
-                              if(d._id.month == 5){
-                                totalMay =  d.Total;
-                              }
-                              if(d._id.month == 6){
-                                totalJun =  d.Total;
-                              }
-                              if(d._id.month == 7){
-                                totalJul =  d.Total;
-                              }
-                              if(d._id.month == 8){
-                                totalAug =  d.Total;
-                              }
-                              if(d._id.month == 9){
-                                totalSep =  d.Total;
-                              }
-                              if(d._id.month == 10){
-                                totalOct =  d.Total;
-                              }
-                              if(d._id.month == 11){
-                                totalNov =  d.Total;
-                              }
-                              if(d._id.month == 12){
-                                totalDec =  d.Total;
-                              }                             
-                            })
-                          })
+  // const web3 = require("@solana/web3.js");
+ 
+  //   const publicKey = new web3.PublicKey("83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri"); // 2gnbtxYypr8XaAUFBmwyUhdsMM5TXBWQHi1XAmpLif8Q
+  //   const solana = new web3.Connection("https://api.testnet.solana.com");
+  //   console.log(await solana.getBalance(publicKey));
+ 
 
 
-          const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, totalJul, totalAug, totalSep, totalOct, totalNov, totalDec];   
 });
 
 
