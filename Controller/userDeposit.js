@@ -96,6 +96,7 @@ exports.userDeposit = async (req, res) => {
     const SOL_WebAddr =  "https://api.testnet.solana.com";
   
     const email = req.body.email;
+    
     if (email) {
       let go = await canUpdate(email);
       if (go) {     
@@ -589,6 +590,12 @@ exports.userDeposit = async (req, res) => {
 
 
          })
+       }).then( async(d) => {
+
+        await userWallet.find({ email : email }).then((data) => {
+          io.emit("balance", data);
+        }) 
+       
        })
   
           
@@ -597,12 +604,7 @@ exports.userDeposit = async (req, res) => {
     }
   };
   
-    // const web3 = require("@solana/web3.js"); 
-    // const publicKey = new web3.PublicKey("83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri"); // 2gnbtxYypr8XaAUFBmwyUhdsMM5TXBWQHi1XAmpLif8Q
-    // const solana = new web3.Connection("https://api.testnet.solana.com");
-    // console.log(await solana.getBalance(publicKey));
-
-
+   
   function createDepositHistory(email, symbol, address, amount, balance) {
     const transaction_history = require("../models/transaction_history");
     try {
