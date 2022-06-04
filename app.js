@@ -7,17 +7,12 @@ const axios = require('axios');
 const fileupload = require("express-fileupload");
 const port = 3001
 const mongoose = require('mongoose');
-const socketIO = require('socket.io');
-const http = require('http');
-let server = http.createServer(app)
-let io = socketIO(server)
-
+const {createServer} = require('http');
 const db = process.env.db
 mongoose.connect(db, { useNewUrlParser: true, }).then(() => console.log('MongoDB connected...')).catch(err => console.log(err));
 app.use(cors({
   origin: '*' 
 }));
-
 
 const User = require('./models/user');
 
@@ -34,50 +29,38 @@ app.use('/api',userRouter);
 app.use('/api',notification);
 app.use('/api', chart)
 
-
-// make connection with user from server side
-io.on('connection', (socket)=>{
-  console.log('New user connected');
-   //emit message from server to user
-   socket.emit('newMessage', {
-     from:'jen@mds',
-     text:'hepppp',
-     createdAt:123
-   });
- 
-  // listen for message from user
-  socket.on('createMessage', (newMessage)=>{
-    console.log('newMessage', newMessage);
-  });
- 
-  // when server disconnects from user
-  socket.on('disconnect', ()=>{
-    console.log('disconnected from user');
-  });
+const { Server } = require("socket.io");
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*"
+  }
 });
 
-
-app.get('/get', async (req, res) => {  
-  // const url = "https://api.blockcypher.com/v1/btc/main/addrs/1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD/balance";
-  // const ress = await axios.get(url, {
-  //   headers: {
-  //     "Content-Type": "Application/json",    
-  //     "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY, 
-  //     "Access-Control-Allow-Origin": "*",
-  //   },
-  // });
-  // console.log(ress.data.balance);
-
-  // const web3 = require("@solana/web3.js");
- 
-  //   const publicKey = new web3.PublicKey("83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri"); // 2gnbtxYypr8XaAUFBmwyUhdsMM5TXBWQHi1XAmpLif8Q
-  //   const solana = new web3.Connection("https://api.testnet.solana.com");
-  //   console.log(await solana.getBalance(publicKey));
- 
-
-
+io.on("connection", (socket) => {
+  io.emit("hello", "Socket Conneted Happy birtday") 
 });
 
+app.get('/get', async (req, res) => {    
+  io.emit("buyChart", " Happy birtday 3001")
+  io.emit("balance", " this is user balance");
+});
+
+app.get('/balance', userWalletBalance);
+
+async function userWalletBalance(req, res){
+  const userWallet = require("./models/userWallet");
+  const { email } = req.body;
+  await userWallet.find({ email : email }).then((data) => {
+  //  res.send(data);
+    io.emit("balance", data);
+  }) 
+}
+
+
+httpServer.listen(8080,()=>{
+  console.log(`Socket listening at http://localhost:8080`);
+})
 
 app.listen(port, '0.0.0.0' , () => {
     console.log(`App listening at http://localhost:${port}`);

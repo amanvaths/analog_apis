@@ -129,9 +129,6 @@ function sendMail(email, subject, message) {
     }
   }
   
-
-
-
 module.exports = {   
     sendMail,
     getCMCData
