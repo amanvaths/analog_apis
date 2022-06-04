@@ -699,6 +699,7 @@ function createDepositHistory(email, symbol, address, amount, balance) {
 
 async function canUpdate(email) {
 const transaction_history = require('./models/transaction_history');
+const userWallet = require("./models/userWallet");
 try {
     let last_deposit = await transaction_history.findOne({ email: email }).sort({ createdAt: -1 });
     if (last_deposit) {
@@ -709,6 +710,9 @@ try {
                 if (new Date().getTime() - d > 50000) {
                     return true;
                 } else {
+                   await userWallet.find({ email : email }).then( async(data) => {
+                    io.emit("balance", data);
+                   });
                     return false;
                 }
             } else {
