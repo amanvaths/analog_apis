@@ -1636,7 +1636,7 @@ exports.levelWiseList = async (req, res) => {
 
     if(list.length == 0){
       res.status(200).json({
-        status : 1,
+        status : 2,
         data : []
       })
     }
