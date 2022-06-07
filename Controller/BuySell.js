@@ -481,13 +481,13 @@ exports.createOrder = async (req, res)=> {
               // order history
                         if(result){
                         var subject = "Buy Order Successfull";
-                        var message = "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency.toUpperCase()+" is Successfull";
+                        var message = "Purchase of Token Quantity "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency.toUpperCase()+" is Successfull";
                         if (message) {
                           sendMail(req.body.email, subject, message);
                         }                   
                           return res.status(200).json({
                               status : true,
-                              message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in+" "+compairCurrency+" is Successfull"
+                              message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency+" is Successfull"
                           }); 
                       } else {
                         return res.status(400).json({
