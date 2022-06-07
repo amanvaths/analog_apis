@@ -1778,13 +1778,17 @@ exports.bounty =async (req, res) => {
     const { email,page } = req.body;
     const per_page = 10;
     const buyModel = require('../models/buy');
+    var count=0
+    var status=0
     const buy = await buyModel.find({ email : email, bonus_type : "Buying" }, { amount : 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price : 1, createdAt : 1
     }).sort({ createdAt: -1 }).limit(per_page).skip(per_page*(page-1));
-    if(buy){
-      var count = await buyModel.find({ email : email, bonus_type : "Buying" }).count()
-    }
+  
+      count = await buyModel.find({ email : email, bonus_type : "Buying" }).count()
+      if(count>0){
+        status=1
+      }
    res.status(200).json({
-      status : 1,
+      status : status,
       data : buy,
       count : count
     })
