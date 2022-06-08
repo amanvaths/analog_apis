@@ -1786,7 +1786,7 @@ exports.bounty =async (req, res) => {
       count = await buyModel.find({ email : email, bonus_type : "Buying" }).count()
       if(count>0){
         status=1
-      }
+      } 
    res.status(200).json({
       status : status,
       data : buy,
