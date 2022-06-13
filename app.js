@@ -45,7 +45,7 @@ io.on("connection", async (socket) => {
   //   io.emit("balance", data);  
 });
 
-app.get('/get', async (req, res) => { 
+app.post('/get', async (req, res) => { 
   const { email } = req.body; 
   const userWallet = require("./models/userWallet");
     await userWallet.find({ email : email }).then( async(userWallets) => {
