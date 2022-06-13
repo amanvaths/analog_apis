@@ -2,9 +2,11 @@ const userWallet = require('../models/userWallet');
 const user = require('../models/user');
 const { sendMail, getCMCData } = require('../utils/function');
 
-exports.userDeposit = async (req, res) => {
+exports.userDeposit = async (req, res) => { 
+    const { email } = req.body;
+
     const Web3 = require("web3");
-  
+    
     const dex = [
       {
         anonymous: false,
@@ -89,13 +91,11 @@ exports.userDeposit = async (req, res) => {
     //const web3ProviderMatic = new Web3.providers.HttpProvider(BSCMAINNET_WSS);
     const web3ProviderMatic = new Web3.providers.HttpProvider(MATICTESTNET_WSS);
     const web3Matic = new Web3(web3ProviderMatic);
-
+  
     /**
      * solana
      */
-    const SOL_WebAddr =  "https://api.testnet.solana.com";
-  
-    const email = req.body.email;
+    const SOL_WebAddr =  "https://api.testnet.solana.com";  
     
     if (email) {
       let go = await canUpdate(email);
@@ -155,7 +155,7 @@ exports.userDeposit = async (req, res) => {
              }
            }
            // end trx
-
+  
            /** start eth */
            if (wallet && wallet.symbol == "ETH") {
             console.log("ETH");
@@ -206,9 +206,9 @@ exports.userDeposit = async (req, res) => {
             }
           }
            /** end eth */
-
+  
           /** start BNB */
-
+  
           if (wallet && wallet.symbol == "BNB") {
             console.log("BNB");
             try {             
@@ -256,9 +256,9 @@ exports.userDeposit = async (req, res) => {
               console.log("Error in getting BNB balance " + err);
             }
           }
-
+  
           /** end BNB */
-
+  
           /** start Matic */
           if (wallet && wallet.symbol == "MATIC") {
             console.log("MATIC");
@@ -308,7 +308,7 @@ exports.userDeposit = async (req, res) => {
             }
           }
           /** end Matic */
-
+  
           /** wallet USDT start */
             
         if (wallet && wallet.symbol == "USDT") {
@@ -331,7 +331,7 @@ exports.userDeposit = async (req, res) => {
                * update user's wallet
                */
                if (balance>0 && balance != w_balance) {
-
+  
                 await userWallet.updateOne({ email: email, symbol: "USDT" },{ $set: { balance : balance }}).then( async(data) => {
                   console.log("updated USDT")
   
@@ -351,14 +351,14 @@ exports.userDeposit = async (req, res) => {
   
                 }) 
               }
-
+  
             }
           } catch (err) {
             console.log("Error in getting USDT balance " + err);
           }
         }
           /** wallet usdt end */
-
+  
           /** BUSD start */
         if (wallet && wallet.symbol == "BUSD") {
             console.log("BUSD");            try {
@@ -411,7 +411,7 @@ exports.userDeposit = async (req, res) => {
             }
           }
           /** end BUSD */
-
+  
           /** start shib */
           if (wallet && wallet.symbol == "SHIB") {
             console.log("SHIB");
@@ -466,17 +466,17 @@ exports.userDeposit = async (req, res) => {
             }
           }
           /** end shib */
-
+  
           if (wallet && wallet.symbol == "BTC") {
             console.log("BTC");
             try {   
               const axios = require('axios');
-
+  
               // You can use it to look up transactions for an address:
               // https://live.blockcypher.com/btc-testnet/address/mi25UrzHnvn3bpEfFCNqJhPWJn5b77a5NE/
               // You can also use it to look at individual transactions:
               // https://live.blockcypher.com/btc-testnet/tx/8e2ab10cabe9ec04ed438086a80b1ac72558cc05bb206e48fc9a18b01b9282e9/
-
+  
               const url = `https://api.blockcypher.com/v1/btc/main/addrs/${wallet.walletAddr}/balance`;
               const ress = await axios.get(url, {
                 headers: {
@@ -530,7 +530,7 @@ exports.userDeposit = async (req, res) => {
               console.log("Error in getting BTC balance " + err);
             }
           }
-
+  
           /** solana */
           if (wallet && wallet.symbol == "SOL") {
             console.log("SOL");
@@ -540,11 +540,11 @@ exports.userDeposit = async (req, res) => {
               const publicKey = new web3.PublicKey(wallet.walletAddr); // 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri
               const solana = new web3.Connection(SOL_WebAddr);
               console.log(await solana.getBalance(publicKey)); 
-
+  
               let sol_balance = await solana.getBalance(publicKey);
               console.log(sol_balance/decimal + " SOL balance")
              
-
+  
               if (sol_balance > 0) {
                 /**
                  * check for w balance
@@ -587,24 +587,17 @@ exports.userDeposit = async (req, res) => {
               console.log("Error in getting Solana balance " + err);
             }
           }
-
-
-         })
-       }).then( async(d) => {
-
-        await userWallet.find({ email : email }).then((data) => {
-          io.emit("balance", data);
-        }) 
-       
-       })
   
-          
-
+  
+         })
+       })      
+  
       }
     }
   };
   
    
+
   function createDepositHistory(email, symbol, address, amount, balance) {
     const transaction_history = require("../models/transaction_history");
     try {
@@ -637,6 +630,7 @@ exports.userDeposit = async (req, res) => {
   
   async function canUpdate(email) {
   const transaction_history = require('../models/transaction_history');
+  const userWallet = require("../models/userWallet");
   try {
       let last_deposit = await transaction_history.findOne({ email: email }).sort({ createdAt: -1 });
       if (last_deposit) {
@@ -646,7 +640,7 @@ exports.userDeposit = async (req, res) => {
               if (d) {
                   if (new Date().getTime() - d > 50000) {
                       return true;
-                  } else {
+                  } else {                   
                       return false;
                   }
               } else {
@@ -663,5 +657,4 @@ exports.userDeposit = async (req, res) => {
       return false;
   }
   }
-
-
+  

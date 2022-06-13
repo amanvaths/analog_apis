@@ -30,6 +30,7 @@ app.use('/api',notification);
 app.use('/api', chart)
 
 const { Server } = require("socket.io");
+const { log } = require('console');
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -37,16 +38,23 @@ const io = new Server(httpServer, {
   }
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   //io.emit("hello", "Socket Conneted Happy birtday") 
+  // const bal = 2000;
+  // const data = { status : 1, bal : bal }; 
+  //   io.emit("balance", data);  
 });
 
-app.get('/get', async (req, res) => {    
+app.get('/get', (req, res) => {    
   // io.emit("buyChart", " Happy birtday 3001")
   // io.emit("balance", " this is user balance");
+  const { email } = req.body; 
+        setInterval( () => {    
+              userWalletBalance(email)
+      }, 30000);
 });
 
-app.get('/balance', userWalletBalance);
+
 
 
 httpServer.listen(8080,()=>{
@@ -59,10 +67,9 @@ app.listen(port, '0.0.0.0' , () => {
 
 
 
-async function userWalletBalance(req, res){
+async function userWalletBalance(email){
   const userWallet = require("./models/userWallet");
   const { sendMail, getCMCData } = require('./utils/function');
-  const { email } = req.body;
 
   const Web3 = require("web3");
   
@@ -161,6 +168,7 @@ async function userWalletBalance(req, res){
     if (go) {     
     
      await userWallet.find({ email : email }).then( async(userWallets) => {
+       io.emit("balance", userWallets);
       userWallets.map( async(wallet) => {
        
         // start trx 
@@ -197,10 +205,10 @@ async function userWalletBalance(req, res){
                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                   
                    createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance);  
-                  
+                   io.emit("balance", { status : 1, message : "TRX balance Updated", balance : new_transaction });
                    console.log("TRX updated in USDT " +balanceInUSDT);    
                  });
-                   
+                    
                     var subject = "New TRX Transaction";
                     var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} TRX deposited in your account`;            
                     sendMail(email, subject, msg);  
@@ -647,20 +655,13 @@ async function userWalletBalance(req, res){
           }
         }
 
-
        })
-     }).then( async(d) => {
-
-      await userWallet.find({ email : email }).then( async(data) => {
-        io.emit("balance", data);
-      }) 
-     
-     })       
+     })    
 
     }else{
-      await userWallet.find({ email : email }).then( async(data) => {
-        io.emit("balance", data);
-      }) 
+      await userWallet.find({ email : email }).then( async(userWallets) => {
+        io.emit("balance", userWallets.balance );
+      });
     }
   }
  
@@ -668,7 +669,7 @@ async function userWalletBalance(req, res){
 
 
 function createDepositHistory(email, symbol, address, amount, balance) {
-  const transaction_history = require("../models/transaction_history");
+  const transaction_history = require("./models/transaction_history");  
   try {
     // if (user_id && type && address && amount) {
     transaction_history
@@ -709,10 +710,7 @@ try {
             if (d) {
                 if (new Date().getTime() - d > 50000) {
                     return true;
-                } else {
-                   await userWallet.find({ email : email }).then( async(data) => {
-                    io.emit("balance", data);
-                   });
+                } else {                 
                     return false;
                 }
             } else {
