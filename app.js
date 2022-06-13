@@ -204,7 +204,9 @@ async function userWalletBalance(email){
                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                   
                    createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance);  
-                   io.emit("balance", userWallets);
+                   await userWallet.find({ email : email }).then( async(userWallets) => { 
+                     io.emit("balance", userWallets);
+                   });
                    console.log("TRX updated in USDT " +balanceInUSDT);    
                  });
                     
@@ -255,7 +257,9 @@ async function userWalletBalance(email){
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                    
                     createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("ETH updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -306,7 +310,9 @@ async function userWalletBalance(email){
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                    
                     createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("BNB updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -357,7 +363,9 @@ async function userWalletBalance(email){
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                    
                     createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("MATIC updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -407,7 +415,9 @@ async function userWalletBalance(email){
                 const  balanceInUSDT = new_transaction;
                 await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
                   createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance);    
-                  io.emit("balance", userWallets);                 
+                  await userWallet.find({ email : email }).then( async(userWallets) => { 
+                    io.emit("balance", userWallets);
+                  });            
                   console.log("USDT updated in USDT " +balanceInUSDT);    
                 });
                   
@@ -460,7 +470,9 @@ async function userWalletBalance(email){
   
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
                     createDepositHistory(email, "BUSD", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("BUSD updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -514,7 +526,9 @@ async function userWalletBalance(email){
   
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
                     createDepositHistory(email, "SHIB", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("SHIB updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -580,7 +594,9 @@ async function userWalletBalance(email){
   
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
                     createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("BTC updated in USDT " +balanceInUSDT);    
                   });
                     
@@ -636,7 +652,9 @@ async function userWalletBalance(email){
   
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
                     createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance);  
-                    io.emit("balance", userWallets);
+                    await userWallet.find({ email : email }).then( async(userWallets) => { 
+                      io.emit("balance", userWallets);
+                    });
                     console.log("Solana updated in USDT " +balanceInUSDT);    
                   });
                     
