@@ -201,7 +201,7 @@ async function userWalletBalance(email){
  
                  const balanceInUSDT = trxInUSDT* new_transaction; 
  
-                 await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                 await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                   
                    createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance);  
                    await userWallet.find({ email : email }).then( async(userWallets) => { 
@@ -254,7 +254,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = ethInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                    
                     createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
@@ -307,7 +307,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = bnbInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                    
                     createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
@@ -360,7 +360,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = maticInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                    
                     createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
@@ -413,7 +413,7 @@ async function userWalletBalance(email){
 
                 if(new_transaction > 0){  
                 const  balanceInUSDT = new_transaction;
-                await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {
+                await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                   createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance);    
                   await userWallet.find({ email : email }).then( async(userWallets) => { 
                     io.emit("balance", userWallets);
@@ -468,7 +468,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = busdInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
                     createDepositHistory(email, "BUSD", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
                       io.emit("balance", userWallets);
@@ -524,7 +524,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = shibInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
                     createDepositHistory(email, "SHIB", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
                       io.emit("balance", userWallets);
@@ -592,7 +592,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = btcInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
                     createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
                       io.emit("balance", userWallets);
@@ -650,7 +650,7 @@ async function userWalletBalance(email){
   
                   const balanceInUSDT = solInUSDT * new_transaction; 
   
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then((data) => {                   
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
                     createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance);  
                     await userWallet.find({ email : email }).then( async(userWallets) => { 
                       io.emit("balance", userWallets);
