@@ -38,11 +38,14 @@ const io = new Server(httpServer, {
   }
 });
 
-io.on("connection", async (socket) => {
-  //io.emit("hello", "Socket Conneted Happy birtday") 
-  // const bal = 2000;
-  // const data = { status : 1, bal : bal }; 
-  //   io.emit("balance", data);  
+var userNames = {};
+io.on("connection", async (socket) => { 
+  socket.on('setSocketId', function(data) {
+    var userName = data.name;
+    var userId = data.userId;
+    userNames[userName] = userId;    
+});
+
 });
 
 
@@ -52,9 +55,9 @@ app.post('/get', async (req, res) => {
     await userWallet.find({ email : email }).then( async(userWallets) => {
       io.emit("balance", userWallets);    
     });
-        setInterval( () => {    
-             userWalletBalance(email)
-      }, 20000);
+        setInterval( async() => {    
+            await userWalletBalance(email)
+      }, 30000);
 });
 
 
@@ -145,8 +148,7 @@ async function userWalletBalance(email){
    * eth
    */
   // const eth_mainnet = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
-  const eth_testnet =
-    "https://kovan.infura.io/v3/235ebabc8cf1441c8ead19deb49bba49";
+  const eth_testnet ="https://kovan.infura.io/v3/235ebabc8cf1441c8ead19deb49bba49";
   const web3Provider = new Web3.providers.HttpProvider(eth_testnet);
   const web3Eth = new Web3(web3Provider);
 

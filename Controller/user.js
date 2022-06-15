@@ -2141,8 +2141,8 @@ exports.buyChart = async (req, res) => {
                             })
                           })
 
-
-    const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, totalJul, totalAug, totalSep, totalOct, totalNov, totalDec];   
+   //totalJul, totalAug, totalSep, totalOct, totalNov, totalDec
+    const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, ];   
     const arr1 = [];
      
         return res.status(200).json({
