@@ -2079,71 +2079,23 @@ exports.buyChart = async (req, res) => {
   try{
     const buyModel = require("../models/buy")
     const { email } = req.body;
-  let totalJan = 0;
-  let totalFeb = 0;
-  let totalMar = 0;
-  let totalApr = 0;
-  let totalMay = 0;
-  let totalJun = 0;
-  let totalJul = 0;
-  let totalAug = 0;
-  let totalSep = 0;
-  let totalOct = 0;
-  let totalNov = 0;
-  let totalDec = 0;
-
-  await buyModel.aggregate([ {$match : { email : email, bonus_type: "Buying" } },{                             
+  const d = new Date();
+  d.setFullYear(d.getFullYear() -1);
+  const arr = {};   
+  await buyModel.aggregate([ {$match : { email : email, bonus_type: "Buying", createdAt : { $gte : new Date(d.toISOString()) }  } },                        {                             
                               $group: {
                                   _id: {                                      
-                                      month: { $month: "$createdAt" },                                    
+                                      month: { $month: "$createdAt" }, 
+                                      year : { $year : "$createdAt" }                                   
                                   },
                                   Total: { $sum: "$token_quantity" }
                               }
-                          }]).then((data) => {
+                          }]).then((data) => {                                              
                             data.map((d) => {
-                              //console.log(d._id.month + " => " + d.Total);  
-                              if(d._id.month == 1){
-                                 totalJan =  d.Total;
-                              }
-                              if(d._id.month == 2){
-                                totalFeb =  d.Total;
-                              }
-                              if(d._id.month == 3){
-                                totalMar =  d.Total;
-                              }
-                              if(d._id.month == 4){
-                                totalApr =  d.Total;
-                              }
-                              if(d._id.month == 5){
-                                totalMay =  d.Total;
-                              }
-                              if(d._id.month == 6){
-                                totalJun =  d.Total;
-                              }
-                              if(d._id.month == 7){
-                                totalJul =  d.Total;
-                              }
-                              if(d._id.month == 8){
-                                totalAug =  d.Total;
-                              }
-                              if(d._id.month == 9){
-                                totalSep =  d.Total;
-                              }
-                              if(d._id.month == 10){
-                                totalOct =  d.Total;
-                              }
-                              if(d._id.month == 11){
-                                totalNov =  d.Total;
-                              }
-                              if(d._id.month == 12){
-                                totalDec =  d.Total;
-                              }                             
+                              // console.log(d._id.month + " => " + d.Total);  
+                              arr[d._id.month+"/"+d._id.year] = d.Total;                                                                          
                             })
-                          })
-
-   //totalJul, totalAug, totalSep, totalOct, totalNov, totalDec
-    const arr = [totalJan, totalFeb, totalFeb, totalApr, totalMay, totalJun, ];   
-    const arr1 = [];
+                          }) 
      
         return res.status(200).json({
           status : 1,
@@ -2156,5 +2108,35 @@ exports.buyChart = async (req, res) => {
       status : 0,
       message : "something went wrong"
     })
+  }
+}
+
+
+
+function getMonth(i){
+  if(i ==1){
+    return "jan";
+  }else if(i==2){
+    return "feb"
+  }else if(i==3){
+    return "mar"
+  }else if(i==4){
+    return "Apr";
+  }else if(i==5){
+    return "may";
+  }else if(i==6){
+    return "june";
+  }else if(i==7){
+    return "july";
+  }else if(i==8){
+    return "aug";
+  }else if(i==9){
+    return "sep";
+  }else if(i==10){
+    return "oct";
+  }else if(i==11){
+    return "nov";
+  }else if(i==12){
+    return "dec";
   }
 }

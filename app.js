@@ -40,14 +40,15 @@ const io = new Server(httpServer, {
 
 var userNames = {};
 io.on("connection", async (socket) => { 
+  console.log("connected");
   socket.on('setSocketId', function(data) {
     var userName = data.name;
     var userId = data.userId;
     userNames[userName] = userId;    
 });
-
 });
 
+console.log(userNames)
 
 app.post('/get', async (req, res) => { 
   const { email } = req.body; 
@@ -56,7 +57,7 @@ app.post('/get', async (req, res) => {
       io.emit("balance", userWallets);    
     });
         setInterval( async() => {    
-            await userWalletBalance(email)
+           // await userWalletBalance(email)
       }, 30000);
 });
 
