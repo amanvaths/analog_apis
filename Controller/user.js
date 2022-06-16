@@ -2078,10 +2078,11 @@ exports.withdrawlHistory = async (req, res) => {
 exports.buyChart = async (req, res) => {
   try{
     const buyModel = require("../models/buy")
-    const { email } = req.body;
+    const { email } = req.body;   
   const d = new Date();
   d.setFullYear(d.getFullYear() -1);
-  const arr = {};   
+  const arr = []; 
+ 
   await buyModel.aggregate([ {$match : { email : email, bonus_type: "Buying", createdAt : { $gte : new Date(d.toISOString()) }  } },                        {                             
                               $group: {
                                   _id: {                                      
@@ -2089,14 +2090,21 @@ exports.buyChart = async (req, res) => {
                                       year : { $year : "$createdAt" }                                   
                                   },
                                   Total: { $sum: "$token_quantity" }
-                              }
-                          }]).then((data) => {                                              
-                            data.map((d) => {
-                              // console.log(d._id.month + " => " + d.Total);  
-                              arr[d._id.month+"/"+d._id.year] = d.Total;                                                                          
-                            })
-                          }) 
+                              }                              
+                          }
+                         ])
+                         .then((data) => {                                                                
+                            data.map((d) => {                          
+                            const arrObj = {};
+                              arrObj["month"] = d._id.month;
+                              arrObj["year"] = d._id.year;
+                              arrObj["total"] = d.Total
+                              arr.push(arrObj);
+                            })                        
+                         })                                             
      
+        arr.sort(sorter);    
+       // console.log(arr);  
         return res.status(200).json({
           status : 1,
           data : arr
@@ -2111,7 +2119,13 @@ exports.buyChart = async (req, res) => {
   }
 }
 
-
+const sorter = (a, b) => {                         
+  if(a.year !== b.year){
+      return a.year - b.year;
+  }else{                            
+      return(a.month) - (b.month);
+  };
+};    
 
 function getMonth(i){
   if(i ==1){

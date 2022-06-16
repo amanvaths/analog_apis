@@ -39,16 +39,17 @@ const io = new Server(httpServer, {
 });
 
 var userNames = {};
+var i = 0;
 io.on("connection", async (socket) => { 
-  console.log("connected");
+  //console.log("connected");
   socket.on('setSocketId', function(data) {
     var userName = data.name;
     var userId = data.userId;
     userNames[userName] = userId;    
+   // console.log(data.name)     
+      io.to(data.userId).emit('private', 'hellow '+data.name+ ' ' + i++); 
 });
 });
-
-console.log(userNames)
 
 app.post('/get', async (req, res) => { 
   const { email } = req.body; 
