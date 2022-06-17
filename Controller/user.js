@@ -1531,7 +1531,7 @@ exports.refferalLevelWiseData1 = async (req, res) => {
    }
 }
 
-
+/*
 exports.refferalLevelWiseData = async (req, res) => {
   try{
    const { email } = req.body;
@@ -1594,6 +1594,68 @@ exports.refferalLevelWiseData = async (req, res) => {
      status : 0,
      message : "Something went wrong "
    });
+  }
+}
+*/
+
+exports.refferalLevelWiseData = async (req, res) => {
+  try{
+    const { email } = req.body;
+    const buyModel = require("../models/buy");
+    let user_id = [];
+    user_id.push(await findUserId(email));  
+    const level1 = await levelWiseList(user_id, 1);
+    const level2 = await levelWiseList(user_id, 2);
+    const level3 = await levelWiseList(user_id, 3);
+    let amtLevel1 = 0;
+    let amtLevel2 = 0;
+    let amtLevel3 = 0;
+    let totalAna1 = 0;
+    let totalAna2 = 0;
+    let totalAna3 = 0;
+    let totalExpense1 = 0;
+    let totalExpense2 = 0;
+    let totalExpense3 = 0;
+   
+    await buyModel.aggregate([{ $match : { email : email,  bonus_type : "Level" }}, 
+                                                { $group: { _id: {  from_level: "$from_level" },
+                                                  amount: { $sum: "$amount" },
+                                                  token_buying: { $sum: "$token_quantity" },
+                                                  affiliate_bonus: { $sum: "$bonus" },
+                                                  handout: { $sum : "$ho_bonus"}
+                                                },
+                                                },
+                                              ]).then((data) => {
+                                                data.map((d) => {
+                                                   if(d._id.from_level == 1 ){                                                   
+                                                    totalExpense1   = d.amount;
+                                                    totalAna1       = d.token_buying;
+                                                    amtLevel1       = d.affiliate_bonus;                                                 
+                                                   } 
+                                                   if(d._id.from_level == 2 ){                                                   
+                                                    totalExpense2   = d.amount;
+                                                    totalAna2       = d.token_buying;
+                                                    amtLevel2       = d.affiliate_bonus;                                                 
+                                                   }   
+                                                   if(d._id.from_level == 3 ){                                                   
+                                                    totalExpense3   = d.amount;
+                                                    totalAna3       = d.token_buying;
+                                                    amtLevel3       = d.affiliate_bonus;                                                 
+                                                   }                            
+                                                })                                              
+                                              })
+        //  console.log(amtLevel1, 1)
+          res.status(200).json({
+            status : 1,
+            data: {
+              level1 : { totalUsers : level1.length, totalInc : amtLevel1, totalAna : totalAna1, totalExpense : totalExpense1},
+              level2 : { totalUsers : level2.length, totalInc : amtLevel2, totalAna : totalAna2, totalExpense : totalExpense2 },
+              level3 : { totalUsers : level3.length, totalInc : amtLevel3, totalAna : totalAna3, totalExpense : totalExpense3 },
+            }
+          });
+       
+  }catch(err){
+    console.log(" Error in level data " +err);
   }
 }
 
