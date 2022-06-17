@@ -48,7 +48,7 @@ router.post('/signin', auth, signin);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
-router.post("/transaction_update", userDeposit);
+// router.post("/transaction_update", userDeposit);
 router.post('/loginhistory',  loginhistory);
 router.post('/levels',  levels);
 router.post('/settings', settings);
@@ -138,15 +138,18 @@ async function getCMCData(req, res) {
     var coin_symbols = req.body.base_currency ? req.body.base_currency : query_coin_symbol_array.join(",");
     var conver_currency = req.body.currency ? req.body.currency : "usd";     
     const final_third_party_api_url = `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${coin_symbols}&convert=${conver_currency}`;
-    const ress = await axios.get(final_third_party_api_url, {
+    await axios.get(final_third_party_api_url, {
       headers: {
         "Content-Type": "Application/json",      
         "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY, //  024d5931-52b8-4c1f-8d99-3928fd987163
         "Access-Control-Allow-Origin": "*",
       },
-    });
-   
-    return res.status(200).json(ress.data.data);
+    }).then((ress) => {
+      return res.status(200).json(ress.data.data);
+    }).catch((err) => {
+      return res.status(400).json({ status : 0, message : "Error in getting data from cmc" });
+    })
+  
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
