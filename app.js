@@ -663,6 +663,7 @@ async function emitBalance(email){
   setInterval( async() => {
     await userWallet.find({ email : email }).then( async(userWallets) => {
       io.emit("balance", userWallets);
+      io.emit("msg", "TRX AYA ");
     })
   }, 30000);
 
