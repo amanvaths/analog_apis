@@ -674,12 +674,12 @@ exports.walletData = async (req, res) => {
 exports.transaction_history = async (req, res) => {
   const transaction_history = require("../models/transaction_history");
   try {
-    const { email, symbol }   = req.body;
-    const limitValue          = req.body.limit || 1000;
-    const skipValue           = req.body.skip || 0;
-    const transactionData = await transaction_history.find({ email, symbol }).limit(limitValue).skip(skipValue).sort({ createdAt: 'desc'});
+    const { email, symbol, page }   = req.body;
+    const per_page = 10 
+    const transactionData = await transaction_history.find({ email, symbol }).limit(per_page).skip(per_page*(page-1)).sort({ createdAt: 'desc'});
+    const count = await transaction_history.find({ email, symbol }).count()
     if (transactionData) {
-      return res.status(200).json(transactionData);
+      return res.status(200).json({data: transactionData, count: count});
     } else {
       return res
         .status(400)

@@ -86,7 +86,7 @@ router.post('/buyChart', buyChart);
 /**
  * Admin Routes
  */
-
+  
 router.post('/buytoken', buytoken);
 router.post('/updatePrecent', updatePrecent);
 router.post('/addpresale', presalelevel);
