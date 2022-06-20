@@ -47,11 +47,11 @@ const userWallet = require('./models/userWallet');
 io.on("connection", async (socket) => { 
   socket.on('join', async function (data) {
     socket.join(data.email); 
-    // setInterval( async() => {
+     setInterval( async() => {
       await userWallet.find({ email : data.email }).then( async(userWallets) => {
         io.sockets.in(data.email).emit('balance', userWallets);   
       })
-    // }, 30000);  
+     }, 30000);  
   }); 
 });
 
@@ -83,7 +83,7 @@ io.on("connection", async (socket) => {
 // })
 // })
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('*/30 * * * * *', async () => {
   const User = require('./models/user'); 
   await User.find({}).then((user) =>{
     user.map((users) => {    
