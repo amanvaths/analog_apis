@@ -10,7 +10,11 @@ const {createServer} = require('http');
 const db = process.env.db
 try {
   setTimeout(async function() {
-   await mongoose.connect(db, { useNewUrlParser: true, }).then(() => console.log('MongoDB connected...')).catch(err => console.log(err));
+   await mongoose.connect(db, { useNewUrlParser: true, })
+   .then( async() => {
+    console.log('MongoDB connected...')
+   })  
+   .catch(err => console.log(err));
   }, 10000);
 } catch (error) {
   handleError(error);
@@ -44,46 +48,34 @@ const io = new Server(httpServer, {
 });
 
 const userWallet = require('./models/userWallet');
+const userNotification = require('./models/userNotification')
 io.on("connection", async (socket) => { 
+  
   socket.on('join', async function (data) {
-    socket.join(data.email); 
+    const email = data.email;
+    socket.join(email); 
+
      setInterval( async() => {
-      await userWallet.find({ email : data.email }).then( async(userWallets) => {
-        io.sockets.in(data.email).emit('balance', userWallets);   
+
+      await userWallet.find({ email : email }).then( async(userWallets) => {
+        io.sockets.in(email).emit('balance', userWallets);   
       })
-     }, 30000);  
+
+      await userNotification.find({ email : email }).then((data) => {
+        console.log(email,2);
+        io.sockets.in(email).emit('notification', data);  
+      })
+
+     }, 30000);
+
+   
+
   }); 
 });
 
-// let onlineUsers = [];
-// const addNewUser = (username, socketId) => {
-//   !onlineUsers.some((user) => user.username === username) && onlineUsers.push({ username, socketId });
-// }
 
-// const removeUser = (socketId) => {
-//   onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
-// }
 
-// const getUser = (username) =>{
-//   return onlineUsers.find((user) => user.username === username);
-// }
-
-// io.on("connection", (socket) => {
-//   socket.on("newUser", (username) => {
-//     addNewUser(username, socket.id);
-//   })
-
-//   socket.on("sendMessage", ({ senderName, receiverName, type }) =>{
-//     const receiver = getUser(receiverName);
-//     io.to(receiver.socketId).emit("sendMsg", 'hellow')
-//   })
-
-// socket.on("disconnet", () => {
-//   removeUser(socket.id);
-// })
-// })
-
-cron.schedule('*/30 * * * * *', async () => {
+cron.schedule('* * * * *', async () => {
   const User = require('./models/user'); 
   await User.find({}).then((user) =>{
     user.map((users) => {    
@@ -91,6 +83,17 @@ cron.schedule('*/30 * * * * *', async () => {
     }) 
   })
 });
+
+// async function checkbal(){
+//   const axios = require('axios');
+//   const testnet = `https://api.blockcypher.com/v1/btc/test3/addrs/mkWc9AJ6WN4JQVKLhqfv9ZENnCVaJvRGKZ/balance`;      
+//   await axios.get(testnet).then( async(bal) => {
+//      console.log(bal);
+//   }).catch((e) => {
+//     console.log(e);
+//   })
+// }
+// checkbal();
 
 
 httpServer.listen(8080,()=>{
@@ -199,22 +202,7 @@ async function userWalletBalance(email){
   if (email) {
     let go = await canUpdate(email);
     if (go) { 
-      // let trxInUSDT, ethInUSDT, bnbInUSDT, maticInUSDT, solInUSDT, busdInUSDT, sbhibInUSDT, btcInUSDT   = 0;     
-      // const cmcdata  = await getCMCData();
-      // if(cmcdata){
-      //   trxInUSDT    = cmcdata.TRX.quote.USD.price ?  parseFloat(cmcdata.TRX.quote.USD.price) : 0 ; 
-      //   ethInUSDT    = cmcdata.ETH.quote.USD.price ?  parseFloat(cmcdata.ETH.quote.USD.price) : 0 ; 
-      //   bnbInUSDT    = cmcdata.BNB.quote.USD.price ?  parseFloat(cmcdata.BNB.quote.USD.price) : 0 ;     
-      //   maticInUSDT  = cmcdata.MATIC.quote.USD.price ?  parseFloat(cmcdata.MATIC.quote.USD.price) : 0 ;   
-      //   solInUSDT    = cmcdata.SOL.quote.USD.price ?  parseFloat(cmcdata.SOL.quote.USD.price) : 0 ; 
-      //   busdInUSDT   = cmcdata.BUSD.quote.USD.price ?  parseFloat(cmcdata.BUSD.quote.USD.price) : 0 ; 
-      //   sbhibInUSDT  = cmcdata.SHIB.quote.USD.price ?  parseFloat(cmcdata.SHIB.quote.USD.price) : 0 ; 
-      //   btcInUSDT    = cmcdata.BTC.quote.USD.price ?  parseFloat(cmcdata.BTC.quote.USD.price) : 0 ; 
-      // }else{
-      //   console.log("Error in getting CMC Data"); 
-      //   return;
-      // }
-     
+         
      await userWallet.find({ email : email }).then( async(userWallets) => {    
       userWallets.map( async(wallet) => {
 
@@ -232,18 +220,22 @@ async function userWalletBalance(email){
                       const  trxInUSDT    = cmcdata.TRX.quote.USD.price ?  parseFloat(cmcdata.TRX.quote.USD.price) : 0 ;                 
                     await userWallet.updateOne({ email: email, symbol: "TRX" },{ $set: { balance : balance }}).then( async(data) => {              
                       const new_transaction = balance - w_balance;
-                      if(new_transaction > 0){ 
+                      if(new_transaction){ 
                             const balanceInUSDT = trxInUSDT* new_transaction;               
                             await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
-                              console.log("updated TRX" , 3);
+                             // console.log("updated TRX" , 3);
                               if(balance < w_balance){
+                                createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
                                 const msg = new_transaction + ' TRX Withdrawl from wallet';
                                 io.sockets.in(email).emit('msg', msg); 
+                                createNotification(email, msg, 2)
                               } else{
+                                createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Deposit');
                                 const msg =  new_transaction + ' TRX Deposited in wallet';
                                 io.sockets.in(email).emit('msg', msg); 
-                              } 
-                              createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance);
+                                createNotification(email, msg, 1)
+                              }                               
+                             
                             });
                           
                           var subject = "New TRX Transaction";
@@ -277,17 +269,19 @@ async function userWalletBalance(email){
                   await userWallet.updateOne({ email: email, symbol: "ETH" },{ $set: { balance : balance }}).then( async(data) => {
                     //  console.log("updated ETH")
                     const new_transaction = balance - w_balance; 
-                    if(new_transaction > 0){  
+                    if(new_transaction){  
                     const balanceInUSDT = ethInUSDT * new_transaction; 
                     await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
                       createDepositHistory(email, "ETH", wallet.walletAddr, new_transaction, balance); 
                      
                         if(balance < w_balance){
                           const msg = new_transaction + ' ETH Withdrawl from wallet';
-                          io.sockets.in(email).emit('msg', msg); 
+                          io.sockets.in(email).emit('msg', msg);
+                          createNotification(email, msg, 2) 
                          } else{
                           const msg =  new_transaction + ' ETH Deposited in wallet';
                           io.sockets.in(email).emit('msg', msg); 
+                          createNotification(email, msg, 1)
                          } 
                        
                        console.log("ETH updated in USDT " +balanceInUSDT);    
@@ -310,11 +304,11 @@ async function userWalletBalance(email){
         }
         
         if (wallet && wallet.symbol == "BNB") {
-          // console.log("BNB");
+        
           try {             
             const decimal = 1e18;
             await web3Bnb.eth.getBalance(wallet.walletAddr).then( async(bnb_balance) => {
-               // console.log(bnb_balance / decimal + " BNB balance");
+            
             const balance = bnb_balance / decimal;
             if (balance > 0) {
               const w_balance       = wallet.balance ? parseFloat(wallet.balance) : 0; 
@@ -323,23 +317,26 @@ async function userWalletBalance(email){
                 if(cmcdata){
                  const bnbInUSDT    = cmcdata.BNB.quote.USD.price ?  parseFloat(cmcdata.BNB.quote.USD.price) : 0 ;
                 await userWallet.updateOne({ email: email, symbol: "BNB" },{ $set: { balance : balance }}).then( async(data) => {
-                   console.log("updated BNB")
+                  
                   const new_transaction = balance - w_balance; 
-                  if(new_transaction > 0){  
-                  const balanceInUSDT = bnbInUSDT * new_transaction; 
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
-                    createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance);  
-                   
-                      if(balance < w_balance){
-                        const msg = new_transaction + ' BNB Withdrawl from wallet';
-                        io.sockets.in(email).emit('msg', msg); 
-                       } else{
-                        const msg =  new_transaction + ' BNB Deposited in wallet';
-                        io.sockets.in(email).emit('msg', msg); 
-                       } 
-                     console.log("BNB updated in USDT " +balanceInUSDT);    
-                  });
-                    
+                  if(new_transaction){  
+
+                    const balanceInUSDT = bnbInUSDT * new_transaction; 
+                    await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
+                        if(balance < w_balance){
+                          createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance, 'Withdrawl');  
+                          const msg = new_transaction + ' BNB Withdrawl from wallet';
+                          io.sockets.in(email).emit('msg', msg); 
+                          createNotification(email, msg, 2)
+                        } else{
+                          createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance, 'Deposit');  
+                          const msg =  new_transaction + ' BNB Deposited in wallet';
+                          io.sockets.in(email).emit('msg', msg); 
+                          createNotification(email, msg, 1)
+                        } 
+                      console.log("BNB updated in USDT " +balanceInUSDT);    
+                    });
+                      
                      var subject = "New BNB Transaction";
                      var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BNB deposited in your account`;            
                      sendMail(email, subject, msg);  
@@ -357,11 +354,11 @@ async function userWalletBalance(email){
         }
         
         if (wallet && wallet.symbol == "MATIC") {
-          // console.log("MATIC");
+       
           try {           
             const decimal = 1e18;          
             await web3Matic.eth.getBalance(wallet.walletAddr).then( async(matic_balance)=> {
-            // console.log(matic_balance / decimal + " Matic balance");
+           
             const balance            = matic_balance / decimal;  
             if (balance > 0) {
               const w_balance    = wallet.balance ? parseFloat(wallet.balance) : 0; 
@@ -370,18 +367,22 @@ async function userWalletBalance(email){
                 if(cmcdata){
                  const maticInUSDT  = cmcdata.MATIC.quote.USD.price ?  parseFloat(cmcdata.MATIC.quote.USD.price) : 0 ; 
                 await userWallet.updateOne({ email: email, symbol: "MATIC" },{ $set: { balance : balance }}).then( async(data) => {
-                  //  console.log("updated MATIC")
+                 
                   const new_transaction = balance - w_balance; 
-                  if(new_transaction > 0){  
+                  if(new_transaction){  
                   const balanceInUSDT = maticInUSDT * new_transaction; 
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
-                    createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance);                    
+                                      
                       if(balance < w_balance){
+                        createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance, 'Withdrawl'); 
                         const msg = new_transaction + ' MATIC Withdrawl from wallet';
                         io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 2)
                        } else{
+                        createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance, 'Deposit'); 
                         const msg =  new_transaction + ' MATIC Deposited in wallet';
                         io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 1)
                        } 
                       
                      console.log("MATIC updated in USDT " +balanceInUSDT);    
@@ -410,26 +411,31 @@ async function userWalletBalance(email){
           tronWeb.setAddress(wallet.walletAddr);
           const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
           await instance.balanceOf(wallet.walletAddr).call().then( async(hex_balance) => {
-            const usdt_balance = Number(hex_balance._hex);
-            // console.log(usdt_balance + " USDT balance");
+          const usdt_balance = Number(hex_balance._hex);
+          
             if (usdt_balance > 0) {
-              let balance              = usdt_balance ? usdt_balance / decimal : 0;
-              const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0;       
+                let balance              = usdt_balance ? usdt_balance / decimal : 0;
+                const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0; 
+
                if (balance>0 && balance != w_balance) {
+
                 await userWallet.updateOne({ email: email, symbol: "USDT" },{ $set: { balance : balance }}).then( async(data) => {
-                  //  console.log("updated USDT")
+                 
                   const new_transaction = balance - w_balance; 
-                  if(new_transaction > 0){  
+                  if(new_transaction){  
                   const  balanceInUSDT = new_transaction;
                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
-                    createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance);   
                    
                       if(balance < w_balance){
+                        createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Withdrawl');   
                         const msg =new_transaction + ' USDT Withdrawl from wallet';
                         io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 2)
                        } else{
+                        createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Deposit');  
                         const msg = new_transaction + ' USDT Deposited in wallet';
                         io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 1)
                        } 
                      
                      console.log("USDT updated in USDT " +balanceInUSDT);    
@@ -469,20 +475,24 @@ async function userWalletBalance(email){
                 if(cmcdata){
                   const solInUSDT    = cmcdata.SOL.quote.USD.price ?  parseFloat(cmcdata.SOL.quote.USD.price) : 0 ; 
                 await userWallet.updateOne({ email: email, symbol: "SOL" },{ $set: { balance : balance }}).then( async(data) => {
-                   console.log("updated SOL")
+                  
                   const new_transaction = balance - w_balance; 
-                  if(new_transaction > 0){  
+                  if(new_transaction){  
+
                   const balanceInUSDT = solInUSDT * new_transaction; 
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
-                    createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance);
+                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                 
                     if(balance < w_balance){
-                     const msg = new_transaction + ' SOL Withdrawl from wallet';
-                     io.sockets.in(email).emit('msg', msg); 
+                        createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
+                        const msg = new_transaction + ' SOL Withdrawl from wallet';
+                        io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 2)
                     } else{
-                     const msg = new_transaction + ' SOL Deposited in wallet';
-                     io.sockets.in(email).emit('msg', msg); 
+                        createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance, 'Deposit');
+                        const msg = new_transaction + ' SOL Deposited in wallet';
+                        io.sockets.in(email).emit('msg', msg); 
+                        createNotification(email, msg, 1)
                     } 
-                     console.log("Solana updated in USDT " +balanceInUSDT);    
+                    // console.log("Solana updated in USDT " +balanceInUSDT);    
                   });
                     
                      var subject = "New Solana Transaction";
@@ -603,7 +613,8 @@ async function userWalletBalance(email){
           }
         }
         */
-     /*   if (wallet && wallet.symbol == "BTC") {
+       /*
+       if (wallet && wallet.symbol == "BTC") {
           // console.log("BTC");
           try {   
             const axios = require('axios');
@@ -613,58 +624,57 @@ async function userWalletBalance(email){
             // You can also use it to look at individual transactions:
             // https://live.blockcypher.com/btc-testnet/tx/8e2ab10cabe9ec04ed438086a80b1ac72558cc05bb206e48fc9a18b01b9282e9/
         
-            const url = `https://api.blockcypher.com/v1/btc/main/addrs/${wallet.walletAddr}/balance`;
-            const ress = await axios.get(url, {
-              headers: {
-                "Content-Type": "Application/json",    
-                "X-CMC_PRO_API_KEY": process.env.CMC_API_KEY, 
-                "Access-Control-Allow-Origin": "*",
-              },
-            });
-            const decimal = 18;
-            let btc_balance = ress.data.balance;
-            // console.log(btc_balance + " BTC balance")
-        
-            if (btc_balance > 0) {
-             
-              let balance               = btc_balance ? btc_balance / decimal : 0;
-              const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;            
-              const cmcdata             = await getCMCData('SHIB','USDT');
-              const btcInUSDT           = cmcdata.BTC.quote.USDT.price || 0;                    
-               
-              if (balance>0 && btcInUSDT && balance != w_balance) {
-        
-                await userWallet.updateOne({ email: email, symbol: "BTC" },{ $set: { balance : balance }}).then( async(data) => {
-                  // console.log("updated BTC")
-        
-                  const new_transaction = balance - w_balance; 
-        
-                  if(new_transaction > 0){  
-        
-                  const balanceInUSDT = btcInUSDT * new_transaction; 
-        
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                   
-                    createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance);  
-                    await userWallet.find({ email : email }).then( async(userWallets) => { 
-                      io.emit("balance", userWallets);
-                    });
-                    // console.log("BTC updated in USDT " +balanceInUSDT);    
-                  });
-                    
-                     var subject = "New BTC Transaction";
-                     var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} BTC deposited in your account`;            
-                     sendMail(email, subject, msg);  
-                }  
-        
-                }) 
-              }                
-        
-            }
+          //  const url = `https://api.blockcypher.com/v1/btc/main/addrs/${wallet.walletAddr}/balance`;
+            const testnet = `https://api.blockcypher.com/v1/btc/test3/addrs/${wallet.walletAddr}/balance`;
+          
+            await axios.get(testnet).then( async(bal) => {
+              let decimal = 1e8;   console.log(bal, 1);            
+              let btc_balance = bal.data.balance/decimal;
+              if (btc_balance > 0) {
+
+                let balance               = btc_balance ? parseFloat(btc_balance) : 0;
+                const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;  
+                if (balance>0 && btcInUSDT && balance != w_balance) {
+                  const cmcdata             = await getCMCData();
+                  if(cmcdata){
+                  const btcInUSDT           = cmcdata.BTC.quote.USD.price ? cmcdata.BTC.quote.USD.price : 0;   
+                  await userWallet.updateOne({ email: email, symbol: "BTC" },{ $set: { balance : balance }}).then( async(data) => {
+                    console.log("updated BTC")
+                   const new_transaction = balance - w_balance; 
+                   if(new_transaction){  
+                   const balanceInUSDT = btcInUSDT * new_transaction; 
+                   await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                 
+                     if(balance < w_balance){
+                       createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
+                      const msg = new_transaction + ' BTC Withdrawl from wallet';
+                      io.sockets.in(email).emit('msg', msg); 
+                      createNotification(email, msg, 2)
+                     } else{
+                       createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance, 'Deposit');
+                      const msg = new_transaction + ' BTC Deposited in wallet';
+                      io.sockets.in(email).emit('msg', msg); 
+                      createNotification(email, msg, 1)
+                     } 
+                      console.log("Bitcoin updated in USDT " +balanceInUSDT);    
+                   });
+                     
+                      var subject = "New Bitcoin Transaction";
+                      var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} Bitcoin deposited in your account`;            
+                      sendMail(email, subject, msg);  
+                 }  
+         
+                 }) 
+                } 
+                }                
+          
+              }
+          })
+
           } catch (err) {
             console.log("Error in getting BTC balance " + err);
           }
         }
-        */
+       */
       
      
 
@@ -679,7 +689,7 @@ async function userWalletBalance(email){
 }
 
 
-function createDepositHistory(email, symbol, address, amount, balance) {
+function createDepositHistory(email, symbol, address, amount, balance, type) {
   const transaction_history = require("./models/transaction_history");  
   try {
   
@@ -691,7 +701,7 @@ function createDepositHistory(email, symbol, address, amount, balance) {
         amount: amount,
         balance: balance,
         to_address: address,
-        type: "Deposit",
+        type: type,
       })
       .then((data) => {
         // console.log("history created", user_id);
@@ -704,6 +714,21 @@ function createDepositHistory(email, symbol, address, amount, balance) {
   } catch (error) {
     return false;
 }
+}
+
+function createNotification(email, msg, type){
+  const notification = require('./models/userNotification');
+        notification
+        .create({
+          email: email,
+          message: msg,         
+          type: type,
+        })
+        .then((data) => {
+          // console.log("notification created");
+        }).catch((e) => {
+          console.log(e);
+        })
 }
 
 async function canUpdate(email) {

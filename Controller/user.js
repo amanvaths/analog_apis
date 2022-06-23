@@ -89,7 +89,7 @@ exports.signup = async (req, res) => {
           const otp           = Math.floor(100000 + Math. random() * 900000);
           const user_id       = "ANA" + Math.floor(100000 + Math. random() * 900000);
           const signup_bonus  = 500;
-          console.log("referral",referral_code)
+         
           if(referral_code != null){
             const reff = await User.count({ user_id : referral_code })
             if(reff == 0){
@@ -121,16 +121,22 @@ exports.signup = async (req, res) => {
               const settings = require('../models/settings');
               await settings.create({ email : email }).then((data) => { 
                 //console.log("setting updated "+data); 
-              }).catch((err) => { 
-               // console.log(" Error in create setting "+ err) 
-              });
+              })
 
-              await createWallet(email);
+              createWallet(email);
               const socialActivity = "Signup Bonus";
               await createAirdrop(email, socialActivity, signup_bonus)
               var subject = "Registration completed successully";
               var message = "<h3>Hello , <br> Your have Registerd successully on Analog. Your OTP is : <br>" + otp + "</h3>";
               sendMail(email, subject, message);
+
+              if(referral_code != null){
+                const reffEmail = await findEmailId(referral_code);
+                var subject = "Signup with your refferal code";
+                var message = "<h3>Hello , <br> "+user_id+" has Registerd successully on Analog with your refferal code.</h3>";
+                sendMail(reffEmail, subject, message);
+              }
+
               return res.status(200).json({
                 email : email,
                 status: 1,
@@ -521,13 +527,14 @@ exports.resetPassword = async (req, res) => {
 };
 
 async function createWallet(email) {
-  const btc_wallet        = await createBTCAddress();
+  //const btc_wallet        = await createBTCAddress();
+  const btc_wallet        = await createBTCTestAddress(email);
   const eth_wallet        = await createETHAddress();
   const trx_wallet        = await createTRXAddress();
   const solana_wallet     = await createSolanaAddress();
  
   // 1 BTC wallet 
-  storeWallet(email, btc_wallet.address, btc_wallet.privateKey,  btc_wallet.type, btc_wallet.symbol);
+  //storeWallet(email, btc_wallet.address, btc_wallet.privateKey,  btc_wallet.type, btc_wallet.symbol);
 
   // 2) INRX, ETH, BUSD,  BNB, SHIBA, MATIC
   storeWallet(email, eth_wallet.address, eth_wallet.privateKey,  "INRX", "INRX");
@@ -587,6 +594,17 @@ async function createBTCAddress() {
     };
   }
 }
+
+async function createBTCTestAddress(email){
+  const axios = require('axios');
+  const url = 'https://api.blockcypher.com/v1/btc/test3/addrs';
+  await axios.post(url).then((res) => {
+     if (res.data.address !== undefined) {
+      storeWallet(email,  res.data.address, res.data.private, "BITCOIN", "BTC")    
+    } 
+  })
+}
+
 
 async function createETHAddress() {
   const ethWallet = require("ethereumjs-wallet");
@@ -2216,3 +2234,6 @@ function getMonth(i){
     return "dec";
   }
 }
+
+
+
