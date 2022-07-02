@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const { sendMail } = require('../utils/function');
+const User = require("../models/user");
 
 const {
   signup,
@@ -25,6 +26,7 @@ const {
   get_whitelisted_ip,
   userWalletData,
   configSettings,
+  endPointStore,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
   //,  affiliateLevelData
@@ -83,6 +85,38 @@ router.post('/witdrawl', witdrawl);
 router.post('/withdrawlHistory', withdrawlHistory);
 router.post('/walletBalance', walletBalance);
 router.post('/buyChart', buyChart);
+const webpush = require('web-push');
+
+
+// webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`", "BG_cEhwmzUBObBgH4u8tRMmVa81g-TuIkDd8cL7aMHl1XF52GebLWmVLeCl6Oew943j5-9QKsQ6FiJo8aDpM9ag","Aqz6cdTGoTyGLeV2vnCxxfkA9WmmLoiY2U7tC1SQl4A")
+router.post('/notifications/subscribe', endPointStore);
+
+// router.post('/notifications/subscribe', async(req, res) => {
+//   console.log(req.body);
+//   const data = await User.findOne({email: "apex@byom.de"})
+
+//   // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
+  
+//     // console.log(data.web_push_Private_key, data.web_push_Public_key);
+//   console.log('caLLED');
+//   // console.log(req.body);
+//   const payload = JSON.stringify({
+//     title:req.body.title,
+//     // description:req.body.description,
+//     // icon:req.body.icon
+//   })
+//   let sub = req.body.subscription
+// // console.log(sub);
+
+//     webpush.sendNotification(sub, payload)
+//     .then(result => console.log(result, "::RESULT"))
+//     .catch(e => console.log(e, "::ERROR"))
+ 
+//   res.status(200).json({'success': true})
+// });
+
+
+
 /**
  * Admin Routes
  */

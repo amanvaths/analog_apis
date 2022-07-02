@@ -61,18 +61,30 @@ io.on("connection", async (socket) => {
         io.sockets.in(email).emit('balance', userWallets);   
       })
 
-      await userNotification.find({ email : email }).then((data) => {
-        console.log(email,2);
-        io.sockets.in(email).emit('notification', data);  
-      })
+      
 
      }, 30000);
-
+     await userNotification.find({ email : email }).then((data) => {
+      // console.log(email,2);
+      io.sockets.in(email).emit('notification', data);  
+      console.log(data);
+    })
    
 
   }); 
 });
 
+
+
+// setTimeout(() => {
+//   test()
+// }, 5000);
+
+//  test()
+
+// webpush.sendNotification(sub, payload)
+//     .then(result => console.log(result, "::RESULT"))
+//     .catch(e => console.log(e, "::ERROR"))
 
 
 cron.schedule('* * * * *', async () => {
@@ -94,6 +106,16 @@ cron.schedule('* * * * *', async () => {
 //   })
 // }
 // checkbal();
+// try{
+//   const TronWeb = require("tronweb");
+//   const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io" });
+//   const decimal = 1e6;        
+//    tronWeb.trx.getBalance("TLz6aQ5Rmvhnp9v9k2WXVhazww5oazbzxB").then( async(trx_balance) => {
+//     console.log(trx_balance);
+//   })
+// }catch(e){
+//   console.log(e);
+// }
 
 
 httpServer.listen(8080,()=>{
@@ -107,7 +129,7 @@ app.listen(port, '0.0.0.0' , () => {
 
 
 async function userWalletBalance(email){  
-  const { sendMail, getCMCData } = require('./utils/function');
+  const { sendMail, getCMCData, test1 } = require('./utils/function');
   const userWallet = require('./models/userWallet');
   const Web3 = require("web3");  
   const dex = [
@@ -210,7 +232,7 @@ async function userWalletBalance(email){
            try {               
              const decimal = 1e6;        
              await tronWeb.trx.getBalance(wallet.walletAddr).then( async(trx_balance) => {
-                 // console.log(trx_balance / decimal + " TRX balance");
+                  console.log(trx_balance / decimal + " TRX balance");
              const balance = trx_balance / decimal; 
                   if (balance > 0) {   
                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
@@ -227,11 +249,15 @@ async function userWalletBalance(email){
                               if(balance < w_balance){
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
                                 const msg = new_transaction + ' TRX Withdrawl from wallet';
+                                
+                                test1(email, "Withdrawl Successful", msg)
                                 io.sockets.in(email).emit('msg', msg); 
                                 createNotification(email, msg, 2)
                               } else{
+                                
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Deposit');
                                 const msg =  new_transaction + ' TRX Deposited in wallet';
+                                test1(email, "Deposit Successful", msg)
                                 io.sockets.in(email).emit('msg', msg); 
                                 createNotification(email, msg, 1)
                               }                               
@@ -250,6 +276,7 @@ async function userWalletBalance(email){
              });           
            
            } catch (err) {
+            // test()
              console.log("Error in getting TRX balance " + err);
            }
          }

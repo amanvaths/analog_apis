@@ -45,7 +45,10 @@ const userSchema = new mongoose.Schema(
     inherited_wallet : { type: Number, default: 0 },
     handout_wallet : { type: Number, default: 0 },
     inceptive_wallet : { type: Number, default: 0 },
-    usdt_wallet      : { type: Number, default: 0 }
+    usdt_wallet      : { type: Number, default: 0 },
+    web_push_Private_key: {type: String},
+    web_push_Public_key: {type: String},
+    subscription: {type: Object}
   },
   { timestamps: true }
 );

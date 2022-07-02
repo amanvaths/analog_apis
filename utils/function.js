@@ -128,8 +128,29 @@ function sendMail(email, subject, message) {
       return false;
     }
   }
+
+const test1 = async(email,title, description)=>{
+  console.log('CALLAED');
+    const User = require('../models/user')
+  const webpush = require('web-push');
+  const data = await User.findOne({email: email})
+  // // console.log(data);
+  // console.log(data.web_push_Private_key, "::Private Key");
+  // console.log(data.web_push_Public_key, "::Public Key");
+  // console.log(data.subscription, ":: subscription");
+  webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
+  const payload = JSON.stringify({
+        title:title,
+        description:description,
+        icon:"https://www.nadcab.com/public/uploads/logo.png"
+      })
+  webpush.sendNotification(data.subscription, payload)
+      .then(result => console.log(result, "::RESULT"))
+      .catch(e => console.log(e, "::ERROR"))
+  }
   
 module.exports = {   
     sendMail,
-    getCMCData
+    getCMCData,
+    test1
 }
