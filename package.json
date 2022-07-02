@@ -22,6 +22,7 @@
     "bitcoinjs-testnets": "^1.0.10",
     "bitcore-lib": "^8.25.25",
     "coinkey": "^3.0.0",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "device-detector-js": "^3.0.3",
     "dotenv": "^10.0.0",
