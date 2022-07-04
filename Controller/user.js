@@ -9,7 +9,8 @@ const session = require("express-session");
 const { sendMail,test1  } = require('../utils/function');
 const webpush = require('web-push');
 require('dotenv').config();
-
+const NodeCache = require('node-cache')
+const myCache = new NodeCache({ stdTTL: 30, checkperiod: 120 });
 app.use(
   session({
     secret: "thisissecratekey",
@@ -1660,6 +1661,16 @@ exports.refferalLevelWiseData = async (req, res) => {
 exports.refferalLevelWiseData = async (req, res) => {
   try {
     const { email } = req.body;
+
+    if(myCache.has(email+"refferalLevelWiseData")){
+  
+      res.status(200).json({
+        status: 1,
+        data: myCache.get(email+"refferalLevelWiseData")
+      });
+
+    }else{         
+
     const buyModel = require("../models/buy");
     let user_id = [];
     user_id.push(await findUserId(email));
@@ -1705,16 +1716,22 @@ exports.refferalLevelWiseData = async (req, res) => {
         }
       })
     })
-    //  console.log(amtLevel1, 1)
+  
+    const dataa = {
+                    level1: { totalUsers: level1.length, totalInc: amtLevel1, totalAna: totalAna1, totalExpense: totalExpense1 },
+                    level2: { totalUsers: level2.length, totalInc: amtLevel2, totalAna: totalAna2, totalExpense: totalExpense2 },
+                    level3: { totalUsers: level3.length, totalInc: amtLevel3, totalAna: totalAna3, totalExpense: totalExpense3 },
+                  }
+    myCache.set(email+"refferalLevelWiseData", dataa)
+    // console.log('Value not present in cache,'+ ' performing computation');
+
     res.status(200).json({
       status: 1,
-      data: {
-        level1: { totalUsers: level1.length, totalInc: amtLevel1, totalAna: totalAna1, totalExpense: totalExpense1 },
-        level2: { totalUsers: level2.length, totalInc: amtLevel2, totalAna: totalAna2, totalExpense: totalExpense2 },
-        level3: { totalUsers: level3.length, totalInc: amtLevel3, totalAna: totalAna3, totalExpense: totalExpense3 },
-      }
+      data: dataa
     });
 
+  
+}
   } catch (err) {
     console.log(" Error in level data " + err);
   }

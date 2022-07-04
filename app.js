@@ -57,27 +57,33 @@ io.on("connection", async (socket) => {
   socket.on('join', async function (data) {
     const email = data.email;
     socket.join(email); 
-
-     setInterval( async() => {
-
-      await userWallet.find({ email : email }).then( async(userWallets) => {
-        io.sockets.in(email).emit('balance', userWallets);   
-      })
-
-      
-
-     }, 30000);
-     await userNotification.find({ email : email }).then((data) => {
-      // console.log(email,2);
-      io.sockets.in(email).emit('notification', data);  
-      console.log(data);
-    })
+    //  setInterval( async() => {
+    //   await userWallet.find({ email : email }).then( async(userWallets) => {
+    //     io.sockets.in(email).emit('balance', userWallets);   
+    //   })     
+    //  }, 30000);
+    //  await userNotification.find({ email : email }).then((data) => {
+    //   // console.log(email,2);
+    //   io.sockets.in(email).emit('notification', data);  
+    //  // console.log(data);
+    // })
    
 
   }); 
 });
 
-
+app.post('/get', async(req, res)=>{
+  try {
+    const userWallet = require('./models/userWallet');
+    const { email } = req.body;
+    await userWallet.find({ email : email }).then( async(userWallets) => {
+      return res.status(200).json(userWallets);
+    })
+  } catch (error) {
+    console.log("erron in get api " + error);
+  }
+ 
+})
 
 // setTimeout(() => {
 //   test()
@@ -90,14 +96,14 @@ io.on("connection", async (socket) => {
 //     .catch(e => console.log(e, "::ERROR"))
 
 
-cron.schedule('* * * * *', async () => {
-  const User = require('./models/user'); 
-  await User.find({}).then((user) =>{
-    user.map((users) => {    
-      userWalletBalance(users.email);
-    }) 
-  })
-});
+// cron.schedule('* * * * *', async () => {
+//   const User = require('./models/user'); 
+//   await User.find({}).then((user) =>{
+//     user.map((users) => {    
+//       userWalletBalance(users.email);
+//     }) 
+//   })
+// });
 
 // async function checkbal(){
 //   const axios = require('axios');
@@ -109,17 +115,41 @@ cron.schedule('* * * * *', async () => {
 //   })
 // }
 // checkbal();
-// try{
-//   const TronWeb = require("tronweb");
-//   const tronWeb = new TronWeb({ fullHost: "https://api.shasta.trongrid.io" });
-//   const decimal = 1e6;        
-//    tronWeb.trx.getBalance("TLz6aQ5Rmvhnp9v9k2WXVhazww5oazbzxB").then( async(trx_balance) => {
-//     console.log(trx_balance);
-//   })
-// }catch(e){
-//   console.log(e);
-// }
 
+
+
+const NodeCache = require('node-cache')
+const myCache = new NodeCache({ stdTTL: 30, checkperiod: 120 });
+
+// Function to demonstrate heavy computation
+// like API requests, database queries, etc.
+function heavyComputation(){
+  let temp = 0;
+  for(let i=0; i<100000; i++)
+       temp = (Math.random()*5342)%i;
+  return 123;
+}
+
+app.get('/api1', (req, res)=>{
+   
+  // If cache has key, retrieve value
+  // from cache itself
+  if(myCache.has('uniqueKey')){
+       console.log('Retrieved value from cache !!')
+       res.send("Result: " + myCache.get('uniqueKey'))
+  }else{
+       let result =  heavyComputation()
+       myCache.set('uniqueKey', result)
+         
+       console.log('Value not present in cache,'
+             + ' performing computation')
+       res.send("Result: " + result)
+  }
+})
+
+setTimeout(() => {
+  emitBalance("amitnadcab@gmail.com", "Hellow user balance  updated");
+}, 20000);
 
 httpServer.listen(8080,()=>{
   console.log(`Socket listening at http://localhost:8080`);
@@ -251,17 +281,16 @@ async function userWalletBalance(email){
                              // console.log("updated TRX" , 3);
                               if(balance < w_balance){
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
-                                const msg = new_transaction + ' TRX Withdrawl from wallet';
-                                
+                                const msg = new_transaction + ' TRX Withdrawl from wallet';                                
                                 test1(email, "Withdrawl Successful", msg)
-                                io.sockets.in(email).emit('msg', msg); 
+                                emitBalance( email, msg);
                                 createNotification(email, msg, 2)
                               } else{
                                 
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Deposit');
                                 const msg =  new_transaction + ' TRX Deposited in wallet';
                                 test1(email, "Deposit Successful", msg)
-                                io.sockets.in(email).emit('msg', msg); 
+                                emitBalance( email, msg);
                                 createNotification(email, msg, 1)
                               }                               
                              
@@ -306,11 +335,11 @@ async function userWalletBalance(email){
                      
                         if(balance < w_balance){
                           const msg = new_transaction + ' ETH Withdrawl from wallet';
-                          io.sockets.in(email).emit('msg', msg);
+                          emitBalance( email, msg);
                           createNotification(email, msg, 2) 
                          } else{
                           const msg =  new_transaction + ' ETH Deposited in wallet';
-                          io.sockets.in(email).emit('msg', msg); 
+                          emitBalance( email, msg);
                           createNotification(email, msg, 1)
                          } 
                        
@@ -356,12 +385,12 @@ async function userWalletBalance(email){
                         if(balance < w_balance){
                           createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance, 'Withdrawl');  
                           const msg = new_transaction + ' BNB Withdrawl from wallet';
-                          io.sockets.in(email).emit('msg', msg); 
+                          emitBalance( email, msg);
                           createNotification(email, msg, 2)
                         } else{
                           createDepositHistory(email, "BNB", wallet.walletAddr, new_transaction, balance, 'Deposit');  
                           const msg =  new_transaction + ' BNB Deposited in wallet';
-                          io.sockets.in(email).emit('msg', msg); 
+                          emitBalance( email, msg);
                           createNotification(email, msg, 1)
                         } 
                       console.log("BNB updated in USDT " +balanceInUSDT);    
@@ -406,12 +435,12 @@ async function userWalletBalance(email){
                       if(balance < w_balance){
                         createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance, 'Withdrawl'); 
                         const msg = new_transaction + ' MATIC Withdrawl from wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 2)
                        } else{
                         createDepositHistory(email, "MATIC", wallet.walletAddr, new_transaction, balance, 'Deposit'); 
                         const msg =  new_transaction + ' MATIC Deposited in wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 1)
                        } 
                       
@@ -459,12 +488,12 @@ async function userWalletBalance(email){
                       if(balance < w_balance){
                         createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Withdrawl');   
                         const msg =new_transaction + ' USDT Withdrawl from wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 2)
                        } else{
                         createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Deposit');  
                         const msg = new_transaction + ' USDT Deposited in wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 1)
                        } 
                      
@@ -514,12 +543,12 @@ async function userWalletBalance(email){
                     if(balance < w_balance){
                         createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
                         const msg = new_transaction + ' SOL Withdrawl from wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 2)
                     } else{
                         createDepositHistory(email, "SOL", wallet.walletAddr, new_transaction, balance, 'Deposit');
                         const msg = new_transaction + ' SOL Deposited in wallet';
-                        io.sockets.in(email).emit('msg', msg); 
+                        emitBalance( email, msg);
                         createNotification(email, msg, 1)
                     } 
                     // console.log("Solana updated in USDT " +balanceInUSDT);    
@@ -789,4 +818,17 @@ try {
     console.log("error in canupdate: ", error.message)
     return false;
 }
+}
+
+
+async function emitBalance(email, msg){
+  try{
+  const userWallet = require("./models/userWallet");
+  await userWallet.find({ email : email }).then( async(userWallets) => {
+    io.sockets.in(email).emit('balance', userWallets); 
+    io.sockets.in(email).emit('msg', msg);   
+  })  
+}catch(err){
+  console.log(err);
+} 
 }
