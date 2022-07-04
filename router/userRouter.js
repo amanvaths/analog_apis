@@ -27,7 +27,7 @@ const {
   userWalletData,
   configSettings,
   endPointStore,
-  notification,
+  // notification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
   //,  affiliateLevelData
@@ -154,7 +154,7 @@ router.post('/allTeam', allTeam);
  router.get('/getCryptoSetting', getCryptoSetting);
  router.get('/usersWalletConut', usersWalletConut);
  router.post('/blockuser', blockuser);
- router.post('/notification', notification);
+//  router.post('/notification', notification);
 
 
 

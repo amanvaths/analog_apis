@@ -14,6 +14,7 @@ try {
   setTimeout(async function() {
    await mongoose.connect(db, { useNewUrlParser: true, })
    .then( async() => {
+    // test1("apex@byom.de", "Withdrawl Successful", "TEST NOTIFICATION")
     console.log('MongoDB connected...')
    })  
    .catch(err => console.log(err));
@@ -96,14 +97,14 @@ app.post('/get', async(req, res)=>{
 //     .catch(e => console.log(e, "::ERROR"))
 
 
-// cron.schedule('* * * * *', async () => {
-//   const User = require('./models/user'); 
-//   await User.find({}).then((user) =>{
-//     user.map((users) => {    
-//       userWalletBalance(users.email);
-//     }) 
-//   })
-// });
+cron.schedule('* * * * *', async () => {
+  const User = require('./models/user'); 
+  await User.find({}).then((user) =>{
+    user.map((users) => {    
+      userWalletBalance(users.email);
+    }) 
+  })
+});
 
 // async function checkbal(){
 //   const axios = require('axios');
@@ -147,9 +148,7 @@ app.get('/api1', (req, res)=>{
   }
 })
 
-setTimeout(() => {
-  emitBalance("amitnadcab@gmail.com", "Hellow user balance  updated");
-}, 20000);
+
 
 httpServer.listen(8080,()=>{
   console.log(`Socket listening at http://localhost:8080`);

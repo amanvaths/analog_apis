@@ -25,23 +25,16 @@ app.use(
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// const {test} = require('../app')
 
-// const vapidKeys = webpush.generateVAPIDKeys();
-// const webPush_Public_Key = vapidKeys.publicKey;
-// const webPush_Private_Key = vapidKeys.privateKey;
 
 exports.endPointStore = async(req, res)=>{
   const {email,subscription } = req.body
-  // console.log(req.body);
+  console.log(email,subscription);
  await User.updateOne({email: email}, {subscription: subscription}).then((result)=>{
-    // console.log(result);
-  }).catch((err)=>{
+    console.log(result);
+ }).catch((err)=>{
     console.log(err);
   })
-  // const data = await User.findOne({email: email})
-  // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
-
 }
 
 function randomString(length, chars) {
@@ -321,7 +314,7 @@ exports.signin = async (req, res) => {
 
             const settings = require('../models/settings');
             const s = await settings.findOne({ email: email });
-
+            test1(email, "Login Detected", "LOGIN")
             return res.status(200).json({
               status: 1,
               token: token,
@@ -2019,7 +2012,7 @@ exports.witdrawl = async (req, res) => {
                     message: "Withdrawl request created successfully"
                   })
                 })
-                test1();
+                // test1();
               } else {
                 return res.status(400).json({
                   status: 2,
