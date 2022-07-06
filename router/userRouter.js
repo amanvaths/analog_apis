@@ -27,6 +27,8 @@ const {
   userWalletData,
   configSettings,
   endPointStore,
+  getUserWallet,
+  deleteEndPoint,
   // notification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
@@ -47,7 +49,7 @@ router.post("/varify", varify);
 router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
-router.post('/signin', auth, signin);
+router.post('/signin', signin);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
@@ -91,6 +93,7 @@ const webpush = require('web-push');
 
 // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`", "BG_cEhwmzUBObBgH4u8tRMmVa81g-TuIkDd8cL7aMHl1XF52GebLWmVLeCl6Oew943j5-9QKsQ6FiJo8aDpM9ag","Aqz6cdTGoTyGLeV2vnCxxfkA9WmmLoiY2U7tC1SQl4A")
 router.post('/notifications/subscribe', endPointStore);
+// router.post('/deleteNotificationEndPoint', deleteEndPoint);
 
 // router.post('/notifications/subscribe', async(req, res) => {
 //   console.log(req.body);
@@ -154,6 +157,7 @@ router.post('/allTeam', allTeam);
  router.get('/getCryptoSetting', getCryptoSetting);
  router.get('/usersWalletConut', usersWalletConut);
  router.post('/blockuser', blockuser);
+ router.post('/getUserWallet', getUserWallet);
 //  router.post('/notification', notification);
 
 
@@ -239,9 +243,11 @@ async function auth(req, res, next){
                // console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
+                return res.json({status:0,msg:"Error:: "+error})
               });                       
             } catch (error) {
               console.log("error = " + error);
+              return res.json({status:0,msg:"Error:: "+error})
             }
           }        
 
@@ -267,11 +273,15 @@ async function auth(req, res, next){
       If it's not you please change your password.</h5>`;
       sendMail(email, subject, msg); 
      // console.log("New browser Activity");           
-    }    
+    } 
+  }
+  else{
+    return res.status(400).json({status: "0", msg: "something went wrong"})
   }
 }catch(err){
   console.log("Error in auth api " + err);
+  return res.status(400).json({status: "0", msg: "something went wrong"})
 }
-    next();
+   next();
 }
 

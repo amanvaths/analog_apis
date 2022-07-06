@@ -73,18 +73,7 @@ io.on("connection", async (socket) => {
   }); 
 });
 
-app.post('/get', async(req, res)=>{
-  try {
-    const userWallet = require('./models/userWallet');
-    const { email } = req.body;
-    await userWallet.find({ email : email }).then( async(userWallets) => {
-      return res.status(200).json(userWallets);
-    })
-  } catch (error) {
-    console.log("erron in get api " + error);
-  }
- 
-})
+
 
 // setTimeout(() => {
 //   test()
@@ -97,14 +86,14 @@ app.post('/get', async(req, res)=>{
 //     .catch(e => console.log(e, "::ERROR"))
 
 
-cron.schedule('* * * * *', async () => {
-  const User = require('./models/user'); 
-  await User.find({}).then((user) =>{
-    user.map((users) => {    
-      userWalletBalance(users.email);
-    }) 
-  })
-});
+// cron.schedule('* * * * *', async () => {
+//   const User = require('./models/user'); 
+//   await User.find({}).then((user) =>{
+//     user.map((users) => {    
+//       userWalletBalance(users.email);
+//     }) 
+//   })
+// });
 
 // async function checkbal(){
 //   const axios = require('axios');
