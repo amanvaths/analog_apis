@@ -25,23 +25,51 @@ app.use(
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// const {test} = require('../app')
 
-// const vapidKeys = webpush.generateVAPIDKeys();
-// const webPush_Public_Key = vapidKeys.publicKey;
-// const webPush_Private_Key = vapidKeys.privateKey;
+
+
+exports.getUserWallet = async(req, res)=>{
+  try {
+    const userWallet = require('../models/userWallet');
+    const { email } = req.body;
+    await userWallet.find({ email : email }).then( async(userWallets) => {
+      return res.status(200).json(userWallets);
+    })
+  } catch (error) {
+    console.log("erron in get api " + error);
+  }
+}
+
+exports.deleteEndPoint = async(req, res)=>{
+ try {
+   const userWallet = require('../models/user')
+   const {email} = req.body;
+   await userWallet.updateOne({email: email}, {subscription: " "}).then((res)=>{
+    console.log(res);
+   })
+   
+ } catch (error) {
+    console.log(error);
+ }
+}
+
 
 exports.endPointStore = async(req, res)=>{
   const {email,subscription } = req.body
-  // console.log(req.body);
+  console.log(email,subscription);
  await User.updateOne({email: email}, {subscription: subscription}).then((result)=>{
-    // console.log(result);
-  }).catch((err)=>{
+    console.log(result);
+     res.json({
+      status:1,
+      msg:"subscribed"
+    })
+ }).catch((err)=>{
     console.log(err);
+    res.json({
+      status:0,
+      msg:err
+    })
   })
-  // const data = await User.findOne({email: email})
-  // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
-
 }
 
 function randomString(length, chars) {
@@ -296,7 +324,7 @@ exports.signInWithGoogle = async (req, res) => {
 exports.signin = async (req, res) => {
   const email = req.body.email ? req.body.email : "";
   const password = req.body.password ? req.body.password : "";
-  if (email && checkEmail(email) && password) {
+  if (email && password) {
     try {
       await User.findOne({ email: email }).exec(async (error, user) => {
         if (error) {
@@ -321,7 +349,7 @@ exports.signin = async (req, res) => {
 
             const settings = require('../models/settings');
             const s = await settings.findOne({ email: email });
-
+            test1(email, "Login Detected", "LOGIN")
             return res.status(200).json({
               status: 1,
               token: token,
@@ -350,6 +378,11 @@ exports.signin = async (req, res) => {
         msg: "Something Went Wrong",
       });
     }
+  } else {
+    res.json({
+      status:0,
+      msg:"Something went wrong"
+    })
   }
 };
 
@@ -496,14 +529,14 @@ exports.resetPassword = async (req, res) => {
         if (err) {
           return res.status(400).json({
             status: 0,
-            message: "Something went wrong",
+            message: err,
           });
         }
         if (fdata) {
           const { _id, email } = fdata;
           const forgetPassword = require("../models/forgetPassword");
           await forgetPassword.updateOne({ _id: _id }, { $set: { status: 1 } });
-          await User.findOne({ email: email, status: 1 }).exec(async (error, user) => {
+          await User.findOne({ email: email}).exec(async (error, user) => {
             if (user) {
               //console.log("exe..1");
               const hashPass = bcrypt.hashSync(req.body.password, 10);
@@ -525,13 +558,13 @@ exports.resetPassword = async (req, res) => {
               } else {
                 return res.status(400).json({
                   status: 0,
-                  message: "Something went wrong",
+                  message: "Error in Updating Password",
                 });
               }
             } else {
               return res.status(400).json({
                 status: 0,
-                message: "Something went wrong",
+                message: "User Not Found",
               });
             }
           }
@@ -539,7 +572,7 @@ exports.resetPassword = async (req, res) => {
         } else {
           return res.status(400).json({
             status: 0,
-            msg: "Something Went Wrong",
+            msg: "Reset Code doest Match",
           });
         }
       });
@@ -547,7 +580,7 @@ exports.resetPassword = async (req, res) => {
       console.log("Error in Reset Password in ", error.message);
       return res.status(400).json({
         status: 0,
-        msg: "Something Went Wrong",
+        msg: "Something Went Wrong5",
       });
     }
   }
@@ -2019,7 +2052,7 @@ exports.witdrawl = async (req, res) => {
                     message: "Withdrawl request created successfully"
                   })
                 })
-                test1();
+                // test1();
               } else {
                 return res.status(400).json({
                   status: 2,

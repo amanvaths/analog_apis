@@ -1,5 +1,8 @@
 const nodemailer = require("nodemailer");
+const fs = require('fs')
 require('dotenv').config();
+// let logo= fs.readFileSync('../');
+// fs.createReadStream("/path/to/file")
 
 function sendMail(email, subject, message) {
     var transporter = nodemailer.createTransport({
@@ -131,21 +134,40 @@ function sendMail(email, subject, message) {
 
 const test1 = async(email,title, description)=>{
   console.log('CALLAED');
+  try {
     const User = require('../models/user')
-  const webpush = require('web-push');
-  const data = await User.findOne({email: email})
-
-  webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
-  const payload = JSON.stringify({
-        title:title,
-        description:description,
-        icon:"https://www.nadcab.com/public/uploads/logo.png"
-      })
-  webpush.sendNotification(data.subscription, payload)
-      .then(result => console.log(result, "::RESULT"))
-      .catch(e => console.log(e, "::ERROR"))
+    const webpush = require('web-push');
+    const data = await User.findOne({email: email})
+    // // console.log(data);
+    console.log(email, 'email');
+    // console.log("data",data);
+    // console.log(data.web_push_Private_key, "::Private Key");
+    // console.log(data.web_push_Public_key, "::Public Key");
+    // console.log(data.subscription, ":: subscription");
+    const payload = JSON.stringify({
+      title:title,
+      description:description,
+      icon:"https://www.nadcab.com/public/uploads/logo.png"
+    })
+    if(data.subscription){
+    webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
+    webpush.sendNotification(data.subscription, payload)
+        .then(result => console.log(result, "::RESULT"))
+        .catch(e => console.log(e, "::ERROR"))
+    } else{
+      const data = await User.findOne({email: email});
+      if(data.subscription){
+        webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
+        webpush.sendNotification(data.subscription, payload)
+            .then(result => console.log(result, "::RESULT"))
+            .catch(e => console.log(e, "::ERROR"))
+      }
+    }
+  } catch (error) {
+      console.log(error, "IN test1() push_notification api");
   }
-  
+   
+}
 module.exports = {   
     sendMail,
     getCMCData,

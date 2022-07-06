@@ -14,6 +14,7 @@ try {
   setTimeout(async function() {
    await mongoose.connect(db, { useNewUrlParser: true, })
    .then( async() => {
+    // test1("apex@byom.de", "Withdrawl Successful", "TEST NOTIFICATION")
     console.log('MongoDB connected...')
    })  
    .catch(err => console.log(err));
@@ -72,18 +73,7 @@ io.on("connection", async (socket) => {
   }); 
 });
 
-app.post('/get', async(req, res)=>{
-  try {
-    const userWallet = require('./models/userWallet');
-    const { email } = req.body;
-    await userWallet.find({ email : email }).then( async(userWallets) => {
-      return res.status(200).json(userWallets);
-    })
-  } catch (error) {
-    console.log("erron in get api " + error);
-  }
- 
-})
+
 
 // setTimeout(() => {
 //   test()
@@ -145,33 +135,6 @@ app.get('/api1', (req, res)=>{
        res.send("Result: " + result)
   }
 })
-
-// setTimeout(() => {
-//   emitBalance("amitnadcab@gmail.com", "Hellow user balance  updated");
-// }, 20000);
-
-// const SOL_WebAddr =  "https://api.testnet.solana.com"; 
-// const web3 = require("@solana/web3.js"); 
-// const decimal = 1e9;
-// // console.log(wallet.walletAddr);
-// const publicKey = new web3.PublicKey("2gnbtxYypr8XaAUFBmwyUhdsMM5TXBWQHi1XAmpLif8Q"); // 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri
-// const solana = new web3.Connection(SOL_WebAddr);
-// // console.log(await solana.getBalance(publicKey)); 
-//  solana.getBalance(publicKey).then( async(sol_balance) => {
-//   console.log(sol_balance);
-// })
-
-
-// const web3 = require("@solana/web3.js");
-// (async () => {
-//   const publicKey = new web3.PublicKey(
-//     "83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri"
-//   );
-//   const solana = new web3.Connection("https://api.testnet.solana.com");
-//   console.log(await solana.getBalance(publicKey));
-// })();
-
-
 
 
 
