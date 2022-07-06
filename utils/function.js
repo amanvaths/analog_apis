@@ -134,10 +134,7 @@ const test1 = async(email,title, description)=>{
     const User = require('../models/user')
   const webpush = require('web-push');
   const data = await User.findOne({email: email})
-  // // console.log(data);
-  // console.log(data.web_push_Private_key, "::Private Key");
-  // console.log(data.web_push_Public_key, "::Public Key");
-  // console.log(data.subscription, ":: subscription");
+
   webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
   const payload = JSON.stringify({
         title:title,

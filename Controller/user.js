@@ -144,7 +144,7 @@ exports.signup = async (req, res) => {
               });
             } else if (data) {
               const settings = require('../models/settings');
-              await settings.create({ email: email }).then((data) => {
+              settings.create({ email: email }).then((data) => {
                 //console.log("setting updated "+data); 
               })
 

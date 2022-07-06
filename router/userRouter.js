@@ -46,7 +46,7 @@ router.post("/varify", varify);
 router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
-router.post('/signin', auth, signin);
+router.post('/signin',  signin); //auth
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
@@ -205,10 +205,10 @@ async function requireSignin(req, res, next) {
  
 
 async function auth(req, res, next){
+  const { email } = req.body;
   const User = require('../models/user');
   const DeviceDetector = require("device-detector-js");
   const login_history = require("../models/login_history");
-  const { email } = req.body;
   const settingsModel = require('../models/settings');
 
   try{
@@ -223,9 +223,7 @@ async function auth(req, res, next){
             const device = deviceDetector.parse(userAgent);           
             const ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
             const browser_name = device.client.name;  
-           // const browser_version = device.device.version ? device.device.version : "";
-      // console.log( email + " email, ip= " +ip, " device = " + device.device.type + "  browser_name = " + browser_name + "  browser_version " +browser_version);
-        
+                   
           if(login_activity == 1){
             try {
               await login_history.create({
@@ -234,7 +232,7 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
-               // console.log("history inserted" + data);
+                console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
               });                       
@@ -266,6 +264,11 @@ async function auth(req, res, next){
       sendMail(email, subject, msg); 
      // console.log("New browser Activity");           
     }    
+  }else{
+    return res.status(400).json({
+      status:0,
+      message : "something went wrong"
+    })
   }
 }catch(err){
   console.log("Error in auth api " + err);
