@@ -172,7 +172,7 @@ exports.signup = async (req, res) => {
               });
             } else if (data) {
               const settings = require('../models/settings');
-              await settings.create({ email: email }).then((data) => {
+              settings.create({ email: email }).then((data) => {
                 //console.log("setting updated "+data); 
               })
 
@@ -2318,33 +2318,20 @@ const sorter = (a, b) => {
   };
 };
 
-function getMonth(i) {
-  if (i == 1) {
-    return "jan";
-  } else if (i == 2) {
-    return "feb"
-  } else if (i == 3) {
-    return "mar"
-  } else if (i == 4) {
-    return "Apr";
-  } else if (i == 5) {
-    return "may";
-  } else if (i == 6) {
-    return "june";
-  } else if (i == 7) {
-    return "july";
-  } else if (i == 8) {
-    return "aug";
-  } else if (i == 9) {
-    return "sep";
-  } else if (i == 10) {
-    return "oct";
-  } else if (i == 11) {
-    return "nov";
-  } else if (i == 12) {
-    return "dec";
+
+
+exports.userNotification = async (req, res) =>{
+  try {
+    const { email } = req.body;
+    const userNotification =  require("../models/userNotification");
+
+    const data = await userNotification.find({ email : email });
+    if(data){
+     return  res.status(200).json(data);
+    }else{
+      return  res.status(400).json({status : 0, message : "Something went wrong"});
+    }   
+  } catch (error) {
+    console.log("Error in userNotification api " + error)
   }
 }
-
-
-

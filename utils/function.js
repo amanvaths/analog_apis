@@ -132,18 +132,11 @@ function sendMail(email, subject, message) {
     }
   }
 
-const test1 = async(email,title, description)=>{
-  console.log('CALLAED');
+const test1 = async(email,title, description)=>{ 
   try {
     const User = require('../models/user')
     const webpush = require('web-push');
-    const data = await User.findOne({email: email})
-    // // console.log(data);
-    console.log(email, 'email');
-    // console.log("data",data);
-    // console.log(data.web_push_Private_key, "::Private Key");
-    // console.log(data.web_push_Public_key, "::Public Key");
-    // console.log(data.subscription, ":: subscription");
+    const data = await User.findOne({email: email})  
     const payload = JSON.stringify({
       title:title,
       description:description,
@@ -152,15 +145,22 @@ const test1 = async(email,title, description)=>{
     if(data.subscription){
     webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
     webpush.sendNotification(data.subscription, payload)
-        .then(result => console.log(result, "::RESULT"))
-        .catch(e => console.log(e, "::ERROR"))
+        .then((result) => {
+          console.log(result, "::RESULT")
+        }).catch(e => {
+            //console.log(e, "::ERROR")
+         })
     } else{
       const data = await User.findOne({email: email});
       if(data.subscription){
         webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
         webpush.sendNotification(data.subscription, payload)
-            .then(result => console.log(result, "::RESULT"))
-            .catch(e => console.log(e, "::ERROR"))
+            .then(result => {
+              console.log(result, "::RESULT") 
+            })
+            .catch(e => {
+             //console.log(e, "::ERROR") 
+            })
       }
     }
   } catch (error) {

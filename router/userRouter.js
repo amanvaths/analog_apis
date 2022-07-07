@@ -29,7 +29,7 @@ const {
   endPointStore,
   getUserWallet,
   deleteEndPoint,
-  // notification,
+  userNotification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
   //,  affiliateLevelData
@@ -88,6 +88,9 @@ router.post('/witdrawl', witdrawl);
 router.post('/withdrawlHistory', withdrawlHistory);
 router.post('/walletBalance', walletBalance);
 router.post('/buyChart', buyChart);
+router.post('/notification', userNotification);
+
+
 const webpush = require('web-push');
 
 
@@ -158,7 +161,7 @@ router.post('/allTeam', allTeam);
  router.get('/usersWalletConut', usersWalletConut);
  router.post('/blockuser', blockuser);
  router.post('/getUserWallet', getUserWallet);
-//  router.post('/notification', notification);
+
 
 
 
@@ -211,10 +214,10 @@ async function requireSignin(req, res, next) {
  
 
 async function auth(req, res, next){
+  const { email } = req.body;
   const User = require('../models/user');
   const DeviceDetector = require("device-detector-js");
   const login_history = require("../models/login_history");
-  const { email } = req.body;
   const settingsModel = require('../models/settings');
 
   try{
@@ -229,9 +232,7 @@ async function auth(req, res, next){
             const device = deviceDetector.parse(userAgent);           
             const ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
             const browser_name = device.client.name;  
-           // const browser_version = device.device.version ? device.device.version : "";
-      // console.log( email + " email, ip= " +ip, " device = " + device.device.type + "  browser_name = " + browser_name + "  browser_version " +browser_version);
-        
+                   
           if(login_activity == 1){
             try {
               await login_history.create({
@@ -240,7 +241,7 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
-               // console.log("history inserted" + data);
+                console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
                 return res.json({status:0,msg:"Error:: "+error})
