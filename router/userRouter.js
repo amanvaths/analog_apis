@@ -29,7 +29,7 @@ const {
   endPointStore,
   getUserWallet,
   deleteEndPoint,
-  // notification,
+  userNotification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
   //,  affiliateLevelData
@@ -88,6 +88,9 @@ router.post('/witdrawl', witdrawl);
 router.post('/withdrawlHistory', withdrawlHistory);
 router.post('/walletBalance', walletBalance);
 router.post('/buyChart', buyChart);
+router.post('/notification', userNotification);
+
+
 const webpush = require('web-push');
 
 
@@ -158,7 +161,7 @@ router.post('/allTeam', allTeam);
  router.get('/usersWalletConut', usersWalletConut);
  router.post('/blockuser', blockuser);
  router.post('/getUserWallet', getUserWallet);
-//  router.post('/notification', notification);
+
 
 
 
