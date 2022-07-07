@@ -49,7 +49,7 @@ router.post("/varify", varify);
 router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
-router.post('/signin', signin);
+router.post('/signin',auth, signin);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
