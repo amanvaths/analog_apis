@@ -10,18 +10,15 @@ const port = 3001
 const mongoose = require('mongoose');
 const {createServer} = require('http');
 const db = process.env.db
-try {
-  setTimeout(async function() {
-   await mongoose.connect(db, { useNewUrlParser: true, })
-   .then( async() => {
-    // test1("apex@byom.de", "Withdrawl Successful", "TEST NOTIFICATION")
-    console.log('MongoDB connected...')
-   })  
-   .catch(err => console.log(err));
-  }, 10000);
-} catch (error) {
-  handleError(error);
+
+async function connectMongoDB() {
+  try{
+   await mongoose.connect(db, { useNewUrlParser: true, }).then(() => { console.log('MongoDB connected...')});
+  }catch(error){
+    console.log(err);
+  }  
 }
+connectMongoDB();
 
 app.use(cors({
   origin: '*' 
@@ -51,35 +48,14 @@ const io = new Server(httpServer, {
   }
 });
 
-const userWallet = require('./models/userWallet');
-const userNotification = require('./models/userNotification')
 io.on("connection", async (socket) => { 
   
   socket.on('join', async function (data) {
     const email = data.email;
     socket.join(email); 
-    //  setInterval( async() => {
-    //   await userWallet.find({ email : email }).then( async(userWallets) => {
-    //     io.sockets.in(email).emit('balance', userWallets);   
-    //   })     
-    //  }, 30000);
-    //  await userNotification.find({ email : email }).then((data) => {
-    //   // console.log(email,2);
-    //   io.sockets.in(email).emit('notification', data);  
-    //  // console.log(data);
-    // })
-   
-
   }); 
 });
 
-
-
-// setTimeout(() => {
-//   test()
-// }, 5000);
-
-//  test()
 
 // webpush.sendNotification(sub, payload)
 //     .then(result => console.log(result, "::RESULT"))
@@ -94,6 +70,32 @@ cron.schedule('* * * * *', async () => {
     }) 
   })
 });
+
+// setInterval(() => {
+//   const {  test1 } = require('./utils/function');
+//   test1("berlin@byom.de","example","this is example")
+//   console.log("hellow ");
+// }, 20000);
+
+
+
+
+// const solanaWallet = require("@solana/web3.js");
+// var keyPair = solanaWallet.Keypair.generate();
+// var address = keyPair.publicKey;
+// var privateKey = keyPair.secretKey;
+
+// console.log(address.toBase58(),1);
+// console.log(privateKey,2);
+
+// const web3 = require("@solana/web3.js");
+// (async () => {
+//   const publicKey = new web3.PublicKey(address.toBase58());
+//   const solana = new web3.Connection("https://api.testnet.solana.com");
+//   const a = await solana.getBalance(publicKey);
+//   console.log(a.toBase58());
+// })();
+
 
 // async function checkbal(){
 //   const axios = require('axios');
@@ -252,7 +254,7 @@ async function userWalletBalance(email){
            try {               
              const decimal = 1e6;        
              await tronWeb.trx.getBalance(wallet.walletAddr).then( async(trx_balance) => {
-                  //console.log(trx_balance / decimal + " TRX balance");
+                 // console.log(trx_balance / decimal + " TRX balance");
              const balance = trx_balance / decimal; 
                   if (balance > 0) {   
                     const w_balance = wallet.balance ? parseFloat(wallet.balance) : 0;
@@ -269,14 +271,14 @@ async function userWalletBalance(email){
                               if(balance < w_balance){
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
                                 const msg = new_transaction + ' TRX Withdrawl from wallet';                                
-                                test1(email, "Withdrawl Successful", msg)
+                              //  test1(email, "Withdrawl Successful", msg)
                                 emitBalance( email, msg);
                                 createNotification(email, msg, 2)
                               } else{
                                 
                                 createDepositHistory(email, "TRX", wallet.walletAddr, new_transaction, balance, 'Deposit');
                                 const msg =  new_transaction + ' TRX Deposited in wallet';
-                                test1(email, "Deposit Successful", msg)
+                               // test1(email, "Deposit Successful", msg)
                                 emitBalance( email, msg);
                                 createNotification(email, msg, 1)
                               }                               
@@ -299,6 +301,62 @@ async function userWalletBalance(email){
              console.log("Error in getting TRX balance " + err);
            }
          }
+
+
+         if (wallet && wallet.symbol == "USDT") {
+          // console.log("USDT");
+          try {           
+            const decimal = 1e6;
+            tronWeb.setAddress(wallet.walletAddr);
+            const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
+            await instance.balanceOf(wallet.walletAddr).call().then( async(hex_balance) => {
+            const usdt_balance = Number(hex_balance._hex);
+            //console.log("USDT BALANCE " + usdt_balance);
+              if (usdt_balance > 0) {
+                  let balance              = usdt_balance ? usdt_balance / decimal : 0;
+                  const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0; 
+  
+                 if (balance>0 && balance != w_balance) {
+  
+                  await userWallet.updateOne({ email: email, symbol: "USDT" },{ $set: { balance : balance }}).then( async(data) => {
+                   
+                    const new_transaction = balance - w_balance; 
+                    if(new_transaction){  
+                    const  balanceInUSDT = new_transaction;
+                    await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
+                     
+                        if(balance < w_balance){
+                          createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Withdrawl');   
+                          const msg =new_transaction + ' USDT Withdrawl from wallet';
+                          emitBalance( email, msg);
+                          createNotification(email, msg, 2)
+                         } else{
+                          createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Deposit');  
+                          const msg = new_transaction + ' USDT Deposited in wallet';
+                          emitBalance( email, msg);
+                          createNotification(email, msg, 1)
+                         } 
+                       
+                       console.log("USDT updated in USDT " +balanceInUSDT);    
+                    });
+                      
+                       var subject = "New USDT Transaction";
+                       var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} USDT deposited in your account`;            
+                       sendMail(email, subject, msg);  
+                  }  
+            
+                  }) 
+                }
+            
+              }
+            });
+           
+          } catch (err) {
+            console.log("Error in getting USDT balance " + err);
+          }
+          }
+  
+
      
          if (wallet && wallet.symbol == "ETH") {        
           try {             
@@ -450,61 +508,9 @@ async function userWalletBalance(email){
           }
         }
                 
-        if (wallet && wallet.symbol == "USDT") {
-        // console.log("USDT");
-        try {           
-          const decimal = 1e6;
-          tronWeb.setAddress(wallet.walletAddr);
-          const instance = await tronWeb.contract().at("TLtzV8o37BV7TecEdFbkFsXqro8WL8a4tK");
-          await instance.balanceOf(wallet.walletAddr).call().then( async(hex_balance) => {
-          const usdt_balance = Number(hex_balance._hex);
-          //console.log("USDT BALANCE " + usdt_balance);
-            if (usdt_balance > 0) {
-                let balance              = usdt_balance ? usdt_balance / decimal : 0;
-                const w_balance          = wallet.balance ? parseFloat(wallet.balance) : 0; 
-
-               if (balance>0 && balance != w_balance) {
-
-                await userWallet.updateOne({ email: email, symbol: "USDT" },{ $set: { balance : balance }}).then( async(data) => {
-                 
-                  const new_transaction = balance - w_balance; 
-                  if(new_transaction){  
-                  const  balanceInUSDT = new_transaction;
-                  await userWallet.updateOne({ email: email, symbol: "USDT" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {
-                   
-                      if(balance < w_balance){
-                        createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Withdrawl');   
-                        const msg =new_transaction + ' USDT Withdrawl from wallet';
-                        emitBalance( email, msg);
-                        createNotification(email, msg, 2)
-                       } else{
-                        createDepositHistory(email, "USDT", wallet.walletAddr, new_transaction, balance, 'Deposit');  
-                        const msg = new_transaction + ' USDT Deposited in wallet';
-                        emitBalance( email, msg);
-                        createNotification(email, msg, 1)
-                       } 
-                     
-                     console.log("USDT updated in USDT " +balanceInUSDT);    
-                  });
-                    
-                     var subject = "New USDT Transaction";
-                     var msg = `<h5>Hello ${wallet.username}, <br> ${new_transaction} USDT deposited in your account`;            
-                     sendMail(email, subject, msg);  
-                }  
+     
           
-                }) 
-              }
-          
-            }
-          });
-         
-        } catch (err) {
-          console.log("Error in getting USDT balance " + err);
-        }
-        }
-
-          
-        if (wallet && wallet.symbol == "SOL") {
+     /*   if (wallet && wallet.symbol == "SOL") {
            //console.log("SOL");
           try {   
             const web3 = require("@solana/web3.js"); 
@@ -512,7 +518,7 @@ async function userWalletBalance(email){
            // console.log(wallet.walletAddr);
             const publicKey = new web3.PublicKey(wallet.walletAddr); // 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri
             const solana = new web3.Connection(SOL_WebAddr);
-            // console.log(await solana.getBalance(publicKey)); 
+             console.log(await solana.getBalance(publicKey)); 
            await solana.getBalance(publicKey).then( async(sol_balance) => {
                   console.log(sol_balance/decimal + " SOL balance")
             if (sol_balance > 0) {
@@ -557,7 +563,7 @@ async function userWalletBalance(email){
           //  console.log("Error in getting Solana balance " + err);
           }
         }
-      
+      */
         
         if (wallet && wallet.symbol == "BUSD") {
           // console.log("BUSD"); 
