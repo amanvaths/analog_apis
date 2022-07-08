@@ -57,6 +57,7 @@ io.on("connection", async (socket) => {
 
 app.post('/updateWallet', async (req, res) => {
   const { email } = req.body;
+  console.log(email);
   userWalletBalance(email);
 })
 
@@ -499,6 +500,8 @@ async function userWalletBalance(email){
                 let balance               = busd_bal ? busd_bal / decimal : 0;
                 const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;      
                 if (balance>0 &&  balance != w_balance) {
+
+                  const cmcdata  = await getCMCData();
                   if(cmcdata){
                     const busdInUSDT    = cmcdata.BUSD.quote.USD.price ?  parseFloat(cmcdata.BUSD.quote.USD.price) : 0 ; 
                   await userWallet.updateOne({ email: email, symbol: "BUSD" },{ $set: { balance : balance }}).then( async(data) => {
@@ -550,6 +553,8 @@ async function userWalletBalance(email){
                   let balance               = shib_bal ? shib_bal / decimal : 0;
                   const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;      
                   if (balance>0 &&  balance != w_balance) {
+
+                    const cmcdata  = await getCMCData();
                     if(cmcdata){
                       const shibInUSDT    = cmcdata.SHIB.quote.USD.price ?  parseFloat(cmcdata.SHIB.quote.USD.price) : 0 ; 
                     await userWallet.updateOne({ email: email, symbol: "SHIB" },{ $set: { balance : balance }}).then( async(data) => {
@@ -610,6 +615,7 @@ async function userWalletBalance(email){
                 const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;  
                
                 if (balance>0 &&  balance != w_balance) {
+                  const cmcdata  = await getCMCData();
                   if(cmcdata){
                     const btcInUSDT    = cmcdata.BTC.quote.USD.price ?  parseFloat(cmcdata.BTC.quote.USD.price) : 0 ; 
                   await userWallet.updateOne({ email: email, symbol: "BTC" },{ $set: { balance : balance }}).then( async(data) => {
@@ -628,7 +634,7 @@ async function userWalletBalance(email){
                           createNotification(email, msg, 2)
 
                       } else{
-                        
+
                           createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance, 'Deposit');
                           const msg = new_transaction + ' BTC Deposited in wallet';
                           emitBalance( email, msg);
