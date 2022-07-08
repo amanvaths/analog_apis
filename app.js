@@ -57,9 +57,9 @@ io.on("connection", async (socket) => {
 
 app.post('/updateWallet', async (req, res) => {
   const { email } = req.body;
-  console.log(email);
   userWalletBalance(email);
 })
+
 
 
 httpServer.listen(8080,()=>{

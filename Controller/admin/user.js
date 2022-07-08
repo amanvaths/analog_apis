@@ -84,3 +84,31 @@ exports.alluser = async (req, res) => {
       
         res.status(200).json({user_data:user,totalCount:user.length});
   }
+
+
+  exports.createTeamMember  = async (req, res) => {
+      try{
+      const { name, degination, image } = req.body;
+      const teamMemberModel = require('./models/company/teamMember');
+    
+          teamMemberModel.create({
+            name: name,
+            degination: degination,
+            image: image,
+            status: 1,       
+          })
+          .then((data) => {
+            res.status(200).json({
+              status : 1,
+              message : "Record inserted"
+            })
+          })
+          .catch((error) => {
+             console.log("error: ", error.message);
+          });
+      
+      }catch(error){
+        console.log("Error in teammember api "+error);
+      }
+    }
+    

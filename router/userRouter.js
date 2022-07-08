@@ -31,12 +31,12 @@ const {
   deleteEndPoint,
   userNotification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
-  airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart
+  airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart, teamMember
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels,ohlcvtUpdate,allTeam,totalSpend,incomeFromLevels } = require('../Controller/utility');
-const { alluser,bonuspercent,alluserbydate,allusertoday } = require('../Controller/admin/user');
+const { alluser,bonuspercent,alluserbydate,allusertoday, createTeamMember } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
@@ -89,7 +89,8 @@ router.post('/withdrawlHistory', withdrawlHistory);
 router.post('/walletBalance', walletBalance);
 router.post('/buyChart', buyChart);
 router.post('/notification', userNotification);
-
+router.post('/createTeamMember', createTeamMember);
+router.post('/teamMember', teamMember);
 
 const webpush = require('web-push');
 

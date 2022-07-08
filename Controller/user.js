@@ -9,7 +9,9 @@ const session = require("express-session");
 const { sendMail,test1  } = require('../utils/function');
 const webpush = require('web-push');
 require('dotenv').config();
-const NodeCache = require('node-cache')
+const NodeCache = require('node-cache');
+const router = require("../router/userRouter");
+const { find } = require("../models/user");
 const myCache = new NodeCache({ stdTTL: 30, checkperiod: 120 });
 app.use(
   session({
@@ -1286,11 +1288,11 @@ exports.removeWhiteListedIp = async (req, res) => {
 exports.configSettings = async (req, res) => {
   try {
     const settingsModel = require('../models/settings');
-    const preSaleModel = require("../models/presale");
-    const { email } = req.body;
-    const _user = await User.findOne({ email: email });
-    const s = await settingsModel.findOne({ email: email });
-    const orders = await preSaleModel.findOne({ status: 1 }) || 0;
+    const preSaleModel  = require("../models/presale");
+    const { email }     = req.body;
+    const _user         = await User.findOne({ email: email });
+    const s             = await settingsModel.findOne({ email: email });
+    const orders        = await preSaleModel.findOne({ status: 1 });
     if (_user && s) {
       return res.status(200).json({
         username: _user.username,
@@ -1304,7 +1306,7 @@ exports.configSettings = async (req, res) => {
         tips: s.tips,
         googleAuth: s.google_authenticator,
         login_activity: s.login_activity,
-        anaPrice: orders.price,
+        anaPrice: orders ? orders.price : 0,
         webPush_Private_Key: _user.web_push_Private_key,
         webPush_Public_Key: _user.web_push_Public_key
       })
@@ -1321,12 +1323,11 @@ exports.userWalletData = async (req, res) => {
   try {
     const { email } = req.body;
     //console.log("user wallet data " + email); 
-    const loginModel = require("../models/login_history");
-    const _user = await User.findOne({ email: email });
-    const _orders = await orders.findOne({ email: email }).sort('-date') || "";
-    const totalWallet = await orders.count({ email: email }).distinct('currency_type') || 0;
-    const login_activity = await loginModel.findOne({ email: email }).sort('-createdAt');
-    const totalTransaction = await orders.count({ email: email }) || 0;
+    const loginModel           = require("../models/login_history");
+    const _user                = await User.findOne({ email: email });   
+    const totalWallet          = await orders.count({ email: email }).distinct('currency_type') || 0;
+    const login_activity       = await loginModel.findOne({ email: email }).sort('-createdAt');
+    const totalTransaction     = await orders.count({ email: email }) || 0;
     return res.status(200).json({
       user_id: _user.user_id,
       affilites_wallet: _user.affilites_wallet,
@@ -1335,7 +1336,7 @@ exports.userWalletData = async (req, res) => {
       inherited_wallet: _user.inherited_wallet,
       handout_wallet: _user.handout_wallet,
       inceptive_wallet: _user.inceptive_wallet,
-      last_activity: login_activity.createdAt,
+      last_activity: login_activity ? login_activity.createdAt : " ",
       total_wallet: totalWallet.length,
       token_balance: _user.token_balance,
       total_transaction: totalTransaction
@@ -2222,3 +2223,21 @@ function timeDiffCalc(dateFuture, dateNow) {
   const arr= [years,months,weeks,days,hours,minutes];
   return arr;
 }
+
+
+
+
+
+exports.teamMember  = async (req, res) => {
+  try{
+     const teamMemberModel = require('../models/company/teamMember');
+
+     const team = await teamMemberModel.find({});
+
+     return res.status(200).json(team);
+  
+  }catch(error){
+    console.log("Error in teammember api "+error);
+  }
+}
+
