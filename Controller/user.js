@@ -1461,6 +1461,26 @@ exports.bannerData = async (req, res) => {
 }
 
 
+async function myAffiliates(userIds) {
+  let level1 = "";
+  let level2 = "";
+  let level3 = "";
+  await myRefferal(userIds).then(async (data1) => {
+    level1 = convertToArray(data1);
+    await myRefferal(level1).then(async (data2) => {
+      level2 = convertToArray(data2);
+      await myRefferal(level2).then(async (data3) => {
+        level3 = convertToArray(data3);
+      })
+    })
+  })
+
+const ob = {
+  level1, level2, level3
+}
+
+return ob;
+}
 
 
 
@@ -1501,196 +1521,6 @@ function convertToArray(data) {
 }
 
 
-
-exports.refferalLevelWiseData1 = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const buyModel = require("../models/buy");
-    let user_id = [];
-    user_id.push(await findUserId(email));
-    let amtLevel1 = 0;
-    let amtLevel2 = 0;
-    let amtLevel3 = 0;
-    let totalAna1 = 0;
-    let totalAna2 = 0;
-    let totalAna3 = 0;
-    let totalExpense1 = 0;
-    let totalExpense2 = 0;
-    let totalExpense3 = 0;
-
-    const list1 = await levelWiseList(user_id, 1);
-
-    for (i = 0; i < list1.length; i++) {
-      let email1 = await findEmailId(list1[i]);
-      const totalSum1 = await buyModel.aggregate([{ $match: { email: email1, from_level: "1", bonus_type: "Level" } }, {
-        $group: {
-          _id: { email: "$email" },
-          amtLevel1: { $sum: "$bonus" },
-          totalAna1: { $sum: "$toten" }
-        },
-      },
-      ])
-      if (totalSum1.length > 0) {
-        amtLevel1 = totalSum1[0].amtLevel1;
-        totalAna1 = totalSum1[0].totalAna1;
-      }
-      const totalExp1 = await buyModel.aggregate([{ $match: { email: email1, bonus_type: "Buying" } }, {
-        $group: {
-          _id: { email: "$email" },
-          balance: { $sum: "$token_buying" },
-        },
-      },
-      ])
-      if (totalExp1.length > 0) {
-        totalExpense1 = totalExp1[0].balance
-      }
-    }
-
-    const list2 = await levelWiseList(user_id, 2);
-    for (i = 0; i < list2.length; i++) {
-      let email1 = await findEmailId(list2[i]);
-
-      const totalSum2 = await buyModel.aggregate([{ $match: { email: email1, from_level: "2", bonus_type: "Level" } }, {
-        $group: {
-          _id: { email: "$email" },
-          amtLevel2: { $sum: "$bonus" },
-          totalAna2: { $sum: "$toten" }
-        },
-      },
-      ])
-      if (totalSum2.length > 0) {
-        amtLevel1 = totalSum2[0].amtLevel1;
-        totalAna1 = totalSum2[0].totalAna1;
-      }
-
-      const totalExp2 = await buyModel.aggregate([{ $match: { email: email1, bonus_type: "Buying" } },
-      {
-        $group: {
-          _id: { email: "$email" },
-          balance: { $sum: "$token_buying" },
-        },
-      },
-      ])
-
-      if (totalExp2.length > 0) {
-        totalExpense2 = totalExpense2 + totalExp2[0].balance
-      }
-    }
-
-    const list3 = await levelWiseList(user_id, 3);
-    for (i = 0; i < list3.length; i++) {
-      let email1 = await findEmailId(list3[i]);
-      const totalSum3 = await buyModel.aggregate([{ $match: { email: email1, from_level: "3", bonus_type: "Level" } }, {
-        $group: {
-          _id: { email: "$email" },
-          amtLevel3: { $sum: "$bonus" },
-          totalAna3: { $sum: "$toten" }
-        },
-      },
-      ])
-      if (totalSum3.length > 0) {
-        amtLevel3 = totalSum3[0].amtLevel3;
-        totalAna3 = totalSum3[0].totalAna3;
-      }
-
-      const totalExp3 = await buyModel.aggregate([{ $match: { email: email1, bonus_type: "Buying" } },
-      {
-        $group: {
-          _id: { email: "$email" },
-          balance: { $sum: "$token_buying" },
-        },
-      },
-      ])
-      if (totalExp3.length > 0) {
-        totalExpense3 = totalExpense3 + totalExp3[0].balance
-      }
-    }
-
-    res.status(200).json({
-      status: 1,
-      data: {
-        level1: { totalUsers: list1.length, totalInc: amtLevel1, totalAna: totalAna1, totalExpense: totalExpense1 },
-        level2: { totalUsers: list2.length, totalInc: amtLevel2, totalAna: totalAna2, totalExpense: totalExpense2 },
-        level3: { totalUsers: list3.length, totalInc: amtLevel3, totalAna: totalAna3, totalExpense: totalExpense3 },
-      }
-    });
-
-  } catch (err) {
-    console.log("Error in refferalLevelWiseData api " + err);
-    return res.status(400).json({
-      status: 0,
-      message: "Something went wrong "
-    });
-  }
-}
-
-/*
-exports.refferalLevelWiseData = async (req, res) => {
-  try{
-   const { email } = req.body;
-   const buyModel = require("../models/buy");
-   let user_id = [];
-   user_id.push(await findUserId(email));  
-   let amtLevel1 = 0;
-   let amtLevel2 = 0;
-   let amtLevel3 = 0;
-   let totalAna1 = 0;
-   let totalAna2 = 0;
-   let totalAna3 = 0;
-   let totalExpense1 = 0;
-   let totalExpense2 = 0;
-   let totalExpense3 = 0;
-     
-   const list1 = await levelWiseList(user_id, 1); 
-
-   for(i=0; i< list1.length; i++){
-      let email1 = await findEmailId(list1[i]); 
-           const totalexp =  await totalBuyExpenseIncome(email1)  
-           totalExpense1 +=  totalexp.totalExpense;
-           totalAna1     +=  totalexp.totalBuy;
-           const totalAff =  await totalAffiliateIncome(email1, 1); 
-           amtLevel1     +=   totalAff.totalAffiliates;                 
-     }
-
-     const list2 = await levelWiseList(user_id, 2);
-     for(i=0; i< list2.length; i++){
-       let email1 = await findEmailId(list2[i]);  
-         const totalexp =  await totalBuyExpenseIncome(email1) 
-         totalExpense2 += totalexp.totalExpense; 
-         totalAna2     +=  totalexp.totalBuy;
-         const totalAff =  await totalAffiliateIncome(email1, 2); 
-         amtLevel2     +=   totalAff.totalAffiliates;          
-      }
-
-      const list3 = await levelWiseList(user_id, 3);
-      for(i=0; i< list3.length; i++){        
-       let email1 = await findEmailId(list3[i]);
-         const totalexp =  await totalBuyExpenseIncome(email1)    
-         totalExpense3 += totalexp.totalExpense; 
-         totalAna3     +=  totalexp.totalBuy;
-         const totalAff =  await totalAffiliateIncome(email1, 3); 
-         amtLevel3     +=   totalAff.totalAffiliates;            
-      }
-
-   res.status(200).json({
-     status : 1,
-     data: {
-       level1 : { totalUsers : list1.length, totalInc : amtLevel1, totalAna : totalAna1, totalExpense : totalExpense1},
-       level2 : { totalUsers : list2.length, totalInc : amtLevel2, totalAna : totalAna2, totalExpense : totalExpense2 },
-       level3 : { totalUsers : list3.length, totalInc : amtLevel3, totalAna : totalAna3, totalExpense : totalExpense3 },
-     }
-   });
-
-  }catch(err){
-    console.log("Error in refferalLevelWiseData api " + err);
-    return res.status(400).json({
-     status : 0,
-     message : "Something went wrong "
-   });
-  }
-}
-*/
-
 exports.refferalLevelWiseData = async (req, res) => {
   try {
     const { email } = req.body;
@@ -1707,9 +1537,10 @@ exports.refferalLevelWiseData = async (req, res) => {
     const buyModel = require("../models/buy");
     let user_id = [];
     user_id.push(await findUserId(email));
-    const level1 = await levelWiseList(user_id, 1);
-    const level2 = await levelWiseList(user_id, 2);
-    const level3 = await levelWiseList(user_id, 3);
+    const myAffiliate = await myAffiliates(user_id);
+    const level1 = myAffiliate.level1;
+    const level2 = myAffiliate.level2;
+    const level3 = myAffiliate.level3;
     let amtLevel1 = 0;
     let amtLevel2 = 0;
     let amtLevel3 = 0;
@@ -2322,16 +2153,72 @@ const sorter = (a, b) => {
 
 exports.userNotification = async (req, res) =>{
   try {
-    const { email } = req.body;
-    const userNotification =  require("../models/userNotification");
+    const { email } = req.body; 
+    const userNotification =  require("../models/userNotification");  
+    var timeDifference="";
+    let arr = [];
+    await userNotification.aggregate( [{ $match: { "email": email } }, { $project : { _id : 1, message:1,type:1,createdAt : 1, dateParts: { $dateToParts: { date: "$createdAt" } } } } ]).sort("-createdAt").then((data) => {
+      data.map((d) => {  
 
-    const data = await userNotification.find({ email : email });
-    if(data){
-     return  res.status(200).json(data);
+        const timeDiff = timeDiffCalc(new Date(d.createdAt.toString()), new Date());
+        const years = timeDiff[0];
+        const months = timeDiff[1];
+        const weeks  = timeDiff[2];
+        const days   = timeDiff[3];
+        const hours  = timeDiff[4];
+        const minutes = timeDiff[5];
+
+        if(years > 0){
+          timeDifference = years +" year";
+        }else if(months > 0){
+          timeDifference = months +" months";
+        }else if(weeks > 0){
+          timeDifference = weeks +" week";
+        }else if(days > 0){
+          timeDifference = days +" days";
+        }else if(hours > 0){
+          timeDifference = hours +" hours";
+        }else if(minutes >= 0){
+          timeDifference = minutes +" minutes";
+        }
+           
+        const arrObj = {};
+          arrObj["message"] = d.message;
+          arrObj["type"] = d.type;
+          arrObj["timeDifference"] = timeDifference
+          arr.push(arrObj);         
+      })
+    })  
+   
+    if(arr){
+     return  res.status(200).json(arr);
     }else{
       return  res.status(400).json({status : 0, message : "Something went wrong"});
     }   
   } catch (error) {
     console.log("Error in userNotification api " + error)
   }
+}
+
+
+function timeDiffCalc(dateFuture, dateNow) {
+  let diffInMilliSeconds = Math.abs(dateFuture - dateNow) / 1000;
+
+  // calculate days
+  const days = Math.floor(diffInMilliSeconds / 86400);
+  diffInMilliSeconds -= days * 86400; 
+
+  var months = Math.floor(days/31);
+  var years = Math.floor(months/12);
+  var weeks  = Math.floor(days/7);
+  // calculate hours
+  const hours = Math.floor(diffInMilliSeconds / 3600) % 24;
+  diffInMilliSeconds -= hours * 3600;
+
+  // calculate minutes
+  const minutes = Math.floor(diffInMilliSeconds / 60) % 60;
+  diffInMilliSeconds -= minutes * 60;
+  
+  const arr= [years,months,weeks,days,hours,minutes];
+  return arr;
 }

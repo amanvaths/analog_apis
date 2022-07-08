@@ -48,97 +48,21 @@ const io = new Server(httpServer, {
   }
 });
 
-io.on("connection", async (socket) => { 
-  
+io.on("connection", async (socket) => {   
   socket.on('join', async function (data) {
     const email = data.email;
     socket.join(email); 
   }); 
 });
 
-
-// webpush.sendNotification(sub, payload)
-//     .then(result => console.log(result, "::RESULT"))
-//     .catch(e => console.log(e, "::ERROR"))
-
-
-cron.schedule('* * * * *', async () => {
-  const User = require('./models/user'); 
-  await User.find({}).then((user) =>{
-    user.map((users) => {    
-      userWalletBalance(users.email);
-    }) 
-  })
-});
-
-// setInterval(() => {
-//   const {  test1 } = require('./utils/function');
-//   test1("berlin@byom.de","example","this is example")
-//   console.log("hellow ");
-// }, 20000);
-
-
-
-
-// const solanaWallet = require("@solana/web3.js");
-// var keyPair = solanaWallet.Keypair.generate();
-// var address = keyPair.publicKey;
-// var privateKey = keyPair.secretKey;
-
-// console.log(address.toBase58(),1);
-// console.log(privateKey,2);
-
-// const web3 = require("@solana/web3.js");
-// (async () => {
-//   const publicKey = new web3.PublicKey(address.toBase58());
-//   const solana = new web3.Connection("https://api.testnet.solana.com");
-//   const a = await solana.getBalance(publicKey);
-//   console.log(a.toBase58());
-// })();
-
-
-// async function checkbal(){
-//   const axios = require('axios');
-//   const testnet = `https://api.blockcypher.com/v1/btc/test3/addrs/mkWc9AJ6WN4JQVKLhqfv9ZENnCVaJvRGKZ/balance`;      
-//   await axios.get(testnet).then( async(bal) => {
-//      console.log(bal);
-//   }).catch((e) => {
-//     console.log(e);
+// cron.schedule('* * * * *', async () => {
+//   const User = require('./models/user'); 
+//   await User.find({}).then((user) =>{
+//     user.map((users) => {    
+//       userWalletBalance(users.email);
+//     }) 
 //   })
-// }
-// checkbal();
-
-
-const NodeCache = require('node-cache')
-const myCache = new NodeCache({ stdTTL: 30, checkperiod: 120 });
-
-// Function to demonstrate heavy computation
-// like API requests, database queries, etc.
-function heavyComputation(){
-  let temp = 0;
-  for(let i=0; i<100000; i++)
-       temp = (Math.random()*5342)%i;
-  return 123;
-}
-
-app.get('/api1', (req, res)=>{
-   
-  // If cache has key, retrieve value
-  // from cache itself
-  if(myCache.has('uniqueKey')){
-       console.log('Retrieved value from cache !!')
-       res.send("Result: " + myCache.get('uniqueKey'))
-  }else{
-       let result =  heavyComputation()
-       myCache.set('uniqueKey', result)
-         
-       console.log('Value not present in cache,'
-             + ' performing computation')
-       res.send("Result: " + result)
-  }
-})
-
-
+// });
 
 httpServer.listen(8080,()=>{
   console.log(`Socket listening at http://localhost:8080`);
@@ -241,8 +165,9 @@ async function userWalletBalance(email){
   /**
    * solana
    */
-  const SOL_WebAddr =  "https://api.testnet.solana.com"; 
-  
+ // const SOL_WebAddr =  "https://api.testnet.solana.com"; 
+  const SOL_WebAddr = "https://api.devnet.solana.com";
+
   if (email) {
     let go = await canUpdate(email);
     if (go) { 
@@ -510,7 +435,7 @@ async function userWalletBalance(email){
                 
      
           
-     /*   if (wallet && wallet.symbol == "SOL") {
+        if (wallet && wallet.symbol == "SOL") {
            //console.log("SOL");
           try {   
             const web3 = require("@solana/web3.js"); 
@@ -518,9 +443,9 @@ async function userWalletBalance(email){
            // console.log(wallet.walletAddr);
             const publicKey = new web3.PublicKey(wallet.walletAddr); // 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri
             const solana = new web3.Connection(SOL_WebAddr);
-             console.log(await solana.getBalance(publicKey)); 
+             //console.log(await solana.getBalance(publicKey)); 
            await solana.getBalance(publicKey).then( async(sol_balance) => {
-                  console.log(sol_balance/decimal + " SOL balance")
+                  //console.log(sol_balance/decimal + " SOL balance")
             if (sol_balance > 0) {
               let balance               = sol_balance ? sol_balance / decimal : 0;
               const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;      
@@ -563,7 +488,7 @@ async function userWalletBalance(email){
           //  console.log("Error in getting Solana balance " + err);
           }
         }
-      */
+    
         
         if (wallet && wallet.symbol == "BUSD") {
           // console.log("BUSD"); 
