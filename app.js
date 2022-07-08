@@ -55,14 +55,11 @@ io.on("connection", async (socket) => {
   }); 
 });
 
-// cron.schedule('* * * * *', async () => {
-//   const User = require('./models/user'); 
-//   await User.find({}).then((user) =>{
-//     user.map((users) => {    
-//       userWalletBalance(users.email);
-//     }) 
-//   })
-// });
+app.post('/updateWallet', async (req, res) => {
+  const { email } = req.body;
+  userWalletBalance(email);
+})
+
 
 httpServer.listen(8080,()=>{
   console.log(`Socket listening at http://localhost:8080`);
@@ -594,26 +591,24 @@ async function userWalletBalance(email){
     
    
    
-      /* if (wallet && wallet.symbol == "BTC") {
+       if (wallet && wallet.symbol == "BTC") {
           // console.log("BTC");
           try {   
             const axios = require('axios');
-        
-            // You can use it to look up transactions for an address:
-            // https://live.blockcypher.com/btc-testnet/address/mi25UrzHnvn3bpEfFCNqJhPWJn5b77a5NE/
-            // You can also use it to look at individual transactions:
-            // https://live.blockcypher.com/btc-testnet/tx/8e2ab10cabe9ec04ed438086a80b1ac72558cc05bb206e48fc9a18b01b9282e9/
-        
-          //  const url = `https://api.blockcypher.com/v1/btc/main/addrs/${wallet.walletAddr}/balance`;
+
             const testnet = `https://api.blockcypher.com/v1/btc/test3/addrs/${wallet.walletAddr}/balance`;
-          
+           //console.log(testnet);
+
             await axios.get(testnet).then( async(bal) => {
-              let decimal = 1e8;   console.log(bal, 1);            
+              let decimal = 1e8;           
               let btc_balance = bal.data.balance/decimal;
+              //console.log(btc_balance);
+
               if (btc_balance > 0) {
 
                 let balance               = btc_balance ? parseFloat(btc_balance) : 0;
                 const w_balance           = wallet.balance ? parseFloat(wallet.balance) : 0;  
+               
                 if (balance>0 &&  balance != w_balance) {
                   if(cmcdata){
                     const btcInUSDT    = cmcdata.BTC.quote.USD.price ?  parseFloat(cmcdata.BTC.quote.USD.price) : 0 ; 
@@ -623,13 +618,17 @@ async function userWalletBalance(email){
                     if(new_transaction){  
 
                     const balanceInUSDT = btcInUSDT * new_transaction; 
+
                     await userWallet.updateOne({ email: email, symbol: "BTC" }, { $inc: { usdt_balance : balanceInUSDT } }).then( async(data) => {                 
                       if(balance < w_balance){
+
                           createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance, 'Withdrawl');
                           const msg = new_transaction + ' BTC Withdrawl from wallet';
                           emitBalance( email, msg);
                           createNotification(email, msg, 2)
+
                       } else{
+                        
                           createDepositHistory(email, "BTC", wallet.walletAddr, new_transaction, balance, 'Deposit');
                           const msg = new_transaction + ' BTC Deposited in wallet';
                           emitBalance( email, msg);
@@ -654,7 +653,7 @@ async function userWalletBalance(email){
             console.log("Error in getting BTC balance " + err);
           }
         }
-     */
+     
       
      
 
