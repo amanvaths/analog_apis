@@ -88,9 +88,11 @@ exports.alluser = async (req, res) => {
 
   exports.createTeamMember  = async (req, res) => {
       try{
-      const { name, degination, image } = req.body;
-      const teamMemberModel = require('./models/company/teamMember');
-    
+      const { name, degination } = req.body;    
+
+      const image = await uploadImage(req.files.image, "image_" + Date.now());
+      const teamMemberModel = require('../../models/company/teamMember');
+
           teamMemberModel.create({
             name: name,
             degination: degination,
@@ -112,3 +114,73 @@ exports.alluser = async (req, res) => {
       }
     }
     
+
+    exports.createNews  = async (req, res) => {
+      try{
+      const { title, shortMessage, message, image } = req.body;
+      const newsPrModel = require('../../models/company/newsPr');
+    
+      newsPrModel.create({
+            title: title,
+            shortMessage: shortMessage,
+            message: message,
+            image: image,       
+          })
+          .then((data) => {
+            res.status(200).json({
+              status : 1,
+              message : "Record inserted"
+            })
+          })
+          .catch((error) => {
+             console.log("error: ", error.message);
+          });
+      
+      }catch(error){
+        console.log("Error in create news api "+error);
+      }
+    }
+    
+
+  exports.addOffers = async (req, res) => {     
+      try {
+        const offersModel = require('../../models/company/offers');
+        const banner = await uploadImage(req.files.banner, "offers_" + Date.now());
+        new offersModel({ ...req.body, banner }).save((error, offers) => {
+          if (error){ 
+            console.log("Error :", error);
+          }else{
+          res.status(200).json({ message: "offers added successfully.", offers });
+        }
+      })
+      } catch (error) {
+        console.log("error from: add offers", error.message);
+        res.status(400).json({ message: "Somthing went wrong" });
+      }
+    }
+
+    async function uploadImage(data_stream, file_name) {
+      const mime = require("mime");
+      const fs = require("fs");
+      try {
+        var decodedImg = data_stream;
+        var imageBuffer = decodedImg.data;
+        var type = decodedImg.mimetype;
+        var extension = mime.getExtension(type);
+        const newname = file_name.split("/").join("");
+        var fileName = newname + "-image." + extension;
+    
+        try {
+          fs.writeFileSync("./uploads/images/" + fileName, imageBuffer, "utf8");
+        } catch (err) {
+          console.log("Error: in file upload: ", err.message);
+          return undefined;
+        }
+        const file_path = `/images/${fileName}`;
+        return file_path;
+      } catch (error) {
+        console.log("Error in file upload: bankDetail >> uploadImage", error);
+        return undefined;
+      }
+    }
+  

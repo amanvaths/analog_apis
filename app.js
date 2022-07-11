@@ -23,8 +23,6 @@ connectMongoDB();
 app.use(cors({
   origin: '*' 
 }));
-const cron = require('node-cron');
-
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));

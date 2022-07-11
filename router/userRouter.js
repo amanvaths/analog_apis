@@ -36,7 +36,7 @@ const {
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels,ohlcvtUpdate,allTeam,totalSpend,incomeFromLevels } = require('../Controller/utility');
-const { alluser,bonuspercent,alluserbydate,allusertoday, createTeamMember } = require('../Controller/admin/user');
+const { alluser,bonuspercent,alluserbydate,allusertoday, createTeamMember, createNews, addOffers } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
@@ -91,10 +91,13 @@ router.post('/buyChart', buyChart);
 router.post('/notification', userNotification);
 router.post('/createTeamMember', createTeamMember);
 router.post('/teamMember', teamMember);
+router.post('/createNews', createNews);
+router.post('/addOffers', addOffers);
 
-const webpush = require('web-push');
 
 
+
+// const webpush = require('web-push');
 // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`", "BG_cEhwmzUBObBgH4u8tRMmVa81g-TuIkDd8cL7aMHl1XF52GebLWmVLeCl6Oew943j5-9QKsQ6FiJo8aDpM9ag","Aqz6cdTGoTyGLeV2vnCxxfkA9WmmLoiY2U7tC1SQl4A")
 router.post('/notifications/subscribe', endPointStore);
 // router.post('/deleteNotificationEndPoint', deleteEndPoint);
