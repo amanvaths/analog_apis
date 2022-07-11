@@ -36,7 +36,7 @@ const {
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
 const { updatePrecent,loginhistory,levels,ohlcvtUpdate,allTeam,totalSpend,incomeFromLevels } = require('../Controller/utility');
-const { alluser,bonuspercent,alluserbydate,allusertoday, createTeamMember, createNews, addOffers } = require('../Controller/admin/user');
+const { alluser,bonuspercent,alluserbydate,allusertoday, createTeamMember, createNews, addOffers, newspr, offers } = require('../Controller/admin/user');
 const { presalelevel,getpresale,deletepresale,updatepresale,getpresalebyid,anaPrice} = require('../Controller/admin/presale');
 const { createOrder, getAllOrder, depositHestory, getUser, addColdWallet, getColdWallet, deleteOrders, userAllRecords, getIncome, cryptoSetting, addCryptoCoin, getCryptoSetting, usersWalletConut, blockuser } = require('../Controller/BuySell');
 const { userDeposit } = require('../Controller/userDeposit');
@@ -93,8 +93,8 @@ router.post('/createTeamMember', createTeamMember);
 router.post('/teamMember', teamMember);
 router.post('/createNews', createNews);
 router.post('/addOffers', addOffers);
-
-
+router.post('/newspr',newspr);
+router.post('/offers', offers);
 
 
 // const webpush = require('web-push');
@@ -230,12 +230,12 @@ async function auth(req, res, next){
   if(_user){ 
   const username =   _user.username;       
   const login_activity = settings.login_activity;   
-            ua = req.headers["user-agent"];
-            const deviceDetector = new DeviceDetector();
-            const userAgent = ua;
-            const device = deviceDetector.parse(userAgent);           
-            const ip = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
-            const browser_name = device.client.name;  
+            ua                    = req.headers["user-agent"];
+            const deviceDetector  = new DeviceDetector();
+            const userAgent       = ua;
+            const device          = deviceDetector.parse(userAgent);           
+            const ip              = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
+            const browser_name    = device.client.name;  
                    
           if(login_activity == 1){
             try {
@@ -245,7 +245,7 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
-                console.log("history inserted" + data);
+                //console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
                 return res.json({status:0,msg:"Error:: "+error})

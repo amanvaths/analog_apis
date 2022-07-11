@@ -232,12 +232,12 @@ exports.signInWithGoogle = async (req, res) => {
 
             const s = await settings.findOne({ email: email });
             return res.status(200).json({
-              status: 1,
-              token: token,
-              user: user._id,
-              email: email,
-              googleAuth: s.google_authenticator,
-              message: "Login Successful",
+              status  : 1,
+              token   : token,
+              user    : user._id,
+              email   : email,
+              googleAuth  : s.google_authenticator,
+              message : "Login Successful",
             });
 
           } else {
@@ -1295,20 +1295,20 @@ exports.configSettings = async (req, res) => {
     const orders        = await preSaleModel.findOne({ status: 1 });
     if (_user && s) {
       return res.status(200).json({
-        username: _user.username,
-        user_id: _user.user_id,
-        refferal: _user.refferal,
-        currency_preference: _user.currency,
-        unusual_activity: s.unusual_activity,
-        new_browser: s.new_browser,
-        sales_latest_news: s.sales_latest_news,
-        new_features_updates: s.new_features_updates,
-        tips: s.tips,
-        googleAuth: s.google_authenticator,
-        login_activity: s.login_activity,
-        anaPrice: orders ? orders.price : 0,
-        webPush_Private_Key: _user.web_push_Private_key,
-        webPush_Public_Key: _user.web_push_Public_key
+        username              : _user.username,
+        user_id               : _user.user_id,
+        refferal              : _user.refferal,
+        currency_preference   : _user.currency,
+        unusual_activity      : s.unusual_activity,
+        new_browser           : s.new_browser,
+        sales_latest_news     : s.sales_latest_news,
+        new_features_updates  : s.new_features_updates,
+        tips                  : s.tips,
+        googleAuth            : s.google_authenticator,
+        login_activity        : s.login_activity,
+        anaPrice              : orders ? orders.price : 0,
+        webPush_Private_Key   : _user.web_push_Private_key,
+        webPush_Public_Key    : _user.web_push_Public_key
       })
     } else {
       console.log("JJ")

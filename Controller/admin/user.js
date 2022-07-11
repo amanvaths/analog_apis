@@ -184,3 +184,30 @@ exports.alluser = async (req, res) => {
       }
     }
   
+    exports.newspr = async (req, res) => {
+      try{
+        const newprModel = require('../../models/company/newsPr');
+        const newsPr = await newprModel.find();
+        if(newsPr){
+          return res.status(200).json(newsPr);
+        }else{
+          return res.status(200).json({ msg : "something went wrong" });
+        }
+      }catch(err){
+        console.log("Error in news and pr api " + err);
+      }
+    }
+
+    exports.offers = async (req, res) => {
+      try{
+        const offersModel = require('../../models/company/offers');
+        const offers = await offersModel.find();
+        if(offers){
+          return res.status(200).json(offers);
+        }else{
+          return res.status(200).json({ msg : "something went wrong" });
+        }
+      }catch(err){
+        console.log("Error in offers api " + err);
+      }
+    }

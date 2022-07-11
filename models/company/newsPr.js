@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const newsSchema = new mongoose.Schema(
+const newsprSchema = new mongoose.Schema(
   {    
     title        : { type: String },
     shortMessage  : { type: String },
@@ -12,4 +12,4 @@ const newsSchema = new mongoose.Schema(
 );
 
 
-module.exports = mongoose.model("news", newsSchema);
+module.exports = mongoose.model("newspr", newsprSchema);
