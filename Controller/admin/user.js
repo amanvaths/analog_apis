@@ -117,12 +117,11 @@ exports.alluser = async (req, res) => {
 
     exports.createNews  = async (req, res) => {
       try{
-      const { title, shortMessage, message, image } = req.body;
+      const { title, message} = req.body;
       const newsPrModel = require('../../models/company/newsPr');
-    
+      const image = await uploadImage(req.files.image, "news_" + Date.now())
       newsPrModel.create({
             title: title,
-            shortMessage: shortMessage,
             message: message,
             image: image,       
           })
@@ -144,6 +143,8 @@ exports.alluser = async (req, res) => {
 
   exports.addOffers = async (req, res) => {     
       try {
+        console.log(req.body);
+        console.log(req.files);
         const offersModel = require('../../models/company/offers');
         const banner = await uploadImage(req.files.banner, "offers_" + Date.now());
         new offersModel({ ...req.body, banner }).save((error, offers) => {
@@ -179,7 +180,7 @@ exports.alluser = async (req, res) => {
         const file_path = `/images/${fileName}`;
         return file_path;
       } catch (error) {
-        console.log("Error in file upload: bankDetail >> uploadImage", error);
+        console.log("Error in file upload: ", error);
         return undefined;
       }
     }
