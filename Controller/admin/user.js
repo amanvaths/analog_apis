@@ -211,3 +211,5 @@ exports.alluser = async (req, res) => {
         console.log("Error in offers api " + err);
       }
     }
+
+

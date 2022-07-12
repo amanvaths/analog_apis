@@ -13,7 +13,7 @@ const {
   resetPassword, 
   walletData,
   transaction_history,
-  transaction_update,
+  //transaction_update,
   settings,
   updateSetting,
   change_password,
@@ -268,17 +268,7 @@ async function auth(req, res, next){
        // console.log("Unusual Activity");
     }
 
-    const login_browser = await login_history.count({ email : email, browser_name : { $in : [ browser_name ]} });
-    //console.log(login_browser);
-    if(settings.new_browser == 1 && login_browser == 1 && login_ip == 1){
-      var subject = "Login with New browser in Analog Account";
-      var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
-      Browser Name : ${browser_name} <br>
-      IP : ${ip} <br>
-      If it's not you please change your password.</h5>`;
-      sendMail(email, subject, msg); 
-     // console.log("New browser Activity");           
-    } 
+ 
   }
   else{
     return res.status(400).json({status: "0", msg: "something went wrong"})
