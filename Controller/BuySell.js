@@ -162,7 +162,7 @@ exports.createOrder = async (req, res)=> {
     let quantity=Number(amount).toFixed(2)
     const currencyType    = "USDT"
      console.log(currencyType)
-    const  walletData     =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
+      const  walletData     =  await wallet.find({email: email,symbol: { $in:[currencyType, compairCurrency ]}})
       const currencyT     = walletData.find((wall => wall.symbol == currencyType ))
       const compairC      = walletData.find((wall => wall.symbol == compairCurrency ))
       const presale       = await Presale.findOne({status: 1})
@@ -289,7 +289,7 @@ exports.createOrder = async (req, res)=> {
                         bonus_percent     : bonus_perc,
                         currency          : compairCurrency,
                         amount            : compairVal,
-                        preferred_currency_amount:pref_curr_amount,
+                        preferred_currency_amount : pref_curr_amount,
                         bonus_type        : "Buying",
                         order_id          : order_id,
                         presalelevel      : presale.levelname
@@ -404,8 +404,8 @@ exports.createOrder = async (req, res)=> {
                 const persentsold   = ((soldcoins/ presale.coinquantity) * 100).toFixed(2)
                 await Presale.updateOne({_id: presale._id },{
                     $set:{
-                      coinremaining: remains_coin,
-                      persentsold : persentsold
+                      coinremaining : remains_coin,
+                      persentsold   : persentsold
                     }
                 })
 
@@ -441,7 +441,7 @@ exports.createOrder = async (req, res)=> {
                 changepriceusdt : newpriceusdt,
                 changepercent   : percntsold
             }])
-              }
+           }
               // token price update
               
               // order history
@@ -455,6 +455,7 @@ exports.createOrder = async (req, res)=> {
                         var message = "Purchase of Token Quantity "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency.toUpperCase()+" is Successfull";
                         if (message) {
                           sendMail(req.body.email, subject, message);
+                          createNotification(req.body.email, message, 3);
                         }                   
                           return res.status(200).json({
                               status : true,
@@ -504,6 +505,23 @@ exports.createOrder = async (req, res)=> {
     });
   }
 }
+
+
+function createNotification(email, msg, type){
+  const notification = require('../models/userNotification');
+        notification
+        .create({
+          email: email,
+          message: msg,         
+          type: type,
+        })
+        .then((data) => {
+          // console.log("notification created");
+        }).catch((e) => {
+          console.log(e);
+        })
+}
+
 
 async function OrderHistory(
   amount,

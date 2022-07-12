@@ -153,15 +153,15 @@ exports.signup = async (req, res) => {
           }
 
           const _user = new User({
-            email: email,
-            user_id: user_id,
-            password: password,
-            refferal: referral_code,
+            email       : email,
+            user_id     : user_id,
+            password    : password,
+            refferal    : referral_code,
             inceptive_wallet: signup_bonus,
             airdrop_wallet: signup_bonus,
-            otp: otp,
-            web_push_Public_key: webPush_Public_Key,
-            web_push_Private_key: webPush_Private_Key
+            otp         : otp,
+            web_push_Public_key   : webPush_Public_Key,
+            web_push_Private_key  : webPush_Private_Key
 
           });
           _user.save(async (error, data) => {
@@ -190,6 +190,8 @@ exports.signup = async (req, res) => {
                 var subject = "Signup with your refferal code";
                 var message = "<h3>Hello , <br> " + user_id + " has Registerd successully on Analog with your refferal code.</h3>";
                 sendMail(reffEmail, subject, message);
+                var msg = user_id +" has Registerd with your refferal code";
+                createNotification(reffEmail, msg, 4);
               }
 
               return res.status(200).json({
@@ -2108,19 +2110,18 @@ exports.buyChart = async (req, res) => {
 
     await buyModel.aggregate([{ $match: { email: email, bonus_type: "Buying", createdAt: { $gte: new Date(d.toISOString()) } } }, {
       $group: {
-        _id: {
+        _id: {         
           month: { $month: "$createdAt" },
           year: { $year: "$createdAt" }
         },
         Total: { $sum: "$token_quantity" }
       }
     }
-    ])
-      .then((data) => {
+    ]).then((data) => {
         data.map((d) => {
-          const arrObj = {};
+          const arrObj    = {};
           arrObj["month"] = d._id.month;
-          arrObj["year"] = d._id.year;
+          arrObj["year"]  = d._id.year;
           arrObj["total"] = d.Total
           arr.push(arrObj);
         })
@@ -2241,3 +2242,18 @@ exports.teamMember  = async (req, res) => {
   }
 }
 
+    
+function createNotification(email, msg, type){
+  const notification = require('../models/userNotification');
+        notification
+        .create({
+          email: email,
+          message: msg,         
+          type: type,
+        })
+        .then((data) => {
+          // console.log("notification created");
+        }).catch((e) => {
+          console.log(e);
+        })
+}
