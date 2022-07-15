@@ -895,7 +895,8 @@ exports.change_password = async (req, res) => {
     const _user = await User.findOne({ email: email });
     if (_user && _user.password) {
       if (bcrypt.compareSync(old_password, _user.password)) {
-        await User.updateOne({ email: email }, { $set: { password: hashPassword } }).then((data) => {
+
+        await User.updateOne({ email: email }, { $set: { password: hashPassword, password_updated_at: new Date()} }).then((data) => {
           return res.json({
             status: 1,
             message: "Password changed successfully"
@@ -1298,6 +1299,8 @@ exports.configSettings = async (req, res) => {
     if (_user && s) {
       return res.status(200).json({
         username              : _user.username,
+        email                 : _user.email,
+        phone                 : _user.contact_no,
         user_id               : _user.user_id,
         refferal              : _user.refferal,
         currency_preference   : _user.currency,

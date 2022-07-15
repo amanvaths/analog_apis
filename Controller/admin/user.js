@@ -143,17 +143,15 @@ exports.alluser = async (req, res) => {
 
   exports.addOffers = async (req, res) => {     
       try {
-        console.log(req.body);
-        console.log(req.files);
+        const { description } = req.body;
         const offersModel = require('../../models/company/offers');
         const banner = await uploadImage(req.files.banner, "offers_" + Date.now());
-        new offersModel({ ...req.body, banner }).save((error, offers) => {
-          if (error){ 
-            console.log("Error :", error);
-          }else{
-          res.status(200).json({ message: "offers added successfully.", offers });
-        }
-      })
+        console.log(banner);
+         const ress = await offersModel.create({ description : description , image : banner });
+         if(ress)
+          return res.status(200).json({ message : "added" })
+        else
+          return res.status(400).json({ err : "err" })
       } catch (error) {
         console.log("error from: add offers", error.message);
         res.status(400).json({ message: "Somthing went wrong" });
@@ -163,7 +161,7 @@ exports.alluser = async (req, res) => {
     async function uploadImage(data_stream, file_name) {
       const mime = require("mime");
       const fs = require("fs");
-      try {
+      try {       
         var decodedImg = data_stream;
         var imageBuffer = decodedImg.data;
         var type = decodedImg.mimetype;
@@ -174,13 +172,13 @@ exports.alluser = async (req, res) => {
         try {
           fs.writeFileSync("./uploads/images/" + fileName, imageBuffer, "utf8");
         } catch (err) {
-          console.log("Error: in file upload: ", err.message);
+          console.log("Error: in file upload111: ", err.message);
           return undefined;
         }
         const file_path = `/images/${fileName}`;
         return file_path;
       } catch (error) {
-        console.log("Error in file upload: ", error);
+        console.log("Error in file upload222: ", error);
         return undefined;
       }
     }

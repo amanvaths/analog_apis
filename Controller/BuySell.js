@@ -166,6 +166,7 @@ exports.createOrder = async (req, res)=> {
       const currencyT     = walletData.find((wall => wall.symbol == currencyType ))
       const compairC      = walletData.find((wall => wall.symbol == compairCurrency ))
       const presale       = await Presale.findOne({status: 1})
+     
       if(presale.coinremaining<quantity){
         return res.status(400).json({
           status : "false",
@@ -451,6 +452,8 @@ exports.createOrder = async (req, res)=> {
                             await injectInGraph('ana','inr',Number(ANA_price.toFixed(5)),Number(quantity))
               // order history
                         if(result){
+                          const newTotalAna = await User.findOne({email: email})
+                          
                         var subject = "Buy Order Successfull";
                         var message = "Purchase of Token Quantity "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency.toUpperCase()+" is Successfull";
                         if (message) {
@@ -459,6 +462,7 @@ exports.createOrder = async (req, res)=> {
                         }                   
                           return res.status(200).json({
                               status : true,
+                              totalAna:  newTotalAna.token_balance,
                               message: "Purchase of Token Quantiy "+token_quantity+" at the price of "+one_ANA_in.toFixed(7)+" "+compairCurrency+" is Successfull"
                           }); 
                       } else {
@@ -588,7 +592,7 @@ exports.getAllOrder = async (req, res) => {
     } else {
       params = query;
     }
-    const order = await Order.find(params); 
+    const order = await Order.find(params).sort("-createdAt"); 
     return res.json({
       status: 200,
       error: false,

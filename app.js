@@ -15,7 +15,7 @@ async function connectMongoDB() {
   try{
    await mongoose.connect(db, { useNewUrlParser: true, }).then(() => { console.log('MongoDB connected...')});
   }catch(error){
-    console.log(err);
+    console.log(error);
   }  
 }
 connectMongoDB();

@@ -48,7 +48,8 @@ const userSchema = new mongoose.Schema(
     usdt_wallet      : { type: Number, default: 0 },
     web_push_Private_key: {type: String},
     web_push_Public_key: {type: String},
-    subscription: {type: Object}
+    subscription: {type: Object},
+    password_updated_at: {type: Date}
   },
   { timestamps: true }
 );
