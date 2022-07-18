@@ -1313,7 +1313,8 @@ exports.configSettings = async (req, res) => {
         login_activity        : s.login_activity,
         anaPrice              : orders ? orders.price : 0,
         webPush_Private_Key   : _user.web_push_Private_key,
-        webPush_Public_Key    : _user.web_push_Public_key
+        webPush_Public_Key    : _user.web_push_Public_key,
+        password_updated_at   : _user.password_updated_at
       })
     } else {
       console.log("JJ")

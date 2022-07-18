@@ -161,8 +161,8 @@ async function userWalletBalance(email){
   /**
    * solana
    */
- // const SOL_WebAddr =  "https://api.testnet.solana.com"; 
-  const SOL_WebAddr = "https://api.devnet.solana.com";
+ const SOL_WebAddr =  "https://api.testnet.solana.com"; 
+  // const SOL_WebAddr = "https://api.devnet.solana.com";
 
   if (email) {
     let go = await canUpdate(email);
