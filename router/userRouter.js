@@ -31,7 +31,7 @@ const {
   deleteEndPoint,
   userNotification,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
-  airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart, teamMember
+  airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart, teamMember,exportBounty
   //,  affiliateLevelData
 } = require("../Controller/user");
 const { buytoken } = require('../Controller/buy');
@@ -96,7 +96,7 @@ router.post('/addOffers', addOffers);
 router.post('/newspr',newspr);
 router.post('/offers', offers);
 
-
+router.post('/exportBounty',exportBounty);
 // const webpush = require('web-push');
 // webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`", "BG_cEhwmzUBObBgH4u8tRMmVa81g-TuIkDd8cL7aMHl1XF52GebLWmVLeCl6Oew943j5-9QKsQ6FiJo8aDpM9ag","Aqz6cdTGoTyGLeV2vnCxxfkA9WmmLoiY2U7tC1SQl4A")
 router.post('/notifications/subscribe', endPointStore);
