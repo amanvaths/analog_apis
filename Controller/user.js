@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userWallet = require("../models/userWallet");
 const session = require("express-session");
-const { sendMail,test1  } = require('../utils/function');
+const { sendMail,test1, getCMCData } = require('../utils/function');
 const webpush = require('web-push');
 require('dotenv').config();
 const NodeCache = require('node-cache');
@@ -140,8 +140,17 @@ exports.signup = async (req, res) => {
         } else {
           const otp = Math.floor(100000 + Math.random() * 900000);
           const user_id = "ANA" + Math.floor(100000 + Math.random() * 900000);
-          const signup_bonus = 500;
 
+          const cmcdata  = await getCMCData(base_currency = false, currency = 'inr');
+          var usdtInINR = 0;
+          if(cmcdata){
+            usdtInINR    = cmcdata.USDT.quote.INR.price ?  parseFloat(cmcdata.USDT.quote.INR.price) : 0 ;     
+          }else{
+            usdtInINR = 0;
+          }
+         
+          const signup_bonus = 500 / usdtInINR;          
+        
           if (referral_code != null) {
             const reff = await User.count({ user_id: referral_code })
             if (reff == 0) {
@@ -232,6 +241,10 @@ exports.signInWithGoogle = async (req, res) => {
               expiresIn: "1h",
             });
 
+            var subject = "Security Alert";
+            var message = "<h3>A new sign-in detected to your Analog Account. if this was you, you don't need to do anything. if not, Kindly change your security password.</h3>";
+            sendMail(email, subject, message);
+
             const s = await settings.findOne({ email: email });
             return res.status(200).json({
               status  : 1,
@@ -249,6 +262,12 @@ exports.signInWithGoogle = async (req, res) => {
             const s = await settings.findOne({ email: email });
             const hashPass = bcrypt.hashSync(password, 10);
             await User.updateOne({ email: email }, { $set: { gmailPass: hashPass, isVarify: 1 } }).then(async (data) => {
+
+              var subject = "Security Alert";
+              var message = "<h3>A new sign-in detected to your Analog Account. if this was you, you don't need to do anything. if not, Kindly change your security password.</h3>";
+              sendMail(email, subject, message);
+
+
               return res.status(200).json({
                 status: 1,
                 token: token,
@@ -263,7 +282,17 @@ exports.signInWithGoogle = async (req, res) => {
 
         } else {
           const user_id = "ANA" + Math.floor(100000 + Math.random() * 900000);
-          const signup_bonus = 500;
+
+          const cmcdata  = await getCMCData(base_currency = false, currency = 'inr');
+          var usdtInINR = 0;
+          if(cmcdata){
+            usdtInINR    = cmcdata.USDT.quote.INR.price ?  parseFloat(cmcdata.USDT.quote.INR.price) : 0 ;     
+          }else{
+            usdtInINR = 0;
+          }    
+
+          const signup_bonus = 500 / usdtInINR; 
+
           const hashPass = bcrypt.hashSync(password, 10);
           const _user = new User({
             email: req.body.email,
@@ -354,6 +383,11 @@ exports.signin = async (req, res) => {
             const settings = require('../models/settings');
             const s = await settings.findOne({ email: email });
             test1(email, "Login Detected", "LOGIN")
+
+            var subject = "Security Alert";
+            var message = "<h3>A new sign-in detected to your Analog Account. if this was you, you don't need to do anything. if not, Kindly change your security password.</h3>";
+            sendMail(email, subject, message);
+
             return res.status(200).json({
               status: 1,
               token: token,
@@ -410,8 +444,13 @@ exports.varify = async (req, res) => {
                 { $set: { isVarify: 1 } }
               );
               if (varify) {
-                console.log(varify);
-                console.log(email);
+               // console.log(varify);
+               // console.log(email);
+
+               var subject = "OTP Varified successfully";
+               var message = "<h3>Welcome to Analog. your Account has been active now.</h3>";
+               sendMail(email, subject, message);
+
                 res.status(200).json({
                   status: 1,
                   message: "OTP Varyfied successully",
@@ -804,6 +843,11 @@ exports.settings = async (req, res) => {
             });
           } else {
             await User.updateOne({ email: email }, { $set: { username: req.body.username, } }).then((data) => {
+
+              var subject = "Username Updated in Analog Account";
+              var message = "<h3>Your Username has been updated successfully on Analog Account.</h3>";
+              sendMail(email, subject, message);
+
               return res.status(200).json({
                 status: 1,
                 message: "Username updated successfully"
@@ -823,13 +867,19 @@ exports.settings = async (req, res) => {
     case "contact":
       try {
         await User.findOne({ contact_no: req.body.contact }).exec(async (err, data) => {
-          if (data) {
+          if (data) {          
+
             return res.status(200).json({
               status: -1,
               message: "Contact no. Already Exits"
             });
           } else {
             await User.updateOne({ email: email }, { $set: { contact_no: req.body.contact, } }).then((data) => {
+
+              var subject = "Contact No. Updated in Analog Account";
+              var message = "<h3>Your Contact No. has been updated successfully on Analog Account.</h3>";
+              sendMail(email, subject, message);
+
               return res.status(200).json({
                 status: 1,
                 message: "Contact no. updated successfully"
@@ -849,6 +899,11 @@ exports.settings = async (req, res) => {
     case "currency":
       try {
         await User.updateOne({ email: email }, { $set: { currency: req.body.currency, } }).then((data) => {
+
+          var subject = "Currency Updated in Analog Account";
+          var message = "<h3>Your Currency has been updated successfully in Analog Account.</h3>";
+          sendMail(email, subject, message);
+
           return res.status(200).json({
             status: 1,
             message: "Currency updated successfully"
@@ -897,6 +952,11 @@ exports.change_password = async (req, res) => {
       if (bcrypt.compareSync(old_password, _user.password)) {
 
         await User.updateOne({ email: email }, { $set: { password: hashPassword, password_updated_at: new Date()} }).then((data) => {
+
+          var subject = "Password successfully updated";
+          var message = "<h3>Your password has been updated successfully in Analog Account.</h3>";
+          sendMail(email, subject, message);
+
           return res.json({
             status: 1,
             message: "Password changed successfully"
@@ -924,6 +984,18 @@ exports.login_activity = async (req, res) => {
   try {
     const settingsModel = require('../models/settings');
     await settingsModel.updateOne({ email: email }, { $set: { login_activity: req.body.login_activity, } }).then((data) => {
+
+      if(req.body.login_activity == 1){
+        var subject = "Login Activity Enabled";
+        var message = "<h3>Your Login activity security has been Enabled. </h3>";
+        sendMail(email, subject, message);
+      }else{
+        var subject = "Login Activity Desabled";
+        var message = "<h3>Your Login activity security has been Desabled. </h3>";
+        sendMail(email, subject, message);
+      }
+     
+
       return res.status(200).json({
         status: 1,
         message: "Login activity updated successfully"
@@ -1185,6 +1257,11 @@ exports.notificationSettings = async (req, res) => {
         tips: tips
       }
     }, { upsert: true }).then((data) => {
+
+      var subject = "Notification setting updated";
+      var message = "<h3>Notification setting has been updated in your Analog Account. </h3>";
+      sendMail(email, subject, message);
+
       return res.status(200).json({
         status: 1,
         message: "Notification updated successfully"
@@ -1242,6 +1319,11 @@ exports.add_whitelisted_ip = async (req, res) => {
         user_id: _user.user_id,
         ip: ip
       }).then((data) => {
+
+        var subject = "New IP Address added";
+        var message = "<h3>New IP has been Added to your Analog Account. </h3>";
+        sendMail(email, subject, message);
+
         return res.status(200).json({ status: 1, message: "IP added successfully" });
       }).catch((error) => {
         return res.status(400).json({ status: 0, message: "something went wrong" });
@@ -1276,8 +1358,13 @@ exports.removeWhiteListedIp = async (req, res) => {
   try {
     const whitelisted_ip_model = require('../models/whitelisted_ip');
     const { _id } = req.body;
-    console.log(_id);
+    // console.log(_id);
     await whitelisted_ip_model.deleteOne({ _id: _id }).then((data) => {
+
+        var subject = "IP Address removed";
+        var message = "<h3>IP has been Removed from  your Analog Account. </h3>";
+        sendMail(email, subject, message);
+
       return res.status(200).json({ status: 1, message: "Deleted successfully" });
     }).catch((error) => {
       console.log("Error in removing whitelisted ip " + error)
@@ -1317,7 +1404,7 @@ exports.configSettings = async (req, res) => {
         password_updated_at   : _user.password_updated_at
       })
     } else {
-      console.log("JJ")
+     // console.log("JJ")
     }
   } catch (error) {
     console.log("Error in config settings " + error);
@@ -1359,6 +1446,11 @@ exports.update_refferal = async (req, res) => {
     const _user = await User.findOne({ email: email });
     if (_u && _user.user_id != refferalCode) {
       User.updateOne({ email: email }, { $set: { refferal: refferalCode } }).then(() => {
+
+        var subject = "Refferal Code updated";
+        var message = "<h3>Refferal code has been updated to your Analog Account.</h3>";
+        sendMail(email, subject, message);
+
         return res.status(200).json({
           status: 1,
           message: "Updated successfully"
@@ -1865,6 +1957,10 @@ exports.witdrawl = async (req, res) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
                   
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Affiliates wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"
@@ -1885,6 +1981,11 @@ exports.witdrawl = async (req, res) => {
                 await User.updateOne({ email: email }, { $inc: { bounty_wallet: -amount } }).then((d) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
+
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Bounty wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"
@@ -1904,6 +2005,11 @@ exports.witdrawl = async (req, res) => {
                 await User.updateOne({ email: email }, { $inc: { airdrop_wallet: -amount } }).then((d) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
+
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Airdrop wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"
@@ -1922,6 +2028,11 @@ exports.witdrawl = async (req, res) => {
                 await User.updateOne({ email: email }, { $inc: { inherited_wallet: -amount } }).then((d) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
+
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Inherited wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"
@@ -1940,6 +2051,11 @@ exports.witdrawl = async (req, res) => {
                 await User.updateOne({ email: email }, { $inc: { handout_wallet: -amount } }).then((d) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
+
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Handout wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"
@@ -1959,8 +2075,11 @@ exports.witdrawl = async (req, res) => {
                 await User.updateOne({ email: email }, { $inc: { inceptive_wallet: -amount } }).then((d) => {
                   createWithdrawlHistory(email, fromWallet, toWalletAddr, amount_pref, usdt_price, currency, fees, remarks);
                   OrderHistory(amount_pref, email, wallet, order_id, currency)
-                  console.log("GALI");
-                    // test1()
+                
+                  var subject = "Withdrawl Request created";
+                  var message = `<h3>New Withdrawl request of &#36; ${amount} has been created from your Analog Account from your Inceptive wallet.</h3>`;
+                  sendMail(email, subject, message);
+
                   return res.status(200).json({
                     status: 1,
                     message: "Withdrawl request created successfully"

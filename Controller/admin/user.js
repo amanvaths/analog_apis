@@ -221,7 +221,7 @@ exports.alluser = async (req, res) => {
         const dark_logo = await uploadImage(req.files.dark_logo, "dark_logo_" + Date.now());
         const icon = await uploadImage(req.files.icon, "icon_" + Date.now());
        
-         const ress = await webSettingModel.create({ name : siteName , logo : logo, dark_logo : dark_logo , icon : icon  });
+         const ress = await webSettingModel.updateOne({ $set : { name : siteName , logo : logo, dark_logo : dark_logo , icon : icon  }});
          if(ress)
           return res.status(200).json({ message : "added" })
         else

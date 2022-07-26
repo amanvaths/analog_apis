@@ -112,6 +112,7 @@ function sendMail(email, subject, message) {
         "bnb",
         "matic",
         "sol",
+        "inr"
       ];
       var coin_symbols = base_currency ? base_currency : query_coin_symbol_array.join(",");
       var conver_currency = currency ? currency : "usd";
