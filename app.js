@@ -9,7 +9,7 @@ const fileupload = require("express-fileupload");
 const port = 3001
 const mongoose = require('mongoose');
 const {createServer} = require('https');
-const db = process.env.db
+const db = process.env.DB
 
 async function connectMongoDB() {
   try{

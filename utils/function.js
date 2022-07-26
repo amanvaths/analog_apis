@@ -6,16 +6,16 @@ require('dotenv').config();
 
 function sendMail(email, subject, message) {
     var transporter = nodemailer.createTransport({
-      host: process.env.e_host,
-      port: process.env.e_port,
+      host: process.env.E_HOST,
+      port: process.env.E_PORT,
       auth: {
-        user: process.env.e_user,
-        pass: process.env.e_pass,
+        user: process.env.E_USER,
+        pass: process.env.E_PASS,
       },
     });
   
     var mailOptions = {
-      from: process.env.e_user,
+      from: process.env.E_USER,
       to: email,
       subject: subject,
       html: emailTemplate(email, message),
