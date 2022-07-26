@@ -231,3 +231,20 @@ exports.alluser = async (req, res) => {
         res.status(400).json({ message: "Somthing went wrong" });
       }
     }
+
+
+    
+    exports.getWebsiteLogo = async (req, res) => {
+      try {       
+        const webSettingModel = require('../../models/company/websiteSettings');
+        const data = await webSettingModel.findOne({});       
+       // console.log(data);
+         if(data)
+          return res.status(200).json(data)
+        else
+          return res.status(400).json({ err : "err" })
+      } catch (error) {
+        console.log("error from: websiteSettings ", error.message);
+        res.status(400).json({ message: "Somthing went wrong" });
+      }
+    }
