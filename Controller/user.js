@@ -2261,3 +2261,34 @@ function createNotification(email, msg, type){
           console.log(e);
         })
 }
+
+
+exports.exportBounty = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const buyModel = require('../models/buy');
+
+    const buy = await buyModel.find({ email: email, bonus_type: "Buying" }, {
+      amount: 1, token_quantity: 1, bonus: 1, presalelevel: 1, bonus_percent: 1, token_price: 1, createdAt: 1
+    }).sort({ createdAt: -1 });
+   
+    const { Parser } = require('json2csv');
+    const fields = ['amount', 'token_quantity', 'bonus', 'presalelevel', 'bonus_percent', 'token_price'];
+    const opts = { fields };
+
+    const parser = new Parser(opts);
+    const csv = parser.parse(buy);
+    console.log(csv);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=tutorials.csv");
+    res.status(200).end(csv);
+   
+  } catch (err) {
+    console.log("Error in bounty api " + err);
+    res.status(200).json({
+      status: 0,
+      message: "something went wrong"
+    })
+  }
+}
