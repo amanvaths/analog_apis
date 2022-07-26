@@ -2277,7 +2277,7 @@ exports.exportBounty = async (req, res) => {
 
     const parser = new Parser(opts);
     const csv = parser.parse(buy);
-    console.log(csv);
+   // console.log(csv);
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", "attachment; filename=tutorials.csv");
@@ -2291,3 +2291,5 @@ exports.exportBounty = async (req, res) => {
     })
   }
 }
+
+

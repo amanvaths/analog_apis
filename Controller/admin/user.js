@@ -172,13 +172,13 @@ exports.alluser = async (req, res) => {
         try {
           fs.writeFileSync("./uploads/images/" + fileName, imageBuffer, "utf8");
         } catch (err) {
-          console.log("Error: in file upload111: ", err.message);
+          console.log("Error: in file uploading* : ", err.message);
           return undefined;
         }
         const file_path = `/images/${fileName}`;
         return file_path;
       } catch (error) {
-        console.log("Error in file upload222: ", error);
+        console.log("Error in file uploading** : ", error);
         return undefined;
       }
     }
@@ -212,3 +212,22 @@ exports.alluser = async (req, res) => {
     }
 
 
+    exports.websiteSettings = async (req, res) => {
+      try {
+        const { siteName } = req.body;
+        const webSettingModel = require('../../models/company/websiteSettings');
+
+        const logo = await uploadImage(req.files.logo, "logo_" + Date.now());
+        const dark_logo = await uploadImage(req.files.dark_logo, "dark_logo_" + Date.now());
+        const icon = await uploadImage(req.files.icon, "icon_" + Date.now());
+       
+         const ress = await webSettingModel.create({ name : siteName , logo : logo, dark_logo : dark_logo , icon : icon  });
+         if(ress)
+          return res.status(200).json({ message : "added" })
+        else
+          return res.status(400).json({ err : "err" })
+      } catch (error) {
+        console.log("error from: websiteSettings ", error.message);
+        res.status(400).json({ message: "Somthing went wrong" });
+      }
+    }
