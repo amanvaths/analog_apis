@@ -8,7 +8,7 @@ const cors = require('cors');
 const fileupload = require("express-fileupload");
 const port = 3001
 const mongoose = require('mongoose');
-const {createServer} = require('http');
+const {createServer} = require('https');
 const db = process.env.db
 
 async function connectMongoDB() {
@@ -65,7 +65,7 @@ httpServer.listen(8080,()=>{
 })
 
 app.listen(port, '0.0.0.0' , () => {
-    console.log(`App listening at http://localhost:${port}`);
+    console.log(`App is listening at http://localhost:${port}`);
 });
 
 
