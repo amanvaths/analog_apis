@@ -74,7 +74,7 @@ async function userWalletBalance(email){
   const { sendMail, getCMCData, test1 } = require('./utils/function');
   const userWallet = require('./models/userWallet');
   const Web3 = require("web3");  
-0  const dex = [
+  const dex = [
     {
       anonymous: false,
       inputs: [
