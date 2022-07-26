@@ -2262,7 +2262,6 @@ function createNotification(email, msg, type){
         })
 }
 
-
 exports.exportBounty = async (req, res) => {
   try {
     const { email } = req.body;
