@@ -65,7 +65,7 @@ httpServer.listen(8080,()=>{
 })
 
 app.listen(port, '0.0.0.0' , () => {
-    console.log(`App is listening at http://localhost:${port}`);
+    console.log(`App listening at http://localhost:${port}`);
 });
 
 
@@ -74,7 +74,7 @@ async function userWalletBalance(email){
   const { sendMail, getCMCData, test1 } = require('./utils/function');
   const userWallet = require('./models/userWallet');
   const Web3 = require("web3");  
-  const dex = [
+0  const dex = [
     {
       anonymous: false,
       inputs: [
