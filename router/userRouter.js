@@ -184,7 +184,6 @@ async function getCMCData(req, res) {
       "bnb",
       "matic",
       "sol",
-      "inr"
     ];
     var coin_symbols = req.body.base_currency ? req.body.base_currency : query_coin_symbol_array.join(",");
     var conver_currency = req.body.currency ? req.body.currency : "usd";     

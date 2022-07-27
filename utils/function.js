@@ -5,7 +5,9 @@ require('dotenv').config();
 // fs.createReadStream("/path/to/file")
 
 function sendMail(email, subject, message) {
+  console.log(process.env.E_HOST, "HOST")
     var transporter = nodemailer.createTransport({
+   
       host: process.env.E_HOST,
       port: process.env.E_PORT,
       auth: {
@@ -15,7 +17,7 @@ function sendMail(email, subject, message) {
     });
   
     var mailOptions = {
-      from: process.env.E_USER,
+      from: process.env.E_SENDER_EMAIL,
       to: email,
       subject: subject,
       html: emailTemplate(email, message),
@@ -34,9 +36,9 @@ function sendMail(email, subject, message) {
     const template = `
     <html>
    <head>    
-       <link rel="stylesheet" href="${process.env.front_url}/assets/css/dashlite.css?ver=3.0.2" />
-       <link rel="stylesheet" href="${process.env.front_url}/assets/css/theme.css?ver=3.0.2">
-       <link rel="stylesheet" href="${process.env.front_url}/assets/css/style-email.css" />
+       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/dashlite.css?ver=3.0.2" />
+       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/theme.css?ver=3.0.2">
+       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/style-email.css" />
    </head>
    <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
       
@@ -49,7 +51,7 @@ function sendMail(email, subject, message) {
                                         <tr>
                                             <td class="text-center pb-4">
                                                 <a href="#">
-                                                    <img class="email-logo" src="${process.env.front_url}/images/logo-dark.png" alt="logo">
+                                                    <img class="email-logo" src="${process.env.FRONT_URL}/images/logo-dark.png" alt="logo">
                                                    </a>
                                                    <p class="email-title">ANALOG (ANA) Inceptive : Initial Asset Offering of INRX Network Ecosystem. </p>
                                                </td>
@@ -78,12 +80,12 @@ function sendMail(email, subject, message) {
                                                <td class="text-center pt-4">
                                                    <p class="email-copyright-text">Copyright © 2020 Analog. All rights reserved.</p>
                                                    <ul class="email-social">
-                                                       <li><a href="#"><img src="${process.env.front_url}/images/socials/facebook.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${process.env.front_url}/images/socials/twitter.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${process.env.front_url}/images/socials/youtube.png" alt=""></a></li>
-                                                       <li><a href="#"><img src="${process.env.front_url}/images/socials/medium.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${process.env.FRONT_URL}/images/socials/facebook.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${process.env.FRONT_URL}/images/socials/twitter.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${process.env.FRONT_URL}/images/socials/youtube.png" alt=""></a></li>
+                                                       <li><a href="#"><img src="${process.env.FRONT_URL}/images/socials/medium.png" alt=""></a></li>
                                                    </ul>
-                                                   <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${process.env.front_url}">analog.com</a>. 
+                                                   <p class="fs-12px pt-4">This email was sent to you as a registered member of <a href="${process.env.FRONT_URL}">analog.com</a>. 
                                                    </p>
                                                </td>
                                            </tr>

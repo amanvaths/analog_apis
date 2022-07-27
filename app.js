@@ -436,12 +436,12 @@ async function userWalletBalance(email){
     
         
         if (wallet && wallet.symbol == "BUSD") {
-          // console.log("BUSD"); 
+          console.log("BUSD"); 
             try {  
               var contract = new web3Bnb.eth.Contract(dex,"0xf8E556996042b34cc706F040c59955abB678995e");
               const decimal = 18; //await contract.methods.decimals().call();
               await contract.methods.balanceOf(wallet.walletAddr).call().then( async (busd_bal)=>{             
-              // console.log("busd_bal: ", busd_bal);
+              console.log("busd_bal: ", busd_bal);
 
               if (busd_bal > 0) {
                 let balance               = busd_bal ? busd_bal / decimal : 0;
