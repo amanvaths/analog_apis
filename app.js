@@ -59,6 +59,7 @@ app.post('/updateWallet', async (req, res) => {
 })
 
 
+//check_ip_whiteListing();
 
 httpServer.listen(8080,()=>{
   console.log(`Socket listening at http://localhost:8080`);
@@ -68,6 +69,18 @@ app.listen(port, '0.0.0.0' , () => {
     console.log(`App listening at http://localhost:${port}`);
 });
 
+
+async function check_ip_whiteListing(){
+  try{
+    const ipWhiteListingModel = require('./models/whitelisted_ip');
+    const email = "rginnadcab@gmail.com";
+    const ip = "103.214.60.214";
+    const result = await ipWhiteListingModel.count({ email : email, ip : { $in:[ip]}});
+    console.log(result);
+  }catch(err){
+    console.log("Error in ip white listing " +err);
+  }
+}
 
 
 async function userWalletBalance(email){  
@@ -439,7 +452,7 @@ async function userWalletBalance(email){
           console.log("BUSD"); 
             try {  
               var contract = new web3Bnb.eth.Contract(dex,"0xf8E556996042b34cc706F040c59955abB678995e");
-              const decimal = 18; //await contract.methods.decimals().call();
+              const decimal = 1e18; //await contract.methods.decimals().call();
               await contract.methods.balanceOf(wallet.walletAddr).call().then( async (busd_bal)=>{             
               console.log("busd_bal: ", busd_bal);
 
@@ -491,8 +504,8 @@ async function userWalletBalance(email){
           if (wallet && wallet.symbol == "SHIB") {
             // console.log("BUSD"); 
               try {  
-                var contract = new web3Bnb.eth.Contract(dex,"0x1004f1CD9e4530736AadC051a62b0992c198758d");
-                const decimal = 18; //await contract.methods.decimals().call();
+                var contract = new web3Bnb.eth.Contract(dex,"0xf8E556996042b34cc706F040c59955abB678995e");
+                const decimal = 1e18; //await contract.methods.decimals().call();
                 await contract.methods.balanceOf(wallet.walletAddr).call().then( async (shib_bal)=>{             
                 // console.log("busd_bal: ", busd_bal);
   

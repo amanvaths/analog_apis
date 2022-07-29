@@ -276,10 +276,11 @@ async function auth(req, res, next){
   else{
     return res.status(400).json({status: "0", msg: "something went wrong"})
   }
-}catch(err){
-  console.log("Error in auth api " + err);
-  return res.status(400).json({status: "0", msg: "something went wrong"})
-}
+  }catch(err){
+    console.log("Error in auth api " + err);
+    return res.status(400).json({status: "0", msg: "something went wrong"})
+  }
+
    next();
 }
 
