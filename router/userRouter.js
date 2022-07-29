@@ -261,15 +261,16 @@ async function auth(req, res, next){
 
     const login_ip = await login_history.count({ email : email, request_address : { $in : [ ip ] } }); 
     //console.log(login_ip + " ip");
-    if(settings.unusual_activity == 1 && login_ip ==1 ){
+    // if(settings.unusual_activity == 1 && login_ip ==1 ){
         var subject = "Unusual Activity in Analog Account";
         var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
         Browser Name : ${browser_name} <br>
         IP : ${ip} <br>
+        Device : ${device} <br>
         If it's not you please change your password.</h5>`;
         sendMail(email, subject, msg);
        // console.log("Unusual Activity");
-    }
+    // }
 
     // check for whitelisted ips 
     const whitelisted_ips = require("../models/whitelisted_ip");
