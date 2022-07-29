@@ -1357,8 +1357,8 @@ exports.get_whitelisted_ip = async (req, res) => {
 exports.removeWhiteListedIp = async (req, res) => {
   try {
     const whitelisted_ip_model = require('../models/whitelisted_ip');
-    const { _id } = req.body;
-    // console.log(_id);
+    const { _id, email } = req.body;
+     console.log(_id);
     await whitelisted_ip_model.deleteOne({ _id: _id }).then((data) => {
 
         var subject = "IP Address removed";
