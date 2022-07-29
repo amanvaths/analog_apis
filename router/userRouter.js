@@ -248,7 +248,7 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
-                console.log("history inserted" + data);
+               // console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
                 return res.json({status:0,msg:"Error:: "+error})
@@ -275,20 +275,21 @@ async function auth(req, res, next){
     const whitelisted_ips = require("../models/whitelisted_ip");
     const default_ip = "0.0.0.0";
     const result_ips = await whitelisted_ips.find({ email : email });
-
+     var status = 0;
     if(result_ips.length == 0 ){
-      next();
+      status =1;
     }else{
        result_ips.map((whitelisted_ips) => {
-          if(whitelisted_ips.ip == default_ip){
-            next();
+          if(whitelisted_ips.ip == default_ip){            
+           status = 1;
           }else if(whitelisted_ips.ip == ip){
-            next();
+            status = 1;
           }
       })
     }    
     
-    return res.status(400).json({ msg : "Invalid Access" });
+    if(status == 0)
+        return res.status(400).json({ status : 5, msg : "Invalid Ip" });
 
   }
   else{
@@ -299,6 +300,6 @@ async function auth(req, res, next){
     return res.status(400).json({status: "0", msg: "something went wrong1"})
   }
 
-  //  next();
+    next();
 }
 

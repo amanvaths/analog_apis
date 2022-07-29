@@ -149,7 +149,7 @@ const test1 = async(email,title, description)=>{
     webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
     webpush.sendNotification(data.subscription, payload)
         .then((result) => {
-          console.log(result, "::RESULT")
+          //console.log(result, "::RESULT")
         }).catch(e => {
             //console.log(e, "::ERROR")
          })
@@ -159,7 +159,7 @@ const test1 = async(email,title, description)=>{
         webpush.setVapidDetails("mailto: `amitnadcab@gmail.com`",data.web_push_Public_key ,data.web_push_Private_key)
         webpush.sendNotification(data.subscription, payload)
             .then(result => {
-              console.log(result, "::RESULT") 
+              //console.log(result, "::RESULT") 
             })
             .catch(e => {
              //console.log(e, "::ERROR") 
