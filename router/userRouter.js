@@ -239,7 +239,7 @@ async function auth(req, res, next){
             const device          = deviceDetector.parse(userAgent);           
             const ip              = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
             const browser_name    = device.client.name;  
-                   
+                 
           if(login_activity == 1){
             try {
               await login_history.create({
@@ -248,7 +248,7 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
-                //console.log("history inserted" + data);
+                console.log("history inserted" + data);
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
                 return res.json({status:0,msg:"Error:: "+error})
@@ -271,16 +271,34 @@ async function auth(req, res, next){
        // console.log("Unusual Activity");
     }
 
- 
+    // check for whitelisted ips 
+    const whitelisted_ips = require("../models/whitelisted_ip");
+    const default_ip = "0.0.0.0";
+    const result_ips = await whitelisted_ips.find({ email : email });
+
+    if(result_ips.length == 0 ){
+      next();
+    }else{
+       result_ips.map((whitelisted_ips) => {
+          if(whitelisted_ips.ip == default_ip){
+            next();
+          }else if(whitelisted_ips.ip == ip){
+            next();
+          }
+      })
+    }    
+    
+    return res.status(400).json({ msg : "Invalid Access" });
+
   }
   else{
-    return res.status(400).json({status: "0", msg: "something went wrong"})
+    return res.status(400).json({status: "0", msg: "something went wrong2"})
   }
   }catch(err){
     console.log("Error in auth api " + err);
-    return res.status(400).json({status: "0", msg: "something went wrong"})
+    return res.status(400).json({status: "0", msg: "something went wrong1"})
   }
 
-   next();
+  //  next();
 }
 
