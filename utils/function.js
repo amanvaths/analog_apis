@@ -35,11 +35,9 @@ function sendMail(email, subject, message) {
   function emailTemplate(user, msg) {
     const template = `
     <html>
-   <head>    
-       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/dashlite.css?ver=3.0.2" />
-       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/theme.css?ver=3.0.2">
-       <link rel="stylesheet" href="${process.env.FRONT_URL}/assets/css/style-email.css" />
+   <head>   
    </head>
+   
    <body class="nk-body bg-white has-sidebar no-touch nk-nio-theme">
       
                    <table class="email-wraper">
@@ -61,8 +59,9 @@ function sendMail(email, subject, message) {
                                    <table class="email-body">
                                        <tbody>
                                            <tr>
-                                               <td class="p-3 p-sm-5">                                                
-                                                   <p>
+                                               <td class="p-3 p-sm-5">   
+                                               <p style="color: red;">Hi This this is test</p>                                             
+                                                   <p style="color: red;">
                                                       ${msg}                                                
                                                    </p>                                                  
                                                    <p class="mt-4">---- 
