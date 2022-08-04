@@ -239,7 +239,7 @@ async function auth(req, res, next){
             const device          = deviceDetector.parse(userAgent);           
             const ip              = (req.headers["x-forwarded-for"] || "").split(",")[0] || req.connection.remoteAddress;  
             const browser_name    = device.client.name;  
-                   
+                 
           if(login_activity == 1){
             try {
               await login_history.create({
@@ -248,7 +248,11 @@ async function auth(req, res, next){
                 request_device: device.device.type,
                 browser_name: browser_name             
               }).then((data) =>{
+<<<<<<< HEAD
               //  console.log("history inserted" + data);
+=======
+               // console.log("history inserted" + data);
+>>>>>>> f367bb994635fc1f5b4e0fd361dfb581eb55da05
               }).catch((error) =>{
                 console.log(" Error in login history " + error);
                 return res.json({status:0,msg:"Error:: "+error})
@@ -261,26 +265,46 @@ async function auth(req, res, next){
 
     const login_ip = await login_history.count({ email : email, request_address : { $in : [ ip ] } }); 
     //console.log(login_ip + " ip");
-    if(settings.unusual_activity == 1 && login_ip ==1 ){
+    // if(settings.unusual_activity == 1 && login_ip ==1 ){
         var subject = "Unusual Activity in Analog Account";
         var msg = `<h5>Hello ${username}, <br> New login in your account details are here -  <br> 
         Browser Name : ${browser_name} <br>
         IP : ${ip} <br>
+        Device : ${device} <br>
         If it's not you please change your password.</h5>`;
         sendMail(email, subject, msg);
        // console.log("Unusual Activity");
-    }
+    // }
 
- 
+    // check for whitelisted ips 
+    const whitelisted_ips = require("../models/whitelisted_ip");
+    const default_ip = "0.0.0.0";
+    const result_ips = await whitelisted_ips.find({ email : email });
+     var status = 0;
+    if(result_ips.length == 0 ){
+      status =1;
+    }else{
+       result_ips.map((whitelisted_ips) => {
+          if(whitelisted_ips.ip == default_ip){            
+           status = 1;
+          }else if(whitelisted_ips.ip == ip){
+            status = 1;
+          }
+      })
+    }    
+    
+    if(status == 0)
+        return res.status(400).json({ status : 5, msg : "Invalid Ip" });
+
   }
   else{
-    return res.status(400).json({status: "0", msg: "something went wrong"})
+    return res.status(400).json({status: "0", msg: "something went wrong2"})
   }
   }catch(err){
     console.log("Error in auth api " + err);
-    return res.status(400).json({status: "0", msg: "something went wrong"})
+    return res.status(400).json({status: "0", msg: "something went wrong1"})
   }
 
-   next();
+    next();
 }
 

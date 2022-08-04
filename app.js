@@ -33,10 +33,12 @@ app.use("/images", express.static(__dirname + "/uploads/images"));
 const userRouter = require('./router/userRouter')
 const notification = require('./router/notification')
 const chart = require('./router/chart')
+const admin = require('./router/adminRouter');
 
 app.use('/api',userRouter);
 app.use('/api',notification);
 app.use('/api', chart)
+app.use('/admin', admin);
 
 const { Server } = require("socket.io");
 const httpServer = createServer(app);
