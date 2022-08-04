@@ -249,7 +249,11 @@ async function auth(req, res, next){
                 browser_name: browser_name             
               }).then((data) =>{
 <<<<<<< HEAD
+<<<<<<< HEAD
               //  console.log("history inserted" + data);
+=======
+               // console.log("history inserted" + data);
+>>>>>>> f367bb994635fc1f5b4e0fd361dfb581eb55da05
 =======
                // console.log("history inserted" + data);
 >>>>>>> f367bb994635fc1f5b4e0fd361dfb581eb55da05
