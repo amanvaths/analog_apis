@@ -385,7 +385,7 @@ exports.signin = async (req, res) => {
             test1(email, "Login Detected", "LOGIN")
 
             var subject = "Security Alert";
-            var message = "<h3>A new sign-in detected to your Analog Account. if this was you, you don't need to do anything. if not, Kindly change your security password.</h3>";
+            var message = "<h3 style='color: green;'>A new sign-in detected to your Analog Account. if this was you, you don't need to do anything. if not, Kindly change your security password.</h3>";
             sendMail(email, subject, message);
 
             return res.status(200).json({
