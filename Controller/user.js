@@ -505,7 +505,7 @@ exports.forgetPassword = async (req, res) => {
             const forgetPassword = require("../models/forgetPassword");
             var randCode = randomString(20, "aA");
             var subject = "Reset your password";
-            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${process.env.front_url}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
+            var msg = `<h3>Hello , <br> Click on the reset button below to reset your password.<br> <a href='${process.env.FRONT_URL}/ResetPassword?resetcode=${randCode}' > Reset </a></h3>`;
             // var msg = "http://localhost:3000/ResetPassword?restcode=123456";
             _forgetPass = new forgetPassword({
               email: email,
