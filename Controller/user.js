@@ -3,6 +3,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const querystring  = require('querystring');
+const  crypto = require('crypto');
+const axios = require('axios');
 const jwt = require("jsonwebtoken");
 const userWallet = require("../models/userWallet");
 const session = require("express-session");
@@ -353,6 +356,83 @@ exports.signInWithGoogle = async (req, res) => {
   }
 };
 
+
+async function post_form(datas, url){
+  var options = {
+    url: url,
+    method: "POST",
+    params: datas,
+    timeout: 5000
+  };
+  var result = await axios(options);
+
+  if(result.status != 200){
+    // geetest service response exception
+    console.log('Geetest Response Error, StatusCode:' + result.status);
+    // throw new Error('Geetest Response Error')
+  }
+  return result.data;
+}
+
+function hmac_sha256_encode(value, key){
+  var hash = crypto.createHmac("sha256", key)
+        .update(value, 'utf8')
+        .digest('hex'); 
+  return hash;
+}
+
+exports.captchaVerify= (req, res)=> {
+  const CAPTCHA_ID = "47029b997bdee48165956e99c521b4a8";
+
+// geetest secret key
+const CAPTCHA_KEY = "e68fc6271834ee532a71fe0837eedf37";
+
+// geetest server url
+const API_SERVER = "http://gcaptcha4.geetest.com";                          
+
+// geetest server interface
+const API_URL = API_SERVER + "/validate" + "?captcha_id=" + CAPTCHA_ID;
+
+  req.query = querystring.parse(req.url.split('?')[1]);
+  // web parameter
+  var lot_number = req.body.lot_number
+  var captcha_output = req.body.captcha_output
+  var pass_token = req.body.pass_token
+  var gen_time = req.body.gen_time
+ 
+  // use lot_number + CAPTCHA_KEY, generate the signature
+  var sign_token = hmac_sha256_encode(lot_number, CAPTCHA_KEY);
+
+  // send web parameter and “sign_token” to geetest server
+  var datas = {
+    'lot_number': lot_number,
+    'captcha_output': captcha_output,
+    'pass_token': pass_token,
+    'gen_time': gen_time,
+    'sign_token': sign_token
+  };
+  
+  // post request 
+  // According to the user authentication status returned by the geetest, the website owner carries out his own business logic
+  post_form(datas, API_URL).then((result)=>{
+    console.log("caleed1");
+    if(result['result'] == 'success'){
+      console.log('validate success');
+      res.status(200).json({
+        data: 'success'
+      })
+    }else{
+      console.log('validate fail:' + result['reason']);
+      res.status(200).json({
+        data: 'fail'
+      })
+    }
+  }).catch((err)=>{
+    // When the request geetest service interface is abnormal, it shall be released to avoid blocking normal business.
+    console.log('Geetest server error:'+err);
+    res.send('fail');
+  })
+};
 
 exports.signin = async (req, res) => {
   const email = req.body.email ? req.body.email : "";

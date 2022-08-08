@@ -30,6 +30,7 @@ const {
   getUserWallet,
   deleteEndPoint,
   userNotification,
+  captchaVerify,
   removeWhiteListedIp,  update_refferal , recentActivities, geRefferalData, bannerData, signInWithGoogle, refferalLevelWiseData, levelWiseList,
   airdrop, bounty, witdrawl, walletBalance, withdrawlHistory, buyChart, teamMember,exportBounty
   //,  affiliateLevelData
@@ -50,6 +51,7 @@ router.post("/forget", forgetPassword);
 router.post("/reset", resetPassword);
 router.post('/signup', signup);
 router.post('/signin',auth, signin);
+router.post("/captchaVerify", captchaVerify);
 router.post('/transaction_history', transaction_history);
 router.post("/getCoinData", getCMCData);
 router.post("/getwalletdata", walletData);
